@@ -2,11 +2,11 @@
 
 ## What This Is
 
-BC-RAO is a Reddit content generation tool for solo SaaS founders who want to promote their products organically without getting banned or shadowbanned. It analyzes the "DNA" of subreddit communities — tone, rhythm, forbidden topics, what works — and generates posts that blend in as authentic contributions while subtly promoting the user's product.
+BC-RAO is a social intelligence platform that automates market validation and organic user acquisition for SaaS founders on Reddit. It reads the behavioral DNA of online communities, generates content conditioned to match community norms (archetypes, syntax rhythm, vulnerability patterns), and monitors post survival — transforming founders from obvious marketers into legitimate community collaborators.
 
 ## Core Value
 
-Generated posts must feel 100% human and community-native, never triggering spam detection or moderator flags. If nothing else works, this must.
+Founders can generate Reddit posts that survive moderation and earn genuine engagement by mimicking native community behavior patterns, not by guessing.
 
 ## Requirements
 
@@ -16,61 +16,70 @@ Generated posts must feel 100% human and community-native, never triggering spam
 
 ### Active
 
-- [ ] User can input their SaaS details (problem, solution, target audience) during onboarding
-- [ ] System identifies and suggests ideal subreddits based on product-audience fit
-- [ ] System scrapes and analyzes successful conversations in target subreddits via Apify
-- [ ] User can select an "Attack Card" archetype (Journey, Solution, Feedback) or create custom ones
-- [ ] System analyzes community unwritten rules: tone, rhythm, forbidden topics
-- [ ] System generates a Community Sensitivity Index (CSI) indicating ban risk level
-- [ ] User can view a "Community Etiquette Manual" for each target subreddit
-- [ ] User can optionally provide a rough draft or leave input empty for full generation
-- [ ] System generates (or refines) a final post using mimicry filters for human-native feel
-- [ ] System enforces a syntax blacklist to avoid spam-flagged patterns
-- [ ] Free trial with paid tiers, differentiated by number of subreddits tracked
-- [ ] Stripe-based billing with plan limit enforcement
-- [ ] User authentication via Supabase (email/password signup, session persistence)
+- [ ] User can create campaigns with product context, keywords, and target subreddits
+- [ ] Module 1 (Collector) scrapes Reddit via Apify, filters with regex, stores raw posts
+- [ ] Module 2 (Pattern Engine) classifies archetypes, scores posts, builds community profiles with ISC
+- [ ] SpaCy performs local rhythm analysis (sentence length, formality, tone) at zero API cost
+- [ ] Module 3 (Generator) produces conditioned drafts using community profile + archetype + blacklist constraints
+- [ ] Draft generation respects ISC gating, account status, and decision tree logic
+- [ ] Syntax blacklist prevents repeating patterns that caused past removals
+- [ ] Module 4 (Orchestrator) monitors posted content with dual-check shadowban detection
+- [ ] Negative reinforcement loop feeds removal data back into blacklist and community profiles
+- [ ] Supabase Auth with profiles, subscriptions, and RLS tenant isolation
+- [ ] Stripe billing with trial (7-day, no card), Starter ($49), and Growth ($99) plans
+- [ ] Usage tracking enforces plan limits (subreddits, drafts/month, campaigns, monitors)
+- [ ] Guided onboarding (4 steps) from signup to first data collection
+- [ ] Next.js dashboard with campaign management, community profiles, draft editor, monitoring dashboard
+- [ ] Email alerts for emergency (shadowban), success, and trial lifecycle events
 
 ### Out of Scope
 
-- Sentinel monitoring (post-deployment tracking) — v2, after core generation proves value
-- Post-audit loop and pivot suggestions — v2, depends on monitoring
-- Hacker News / other platforms — Reddit-only for v1
-- Mobile app — web-first
-- Real-time chat or collaboration — solo founder tool
-- OAuth login (Google, GitHub) — email/password sufficient for v1
-- Video content generation — text posts only
+- Auto-posting to Reddit — ToS violation, trust anti-pattern
+- Hacker News support — different API/dynamics, V2
+- Multi-language NLP — English-first, other SpaCy models later
+- Team/multi-user accounts — single-founder focus
+- Real-time WebSocket dashboard — polling every 30s sufficient
+- Custom model fine-tuning — OpenRouter model selection covers needs
+- Mobile app — responsive web sufficient
+- Public API / webhooks — not needed until platform play
+- A/B testing of drafts — after baseline established
+- Semantic search UI on raw_posts — pgvector column exists, UI deferred
+- White-label / agency tier — V2
 
 ## Context
 
-- The product name "BC-RAO" references the alchemical nature of transmuting marketing intent into authentic community conversation
-- The 6-stage user journey (Briefing → Selection → Intelligence → Generation → Sentinel → Audit) is the full vision; MVP covers stages 1-4
-- Attack Cards are content archetypes: Journey (personal story), Solution (helpful answer), Feedback (asking for input) — defaults plus user-created custom archetypes
-- Community analysis uses SpaCy NLP for rhythm/linguistic pattern detection and LLMs (via OpenRouter) for archetype classification
-- The infrastructure document (`bc-rao-infrastructure_1.md`) defines the full deployment architecture: monorepo with Turborepo, GitHub Actions CI/CD, Vercel preview environments
-- Reddit data collection uses Apify's Reddit Scraper actor
-- LLM inference goes through OpenRouter (multi-model routing)
-- All user data is isolated via Supabase Row Level Security (RLS)
+**System spec:** `bc-rao-system-spec_1.md` is the locked source of truth for schema, API design, module architecture, inference routing, pricing, and deployment.
+
+**Build priority:** Core loop first (Collect → Analyze → Generate) with end-to-end dashboard. Auth stubbed initially, real Supabase Auth added when connecting frontend. Monitoring (Module 4) and billing (Stripe) follow after core loop works.
+
+**External services ready:** Apify account with Reddit actor selected, OpenRouter API key ready. No mocking needed — real integrations from the start.
+
+**4-Module architecture:**
+1. Module 1 (Data Collector): Apify → Regex filter → AI processing → raw_posts storage
+2. Module 2 (Pattern Engine): Archetype classification + SpaCy rhythm analysis + community profiling + ISC scoring
+3. Module 3 (Conditioning Generator): Community profile + archetype + blacklist → conditioned draft via OpenRouter
+4. Module 4 (Orchestrator): Shadow table monitoring + dual-check shadowban detection + negative reinforcement feedback loop
+
+**Cost control is critical:** Apify credits + LLM tokens are the main variable cost. Regex pre-filtering reduces AI volume by ~80%. Only top 10% of posts get full LLM processing. SpaCy runs locally for zero-cost NLP. Per-plan cost caps enforced.
 
 ## Constraints
 
-- **Tech stack (frontend)**: Next.js 15 on Vercel — SSR/ISR for dashboard, edge functions for auth
-- **Tech stack (backend)**: FastAPI + Celery on Railway — long-running collection tasks, SpaCy model in memory
-- **Database**: Supabase (PostgreSQL + Auth + RLS) — staging and production projects
-- **Monorepo**: Turborepo with `apps/web`, `apps/api`, `packages/shared`
-- **LLM costs**: Must track and cap per-user LLM spending (OpenRouter cost tracking)
-- **External APIs**: Apify (Reddit scraping), OpenRouter (LLM), Stripe (billing), Resend (email)
-- **Reddit only**: v1 targets Reddit exclusively; architecture should not over-abstract for multi-platform
+- **Tech stack**: Next.js 15 + Tailwind + Shadcn/UI (frontend), Python 3.11+ / FastAPI (backend), Supabase (database + auth), Celery + Redis (workers), OpenRouter (AI), Apify (scraping) — locked per system spec
+- **Pricing**: Trial $0/7d, Starter $49/mo, Growth $99/mo — locked per system spec
+- **Database schema**: As defined in system spec Section 4 — locked
+- **API design**: As defined in system spec Section 5 — locked
+- **Inference routing**: OpenRouter with model-per-task routing as defined in system spec Section 6 — locked
+- **Project structure**: Backend follows `bc-rao-api/` structure from system spec Section 12 — locked
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Monorepo (Turborepo) | Shared types between TS frontend and Python backend, unified CI, coherent previews | — Pending |
-| Railway for backend (not Vercel) | Celery workers need persistent processes, SpaCy model needs persistent RAM | — Pending |
-| Supabase over self-hosted Postgres | Auth + RLS built-in, free staging tier, managed infrastructure | — Pending |
-| OpenRouter over direct OpenAI | Multi-model routing, cost optimization, model flexibility | — Pending |
-| MVP = Generate only (stages 1-4) | Prove core value (safe posts) before investing in monitoring pipeline | — Pending |
-| Subreddits as billing dimension | Subreddit count is the natural scaling metric for this product | — Pending |
+| Spec is locked source of truth | Comprehensive system spec already covers schema, API, modules, pricing, deployment | — Pending |
+| Core loop first, monitoring/billing later | Get Collect → Analyze → Generate working end-to-end before adding Module 4 and Stripe | — Pending |
+| Stub auth during core loop build | Move faster on module development, add real Supabase Auth when connecting frontend | — Pending |
+| Real integrations from start (no mocks) | Apify and OpenRouter ready, skip mock layer complexity | — Pending |
+| Full dashboard from start | End-to-end UI (Next.js) not just API — user wants to see the value loop visually | — Pending |
 
 ---
 *Last updated: 2026-02-07 after initialization*
