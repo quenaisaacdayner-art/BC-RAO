@@ -1,400 +1,339 @@
 # Project Research Summary
 
-**Project:** BC-RAO - Reddit Content Generation Tool
-**Domain:** Reddit Marketing Automation / AI-Powered Community Engagement
+**Project:** BC-RAO (Social Intelligence Platform)
+**Domain:** Reddit behavioral analysis + AI content generation + post monitoring
 **Researched:** 2026-02-07
 **Confidence:** HIGH
 
 ## Executive Summary
 
-BC-RAO is a Reddit marketing automation tool for SaaS founders that generates community-native content to avoid AI detection and shadowbans. The research reveals this is a high-risk, high-value domain where the primary challenge is not technical complexity but navigating Reddit's sophisticated bot detection, community norms, and TOS compliance. Success depends on three pillars: (1) authentic content mimicry through NLP analysis of community patterns, (2) proactive ban risk assessment before posting, and (3) strict adherence to Reddit's API limits and anti-spam policies.
+BC-RAO is a social intelligence platform that helps indie hackers and SaaS founders engage authentically on Reddit by analyzing community patterns, generating contextually-appropriate content, and monitoring post survival. Research confirms this is a validated market (GummySearch closure left gap, competitors like SubredditSignals generating 78 leads/month), but success depends on navigating Reddit's strict anti-scraping enforcement and managing multi-vendor costs (Apify + OpenRouter + Supabase).
 
-The recommended approach is an event-driven async pipeline built on Next.js 16 + FastAPI + Celery + Supabase. Four core modules handle the lifecycle: Collector (scrape Reddit via Apify), Pattern Engine (SpaCy NLP for "Conversation DNA"), Generator (LLM with mimicry constraints via OpenRouter), and Monitor (shadowban detection + engagement tracking). The architecture must prioritize resilience over speed—tasks are long-running (1-5 minutes for scraping), users must review content before posting (no full automation), and community profiles require weekly refreshes to avoid staleness.
+The recommended architecture splits cleanly: Next.js 15 frontend on Vercel, FastAPI backend + Celery workers on Railway/Render, Supabase for database + auth, and OpenRouter for LLM routing. This stack is production-proven with established integration patterns. The critical technical differentiator is behavioral mimicry through multi-layered conditioning (archetype classification + Community Sensitivity Index + syntax rhythm analysis + blacklist constraints), which no competitor explicitly offers.
 
-Critical risks include shadowbans from AI-detected content (70-90% risk for new accounts), Reddit API bans from rate limit violations, Supabase RLS security breaches (170+ apps compromised in 2026), and LLM cost explosion from inefficient prompts. Mitigation requires security-first development (RLS enabled from day 1), multi-layer content safety (blacklist + LLM moderation + human review), aggressive cost controls (prompt caching, model routing), and honest UX about Reddit's barriers (account age/karma requirements).
+The primary risks are cost control (Apify + LLM can exceed revenue at $49/month without aggressive filtering), legal exposure (Reddit actively suing scrapers who violate ToS), and shadowban detection accuracy (false positives damage credibility). Mitigation strategy: use official Reddit API exclusively (never HTML scraping), implement 80% regex pre-filter before LLM processing, build dual-session shadowban detection with confidence scoring, and set hard spending caps on all external APIs.
 
 ## Key Findings
 
 ### Recommended Stack
 
-The stack is optimized for async background processing with strong type safety and cost control. Next.js 16 + Vercel handles the frontend with native React Server Components. FastAPI + Railway provides the backend API and Celery workers (Redis broker) for long-running tasks. Supabase delivers PostgreSQL + Auth + Realtime subscriptions with Row Level Security. OpenRouter routes LLM requests across 300+ models with cost-based selection and prompt caching.
+BC-RAO's locked stack represents a mature, production-ready combination validated through extensive research. The architecture leverages Next.js 15 (stable App Router, React 19, Turbopack), FastAPI 0.128.4+ (Pydantic v2, async-first), Supabase (managed Postgres + auth + RLS + pgvector), Celery 5.6.2+ (memory leak fixes), Redis 7.x (broker + backend), and OpenRouter (unified LLM routing). This configuration has established integration patterns documented across multiple production deployments.
 
 **Core technologies:**
-- **Next.js 16** (frontend): React 19 Server Components, ISR for dashboards, Edge Functions for auth — native Vercel integration
-- **FastAPI 0.128.2** (backend): Async-first API framework, automatic OpenAPI generation for type-safe monorepo, Pydantic v2 validation
-- **Celery 5.6** (task queue): Industry standard for distributed async tasks, Redis broker, Beat scheduler for monitoring jobs
-- **SpaCy 3.8** (NLP): Production-grade text analysis (tokenization, POS tagging, dependency parsing) for rhythm analysis — model `en_core_web_md` balances accuracy/speed
-- **Supabase** (database): PostgreSQL 15+ with RLS, built-in auth, realtime subscriptions — critical for security and live updates
-- **OpenRouter** (LLM gateway): Multi-model routing (Claude 3.5 Sonnet → GPT-4 → Llama 3), prompt caching (0.25x cost), cost limits
-- **Apify** (Reddit scraping): Unlimited scraping without login, structured data extraction, avoids direct Reddit API rate limits for collection
-- **Redis 7.x** (broker + cache): Dual-purpose for Celery task queue and caching community profiles
-- **Turborepo** (monorepo): Optimizes Next.js + FastAPI builds, intelligent caching, parallel task execution
+- **Next.js 15 + React 19**: Frontend framework with SSR/SSG — 76.7% faster dev server, stable App Router, full TypeScript support with next.config.ts
+- **FastAPI 0.128.4+**: API framework — latest stable with Pydantic v2 integration, automatic OpenAPI docs, async-first design for high concurrency
+- **Supabase**: Database + auth + real-time — managed Postgres 15+, built-in RLS for tenant isolation, pgvector for embeddings, 99.9% SLA
+- **Celery 5.6.2 + Redis 7.x**: Task queue — distributed async processing, memory leak fixes in latest release, sub-millisecond broker latency
+- **OpenRouter**: LLM routing gateway — access 400+ models, automatic fallbacks, cost optimization, prevents vendor lock-in
+- **spaCy 3.8.11 + en_core_web_md**: Local NLP — zero API cost, 20k word vectors for behavioral analysis, Python 3.13 support
+- **Apify**: Reddit scraping service — pre-built actors, handles OAuth + rate limits, webhook-based async results
 
-**Critical version notes:**
-- FastAPI 0.126+ requires Pydantic v2 (v1 support dropped)
-- Python 3.11 recommended (FastAPI requires 3.9+, Celery supports 3.9-3.13)
-- OpenRouter SDK is beta — pin version to avoid breaking changes
-- Avoid Python 3.8 (FastAPI dropped support), Requests library (use httpx for async), Jest (use Vitest)
+**Critical version requirements:**
+- Python 3.11 or 3.12 (best performance + stability balance for FastAPI + Celery + spaCy)
+- Node.js 18.18.0+ (Next.js 15 minimum requirement)
+- Supabase Transaction Mode (port 6543) with disabled prepared statements for production
+- Celery 5.6+ required (earlier versions have critical memory leaks)
 
 ### Expected Features
 
-Research identified clear table stakes vs. differentiators. Competitors (GummySearch, Subreddit Signals, ReplyAgent, Redreach) focus on monitoring/discovery OR managed accounts, but none combine content generation + ban risk intelligence + community mimicry.
+Research across 7 Reddit marketing tools and 15+ social listening platforms reveals clear feature expectations. BC-RAO's differentiators (behavioral mimicry, Community Sensitivity Index, negative reinforcement learning) fill gaps left by GummySearch's closure and competitor limitations.
 
 **Must have (table stakes):**
-- **Subreddit Discovery** — users expect intelligent filtering by ICP match, engagement quality (free tools like SubredditStats set baseline)
-- **Keyword/Topic Monitoring** — real-time alerts for brand mentions (F5Bot offers this free, must exceed)
-- **Rules Checking** — Reddit now has native "Rule Check" feature, must beat it by explaining why rules apply and predicting mod behavior
-- **Engagement Analytics** — post-publication tracking (upvotes, comments, upvote ratio) to validate what works
-- **Shadowban Detection** — 70-90% ban risk makes this critical; multiple free checkers exist (ShadowBan, PixelScan)
-- **Basic Post Scheduling** — standard in all marketing tools (Postpone, Redreach already offer)
-- **Multi-Subreddit Management** — SaaS founders promote across 5-15 communities, need dashboard view
+- Content Discovery & Keyword Monitoring — users expect automated scanning of relevant subreddits/posts (SubredditSignals, F5Bot, Brand24 all provide this)
+- Sentiment Analysis (Basic) — positive/neutral/negative classification to filter irrelevant posts
+- Engagement Metrics Tracking — upvotes, comments, CTR, engagement trends (Reddit's algorithm prioritizes upvote rate)
+- Shadowban Detection — users assume tools warn about shadowbans proactively (multiple free checkers exist)
+- Community Profile/Research — insight into subreddit culture, demographics, posting patterns (GummySearch pioneered this)
+- Post Scheduling (Notification-based) — standard in all social tools, but must avoid API-based posting (Reddit shadowbans API posts 8x more)
 
-**Should have (competitive advantage):**
-- **Community Etiquette Manual + CSI Score** — BC-RAO's unique differentiator: quantifies ban risk per subreddit by analyzing mod behavior, enforcement patterns, sensitivity triggers
-- **Conversation DNA Scraping & Mimicry** — analyze top posts to extract linguistic fingerprints (sentence rhythm, tone, vocabulary), apply to generation for 100% human-feel
-- **Attack Card Strategy Framework** — Journey/Solution/Feedback/Custom cards educate users on Reddit-native promotion patterns
-- **Ban Risk Prediction** — combine CSI + content analysis + timing + account history to estimate probability ("72% chance this gets removed")
-- **Draft Refinement Mode** — user provides rough draft, system applies mimicry filters to preserve authenticity while reducing ban triggers
-- **Purchase Intent Scoring** — AI estimates user likelihood to buy based on language/context, prioritizes high-intent threads
-- **Cross-Post Optimization** — adjust tone, framing, timing per community (one draft → 5 community-specific versions)
+**Should have (competitive differentiators):**
+- Behavioral Mimicry / Style Matching — generate content that "sounds native" to specific communities (BC-RAO's archetype + syntax rhythm analysis is unique)
+- Community Sensitivity Index (ISC) — quantify how strict/sensitive a subreddit is to self-promotion (no competitor offers explicitly)
+- Negative Reinforcement Learning — feed removal/shadowban data back to improve content generation (Meta's Dec 2025 research shows 100x data efficiency)
+- Post Archetype Classification — identify Journey/ProblemSolution/Feedback patterns for better targeting
+- Syntax Rhythm Analysis — match linguistic patterns beyond keywords (sentence length, punctuation, conversational flow via SpaCy)
+- Dual-Check Shadowban Detection — multi-method verification reduces false positives
 
 **Defer (v2+):**
-- **Managed Account Network** — ReplyAgent charges $3/post using karma-aged accounts; eliminates warmup but requires major infrastructure + legal review
-- **Multi-Platform Support** — LinkedIn, X, HN expansion only after Reddit mastery proven (different dynamics, dilutes focus)
-- **Karma Farming Automation** — violates Reddit TOS, creates legal/ethical risk; instead educate users on manual warming best practices
-- **Fully Automated Posting** — removes human oversight, triggers AI detection + community backlash; keep human in loop
+- Managed Account Posting — operational complexity requires infrastructure BC-RAO doesn't have yet (ReplyAgent.ai model)
+- Multi-Account Management — legally/practically risky (Reddit actively detects)
+- Full Multi-Platform Monitoring — Reddit + Twitter + Facebook = 4x complexity, stay focused until dominance
+- Competitor Auto-Response Templates — likely to be misused, leads to spam
 
-**Anti-features (avoid):**
-- **Mass Cross-Posting Same Content** — Reddit flags as spam
-- **Comment Auto-Replies** — users detect and hate automated responses
-- **AI Detection Evasion Tools** — arms race mentality; better to focus on genuine authenticity
+**Anti-features to avoid:**
+- Direct API Auto-Posting — Reddit shadowbans API posts (8x higher removal rate), use notification-based posting instead
+- Universal Content Templates — Reddit communities are highly distinct, templates get downvoted
+- Real-Time Everything — creates notification fatigue, batch non-urgent alerts
 
 ### Architecture Approach
 
-Event-driven async pipeline where each module triggers the next via Celery tasks, with state persisted to PostgreSQL between stages. This is the standard pattern for long-running multi-stage data processing where failures must be isolated and retryable.
+Standard architecture for social intelligence platforms processing Reddit data follows API-first pattern with async workers. FastAPI handles orchestration and returns task IDs immediately while Celery workers process long-running operations (scraping, analysis, monitoring). This enables non-blocking API, horizontal scaling of workers, and graceful degradation.
 
 **Major components:**
-1. **Frontend (Next.js 16 on Vercel)** — Server Components for SEO/data fetching, Client Components for interactivity, real-time updates via Supabase subscriptions
-2. **API Gateway (FastAPI on Railway)** — HTTP endpoints for CRUD operations, orchestrates Celery tasks, enforces plan limits
-3. **Task Queue (Celery + Redis)** — Async job execution with specialized queues (scraping: I/O-bound high concurrency, NLP: CPU-bound low concurrency, generation: API-bound medium concurrency)
-4. **Module 1: Collector** — Apify scrapes Reddit → Regex archetype classifier → AI confidence scorer → stores raw_posts table
-5. **Module 2: Pattern Engine** — SpaCy NLP analysis → rhythm scoring (sentence length, clause density) → calculate ISC (Influence Style Coefficient) → stores community_profiles table
-6. **Module 3: Generator** — RAG pattern (retrieve top posts as context) → check syntax blacklist → LLM generation via OpenRouter → mimicry filters (ISC match, tone calibration) → stores generated_drafts table
-7. **Module 4: Monitor** — Celery Beat scheduler (every 4h) → Reddit API fetch metrics → shadowban heuristics → alert on degradation
-8. **Database (Supabase)** — PostgreSQL with RLS policies (critical security requirement), auth integration, real-time subscriptions for live UI updates
+1. **Client Layer (Vercel)** — Next.js 15 frontend with Server Components for direct Supabase queries (read-heavy), dashboard polling for task status, JWT auth via cookies
+2. **API Layer (Railway/Render)** — FastAPI backend with service layer isolation, campaign/collector/analyzer/generator/monitor routes, JWT validation middleware, Pydantic request/response validation
+3. **Worker Layer (Railway/Render)** — Celery workers + Beat scheduler, separate queues (scraping, ml_processing, ai_generation, monitoring), Redis broker + backend with separate DBs
+4. **Inference Layer** — InferenceClient abstraction wrapping OpenRouter (prevents vendor lock-in), model routing by task (Haiku for classification, Sonnet for generation), cost tracking + quota enforcement
+5. **Local NLP Layer** — SpaCy en_core_web_md for zero-cost processing (sentence length, formality scoring, rhythm analysis, regex filtering)
+6. **Data Layer (Supabase)** — PostgreSQL + pgvector + Auth + RLS, all tables isolated by user_id via RLS policies, HNSW indexes for vector similarity
 
 **Key patterns:**
-- **Event-Driven Pipeline:** Collection → Analysis → Generation triggered via Celery chains, user gets immediate response ("Campaign started, we'll notify when ready")
-- **RAG for Context:** LLM generation retrieves successful post examples from database, injects into prompt to ground mimicry in real patterns
-- **Worker Pool Routing:** Specialized queues optimize resources (scraping gets 10 workers, NLP gets 2 CPU-optimized, generation gets 4)
-- **Push-Based Updates:** Supabase Realtime (PostgreSQL LISTEN/NOTIFY) for UI state changes, not database polling
-
-**Critical anti-patterns to avoid:**
-- Synchronous API calls in HTTP endpoints (causes timeouts)
-- Loading SpaCy model on every request (2-3s latency, should load once at startup)
-- Storing raw Reddit JSON in database (causes bloat, use structured columns)
-- Polling database for task status (use Supabase Realtime push-based updates)
-- Generating content without blacklist enforcement (wastes credits, risks bans)
+- Event-driven pipeline: campaigns → raw_posts → community_profiles → generated_drafts → shadow_table → syntax_blacklist (feedback loop)
+- Cost-gated inference: check plan caps BEFORE LLM calls, track usage immediately AFTER, enforce hard limits at 80% threshold
+- Dual-session monitoring: authenticated + anonymous HTTP checks to detect shadowbans (single-check misses them)
+- Tenant isolation via RLS: database-level enforcement prevents data leaks even if application logic breaks
+- Tiered filtering: regex pre-filter (80% reduction) → SpaCy scoring → top 10% get LLM processing
 
 ### Critical Pitfalls
 
-These are domain-specific risks beyond standard web development mistakes. Each has caused production failures in similar tools.
+Research across Reddit scraping, LLM security, and Celery production deployments reveals 8 critical failure modes. Top 5 by severity:
 
-1. **Disabled Row Level Security (RLS) on Supabase** — The #1 security breach cause in Supabase apps. Moltbook incident (Jan 2026) exposed 1.5M API keys because RLS was disabled. Must enable RLS immediately when creating tables, create policies before adding production data, never use service_role keys in client code. Test with different user roles before deployment. Address in Phase 1 (Foundation) — non-negotiable.
+1. **Reddit Rate Limiting Escalation** — 60 req/min limit escalates to IP blocks lasting days if ignored. Avoid: centralized rate limiting before Apify actors, batch endpoints, circuit breaker on HTTP 429, OAuth authentication always, max 1-2 concurrent requests
+2. **Prompt Injection via Scraped Content** — malicious Reddit posts can hijack LLM prompts (13% of web chatbots exposed). Avoid: isolate AI instructions from user data, sanitize all scraped content (strip markdown, detect "Ignore previous instructions"), LLM guardrails, output validation
+3. **LLM + Apify Cost Explosion** — variable costs can exceed $49 Starter revenue ($500+ bills). Avoid: hard spending caps (Apify $20/month, OpenRouter $30/month), 80% regex pre-filter before LLM, max_tokens=500, cheaper models for classification, real-time cost alerts at 80%
+4. **Reddit ToS Violation and Legal Exposure** — Reddit suing Perplexity, SerpAPI, Oxylabs for "unlawful scraping." Avoid: official API ONLY (never HTML scraping), no proxy rotation/user-agent spoofing, OAuth authentication, Reddit attribution, audit logs proving API-only usage
+5. **Shadowban Detection False Positives** — tools can't distinguish shadowban/suspended/deleted (same signals). Avoid: multi-signal detection (API checks, score monitoring, modlog), confidence scores not binary yes/no, flag ambiguous cases as "uncertain," transparency about limitations
 
-2. **AI Content Detection Leading to Shadowbans** — Reddit's bot detection identifies LLM patterns at token level (statistical word choice, sentence structures). 15% of Reddit posts are AI-generated, moderators use heuristics to detect "tells." Avoid by never using raw LLM output, adopt varied sentence rhythm, use creative essayist style (84% bypass rate vs. 7% for standard generation), test with GPTZero before posting. Address in Phase 2 (Content Generation) and Phase 4 (Safety & Quality).
-
-3. **Reddit API/TOS Violations Through Automated Posting** — Reddit pursued legal action against Perplexity for scraping. Rules prohibit posting identical content across subreddits, automated spam, scraping without consent. Avoid by using official API with OAuth, respecting 60 requests/minute rate limit, unique content per subreddit, following 10% self-promotion rule, building organic karma first, adding human review before posting. Address in Phase 1 (Foundation) and Phase 3 (Attack Cards & Posting).
-
-4. **Unreliable Shadowban Detection** — All three states (shadowban, suspension, deleted account) look identical to outside observers. Reddit doesn't notify users of shadowbans. Must implement multi-method detection: check profile when logged out, monitor engagement metrics, use Reddit Shadowban Checker tool, check post visibility in incognito mode. Set automated alerts for zero-engagement posts. Address in Phase 4 (Safety & Quality) and Phase 5 (Monitoring).
-
-5. **Data Staleness in Community Profiles** — Reddit content changes rapidly (weekly/daily shifts in tone, memes, trending topics, mod policies). One-time scraping produces "off" content that gets detected. Avoid by implementing freshness tracking (timestamp all scraped data), re-scrape high-priority subreddits weekly, flag stale profiles (>30 days), prioritize recent posts in analysis, allow manual refresh before posting. Address in Phase 2 (NLP Analysis) and Phase 5 (Monitoring).
-
-**Additional critical pitfalls:**
-- **Celery Worker Failures During Railway Deployments** — Long tasks interrupted during deploys, causing data loss. Configure `RAILWAY_DEPLOYMENT_OVERLAP_SECONDS` and `DRAINING_SECONDS` for graceful shutdown.
-- **LLM Cost Explosion** — Prompts routinely exceed 20K tokens without optimization. Implement prompt caching (0.25x cost), compression (LLMLingua: 20x), max price limits, model routing for simple tasks.
-- **Reddit Rate Limit Violations** — 60 requests/minute with 10-minute rolling window. Burst scraping triggers bans. Use client-side rate limiting, exponential backoff on 429 errors, queue requests through Celery.
-- **Karma/Account Age Filtering** — New accounts auto-filtered by most subreddits (50-500 karma, 30+ days required). Build account readiness checker in onboarding, educate on warming strategy, show estimated readiness per subreddit.
+**Additional gotchas:**
+- Celery + Redis memory leaks (use 5.6+, configure worker_max_tasks_per_child=1000, worker_max_memory_per_child=250000)
+- Supabase RLS performance degradation (index ALL user_id columns, use IN/ANY operators not direct equality, monitor with Performance Advisors)
+- Apify actor "Under Maintenance" cascading failures (health checks, fallback to direct Reddit API, pin versions)
 
 ## Implications for Roadmap
 
-Based on research, the roadmap must follow a strict dependency chain: Auth → Module 1 (Collector) → Module 2 (Pattern Engine) → Module 3 (Generator) → Module 4 (Monitor). Each module requires data from the previous, and security/compliance must be built from day 1 (not retrofitted).
+Based on combined research, recommended 6-phase structure aligns with technical dependencies and risk mitigation:
 
-### Phase 1: Foundation & Security
-**Rationale:** RLS security, Reddit API compliance, and Celery infrastructure are prerequisites for all other work. The research shows that 170+ apps were compromised in 2026 by skipping RLS setup, and Reddit actively pursues legal action for TOS violations. Building on an insecure or non-compliant foundation requires complete rebuilds later.
+### Phase 1: Foundation + Authentication
+**Rationale:** Auth + database are dependencies for everything else. Early deploy pipeline prevents integration issues. Cost monitoring must be built FIRST before any external API usage (Pitfall #3).
 
-**Delivers:**
-- Supabase database with RLS enabled on all tables
-- FastAPI app with auth middleware and plan limit enforcement
-- Celery + Redis configured with graceful shutdown for Railway
-- Next.js frontend with Supabase auth integration
-- Reddit API OAuth flow with rate limiting infrastructure
+**Delivers:** User signup/login, dashboard scaffold, campaign CRUD, cost tracking infrastructure
 
-**Addresses (from FEATURES.md):**
-- Authentication (table stakes for SaaS)
-- Plan limit enforcement (prevents cost explosion)
+**Addresses features:**
+- Basic campaign management (table stakes)
+- User authentication via Supabase
+- Billing groundwork (usage tracking tables)
 
-**Avoids (from PITFALLS.md):**
-- Pitfall #1: Disabled RLS (must be enabled before any user data)
-- Pitfall #3: Reddit API/TOS violations (OAuth + rate limiting from start)
-- Pitfall #6: Celery worker failures (graceful shutdown configured)
-- Pitfall #8: Rate limit violations (client-side rate limiting built in)
+**Avoids pitfalls:**
+- Cost explosion — build spending caps before Apify/OpenRouter integration
+- RLS performance — design policies with indexes from day 1
 
-**Stack elements (from STACK.md):**
-- Supabase (PostgreSQL + Auth + RLS)
-- FastAPI (API framework)
-- Celery + Redis (task queue)
-- Next.js (frontend framework)
+**Research flag:** Standard authentication patterns, no deep research needed. Supabase Next.js integration well-documented.
 
-### Phase 2: Module 1 - Collection & Classification
-**Rationale:** Cannot analyze community patterns or generate content without data. Module 1 provides the raw material (Reddit posts) for all downstream processing. Research shows Apify integration is the de-risking priority (validates data structure before building analysis pipeline).
+---
 
-**Delivers:**
-- Apify client integration for Reddit scraping
-- Regex-based archetype classification (Journey, Solution, Feedback, Custom)
-- AI-powered classification confidence scoring (OpenRouter)
-- Celery task: collect_posts (1-5 minute async job)
-- Frontend: Campaign creation form with subreddit discovery
+### Phase 2: Collection Pipeline (Module 1)
+**Rationale:** Data collection is the input for entire pipeline. Must establish legal Reddit API usage patterns before building analysis/generation features (Pitfall #4). Implements 80% regex pre-filter to control LLM costs (Pitfall #3).
 
-**Addresses (from FEATURES.md):**
-- Subreddit Discovery (table stakes)
-- Conversation DNA Scraping (differentiator)
-- Attack Card data foundation (archetypes feed card selection)
+**Delivers:** Reddit scraping via Apify → regex filtering → archetype classification → storage in raw_posts table
 
-**Avoids (from PITFALLS.md):**
-- Pitfall #8: Rate limit violations (scraping queued through Celery, distributed over time)
+**Uses stack:**
+- Apify SDK for Reddit scraping (OAuth-based, handles rate limits)
+- Celery workers for async processing
+- Redis broker + backend
+- OpenRouter via InferenceClient for archetype classification
+- Supabase for raw_posts storage
 
-**Stack elements (from STACK.md):**
-- Apify Client (Reddit scraping)
-- OpenRouter (AI classification)
-- Celery (async task execution)
+**Addresses features:**
+- Content Discovery & Keyword Monitoring (must-have)
+- Post Archetype Classification (differentiator)
 
-**Architecture components (from ARCHITECTURE.md):**
-- Module 1: Collector (Apify API → Regex filter → AI classifier → raw_posts table)
+**Avoids pitfalls:**
+- Reddit ToS violation — use official API only, no HTML scraping
+- Rate limiting escalation — centralized rate limiting, circuit breaker pattern
+- Cost explosion — 80% regex pre-filter before LLM, hard spending caps
 
-### Phase 3: Module 2 - Pattern Engine (NLP Analysis)
-**Rationale:** Conversation DNA is BC-RAO's core differentiator. Without NLP analysis of community linguistic patterns, the tool becomes a generic AI writer (no competitive advantage). Research shows SpaCy rhythm analysis requires validation with 100+ real posts to tune the weight matrix.
+**Research flag:** NEEDS DEEP RESEARCH for Apify integration specifics (webhook patterns, actor selection, rate limit coordination with Reddit API).
 
-**Delivers:**
-- SpaCy NLP pipeline integration (model loaded at startup)
-- Rhythm analyzer (sentence length, clause density, transitional patterns)
-- Scoring engine (ISC = Influence Style Coefficient, 0-10 scale)
-- Community profiler (aggregates metrics, identifies dominant tone)
-- Celery task: analyze_patterns
-- Frontend: Community profile display (ISC score, rhythm metrics, top hooks)
+---
 
-**Addresses (from FEATURES.md):**
-- Conversation DNA Scraping (differentiator)
-- Community Etiquette Manual (requires pattern analysis)
+### Phase 3: Pattern Engine (Module 2)
+**Rationale:** Depends on Module 1 data. Community profiles provide context for Module 3 generation. SpaCy local processing minimizes API costs. Aggregation logic is complex and requires careful design.
 
-**Avoids (from PITFALLS.md):**
-- Pitfall #5: Data staleness (implement freshness tracking from start)
+**Delivers:** Raw posts analyzed → community profiles generated → ISC scores calculated → syntax patterns extracted
 
-**Stack elements (from STACK.md):**
-- SpaCy 3.8 (NLP analysis)
-- Sentence Transformers (semantic similarity for pattern matching)
-- scikit-learn (TF-IDF + cosine similarity)
+**Implements architecture:**
+- SpaCy NLP analyzer (local, zero-cost)
+- InferenceClient for success/engagement scoring
+- Pattern service aggregation logic
+- community_profiles table with embeddings
 
-**Architecture components (from ARCHITECTURE.md):**
-- Module 2: Pattern Engine (SpaCy pipeline → Rhythm analysis → ISC calculation → community_profiles table)
-- Anti-pattern avoidance: Load SpaCy model once at startup, not per request
+**Addresses features:**
+- Community Profile/Research (must-have)
+- Community Sensitivity Index (differentiator)
+- Syntax Rhythm Analysis (differentiator)
 
-### Phase 4: Module 3 - Content Generation & Safety
-**Rationale:** Generation is the primary user-facing feature, but research shows 70-90% shadowban risk if content is detected as AI. Multi-layer safety (blacklist + LLM moderation + human review) must be built into generation from day 1, not added later.
+**Avoids pitfalls:**
+- Cost explosion — SpaCy processing is free, only top candidates get LLM scoring
+- Prompt injection — sanitize scraped content before LLM analysis
 
-**Delivers:**
-- OpenRouter LLM client with cost controls (prompt caching, max price limits, model routing)
-- RAG retrieval (fetch top posts as context for mimicry)
-- Syntax blacklist checker (pre-generation validation)
-- Mimicry filters (post-generation ISC matching, tone calibration)
-- Attack Card framework implementation (Journey/Solution/Feedback/Custom)
-- Ban Risk Prediction score (CSI + content + timing + account history)
-- Celery task: generate_draft
-- Frontend: Draft editor with preview, refinement mode, ban risk display
+**Research flag:** NEEDS RESEARCH for SpaCy rhythm analysis patterns and ISC scoring algorithm design.
 
-**Addresses (from FEATURES.md):**
-- Attack Card Strategy Framework (differentiator)
-- Mimicry Quality Filters (differentiator)
-- Ban Risk Prediction (differentiator)
-- Draft Refinement Mode (differentiator)
-- Enhanced Rules Checking (table stakes)
+---
 
-**Avoids (from PITFALLS.md):**
-- Pitfall #2: AI content detection (mimicry filters + human editing required)
-- Pitfall #7: LLM cost explosion (caching + compression + price limits)
-- Pitfall #9: Blacklist ineffectiveness (multi-layer safety: keywords + LLM + human)
+### Phase 4: Draft Generation (Module 3)
+**Rationale:** Depends on Module 2 profiles. Critical path to user value. Implements core differentiator (behavioral mimicry). Cost tracking ensures we don't exceed plan revenue.
 
-**Stack elements (from STACK.md):**
-- OpenRouter (LLM gateway with cost controls)
-- Sentence Transformers (semantic similarity for RAG retrieval)
-- Pydantic (validation for blacklist rules)
+**Delivers:** User generates drafts conditioned on community profiles + blacklist constraints → drafts stored with metadata
 
-**Architecture components (from ARCHITECTURE.md):**
-- Module 3: Generator (RAG retrieval → Blacklist check → LLM generation → Mimicry filters → generated_drafts table)
-- RAG pattern: Retrieve top posts → Inject into prompt → Generate with context
+**Implements architecture:**
+- Generator service (prompt building, blacklist checking)
+- Prompt templates per archetype
+- InferenceClient with cost enforcement
+- generated_drafts table
 
-### Phase 5: Module 4 - Monitoring & Shadowban Detection
-**Rationale:** Silent failures (shadowbans) destroy user trust. Research shows shadowbans, suspensions, and deleted accounts look identical to outside observers, requiring multi-method detection. Monitoring validates the effectiveness of earlier safety measures.
+**Addresses features:**
+- AI Content Generation with Community Conditioning (differentiator)
+- Behavioral Mimicry / Style Matching (differentiator)
 
-**Delivers:**
-- Reddit API client (PRAW) for post metrics
-- Multi-method shadowban detection (profile accessibility, engagement heuristics, Reddit Shadowban Checker integration)
-- Alert service (Resend for email notifications)
-- Celery Beat scheduler (periodic checks every 4 hours)
-- Celery task: check_post_status
-- Frontend: Monitoring dashboard (post health, engagement trends, shadowban alerts)
+**Avoids pitfalls:**
+- Cost explosion — max_tokens=500, cost cap checks BEFORE LLM calls
+- Prompt injection — isolate instructions from scraped content, output validation
 
-**Addresses (from FEATURES.md):**
-- Shadowban Detection/Alerts (table stakes)
-- Engagement Analytics (table stakes)
-- Post URL Monitoring (v1.x feature)
+**Research flag:** Standard LLM integration patterns. OpenRouter well-documented. No deep research unless custom prompting techniques needed.
 
-**Avoids (from PITFALLS.md):**
-- Pitfall #4: Unreliable shadowban detection (multi-method approach)
-- Pitfall #5: Data staleness (monitoring triggers profile refresh when community changes detected)
+---
 
-**Stack elements (from STACK.md):**
-- Celery Beat (scheduler for periodic tasks)
-- Resend (email API for alerts)
-- Redis (rate limiting for Reddit API calls)
+### Phase 5: Monitoring + Feedback (Module 4)
+**Rationale:** Completes the loop (generate → post → monitor → learn). Shadowban detection is must-have feature. Feedback loop (removed posts → blacklist) enables negative reinforcement learning (differentiator).
 
-**Architecture components (from ARCHITECTURE.md):**
-- Module 4: Monitor (Periodic checks → Fetch metrics → Shadowban heuristics → Alert on degradation)
+**Delivers:** User registers posted drafts → periodic dual-session HTTP checks → email alerts on status change → blacklist updated on removals
 
-### Phase 6: Billing & Usage Tracking
-**Rationale:** Can be built in parallel with Module 4 (no dependency). Research shows per-user token budgets are critical to prevent LLM cost explosion. Stripe integration follows standard SaaS patterns (well-documented, low risk).
+**Implements architecture:**
+- Monitor service (dual-session HTTP checks)
+- Celery Beat for scheduled tasks
+- Resend for email alerts
+- shadow_table + syntax_blacklist
 
-**Delivers:**
-- Stripe integration (checkout, webhooks, subscription management)
-- Usage tracking service (tokens per user, scraping quota, generation count)
-- Plan limit enforcement middleware (enforced at API layer)
-- Billing API endpoints (upgrade, downgrade, cancel)
-- Frontend: Billing settings, usage meters, upgrade prompts
+**Addresses features:**
+- Shadowban Detection (must-have)
+- Engagement Metrics Tracking (must-have)
+- Negative Reinforcement Learning from Removals (differentiator)
 
-**Addresses (from FEATURES.md):**
-- Freemium pricing model (business requirement)
+**Avoids pitfalls:**
+- Shadowban detection false positives — multi-signal detection, confidence scores, transparent limitations
+- Celery memory leaks — worker recycling, result expiration
 
-**Avoids (from PITFALLS.md):**
-- Pitfall #7: LLM cost explosion (per-user token budgets aligned with plan limits)
+**Research flag:** Shadowban detection requires validation testing (no single authoritative source on Reddit's exact signals). Plan for experimental verification.
 
-**Stack elements (from STACK.md):**
-- Stripe SDK (payment processing)
+---
+
+### Phase 6: Billing + Plan Limits
+**Rationale:** Monetization layer. Can be built in parallel with Phases 3-4 if needed. Enforces cost controls that prevent business model failure.
+
+**Delivers:** Trial expires → user upgrades via Stripe → plan limits enforced → usage stats visible
+
+**Implements architecture:**
+- Stripe integration (checkout, portal, webhooks)
+- Usage service (limit enforcement in all endpoints)
+- Plan limit middleware
+
+**Addresses features:**
+- Subscription tiers (Trial $0/7d, Starter $49/mo, Growth $99/mo)
+- Usage tracking dashboard
+
+**Avoids pitfalls:**
+- Cost explosion — hard caps prevent users from exceeding plan revenue
+- Runaway testing — free tier limits prevent abuse
+
+**Research flag:** Standard Stripe patterns, well-documented FastAPI integrations. No deep research needed.
+
+---
 
 ### Phase Ordering Rationale
 
-**Dependency chain (critical path):** Foundation → Module 1 → Module 2 → Module 3 → Module 4 takes 10-12 weeks. Each module requires data from the previous:
-- Module 1 needs Foundation (auth, Celery, database)
-- Module 2 needs Module 1 (raw_posts to analyze)
-- Module 3 needs Module 2 (community_profiles for mimicry)
-- Module 4 needs Module 3 (approved drafts to monitor)
+- **Phases 1-2 must be sequential:** Can't collect data without auth/database foundation
+- **Phase 2 blocks Phases 3-4:** Analysis and generation require raw_posts data
+- **Phase 3 blocks Phase 4:** Generation needs community profiles for conditioning
+- **Phase 4 blocks Phase 5:** Monitoring needs generated_drafts to track
+- **Phase 6 can parallel Phases 3-5:** Billing is independent, can accelerate if needed
 
-**Parallelization opportunities:**
-- Frontend UI development can occur alongside backend services within each phase
-- Phase 6 (Billing) can be built in parallel with Phase 5 (Monitoring) — no dependency
-- Testing can occur continuously (unit tests per module, integration tests after each phase)
+**Critical path:** 1 → 2 → 3 → 4 → 5 (can ship without 6 for beta, but not sustainable)
 
-**De-risking timeline:**
-- Week 3 (after Phase 1): Validate Apify integration with real Reddit data before building analysis pipeline
-- Week 5 (after Phase 2): Validate SpaCy NLP accuracy with 100+ posts, tune weight matrix before generation depends on it
-- Week 7 (after Phase 3): Human evaluation of 50 generated drafts, iterate on prompt engineering before users see output
-- Week 9 (after Phase 4): Test shadowban detection with known shadowbanned accounts, refine heuristics
+**Earliest viable demo:** End of Phase 4 (can generate conditioned drafts, but no monitoring)
 
-**Security-first philosophy:** Research shows retrofitting RLS, rate limiting, and compliance is expensive (complete rebuilds). Build foundation correctly in Phase 1, validate with security scanners before proceeding to Phase 2.
+**Earliest revenue-generating launch:** End of Phase 6 (full loop + self-serve billing)
 
 ### Research Flags
 
-**Phases likely needing deeper research during planning:**
-- **Phase 3 (Module 2 - Pattern Engine):** SpaCy weight matrix tuning is domain-specific, sparse documentation on "conversation DNA" extraction. Needs iterative experimentation with Reddit data to validate ISC scoring accuracy.
-- **Phase 4 (Module 3 - Generation):** LLM prompt engineering for mimicry is evolving rapidly (OpenRouter released SDK in Jan 2026). May need to research prompt compression techniques (LLMLingua) and multi-model fallback strategies during implementation.
-- **Phase 5 (Module 4 - Monitoring):** Shadowban heuristics are community knowledge (not official Reddit documentation). Needs research into latest detection techniques and validation with test accounts.
+**Phases needing deeper research during planning:**
+- **Phase 2 (Collection):** Apify actor selection, webhook integration, Reddit API rate limit coordination, cost optimization
+- **Phase 3 (Pattern Engine):** SpaCy rhythm analysis implementation, ISC scoring algorithm design, aggregation performance optimization
 
 **Phases with standard patterns (skip research-phase):**
-- **Phase 1 (Foundation):** Supabase RLS, FastAPI auth, Celery setup are well-documented with established patterns. Use official docs and integration guides.
-- **Phase 6 (Billing):** Stripe integration follows standard SaaS patterns. Official SDK has comprehensive documentation and examples.
+- **Phase 1 (Foundation):** Supabase Next.js auth, FastAPI JWT validation — extensive official docs
+- **Phase 4 (Generation):** OpenRouter LLM integration — standard API patterns
+- **Phase 5 (Monitoring):** Celery Beat scheduling, HTTP checks — well-documented
+- **Phase 6 (Billing):** Stripe FastAPI integration — mature ecosystem
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | **HIGH** | All core technologies verified with 2026 sources. Next.js 16, FastAPI 0.128.2, Celery 5.6, SpaCy 3.8, Supabase 2.27.3 releases confirmed. OpenRouter SDK marked as beta (pin version). 90%+ of recommendations have official documentation. |
-| Features | **HIGH** | Competitive analysis covered 6+ direct competitors (GummySearch, Subreddit Signals, ReplyAgent, Redreach, Brand24, Unbannnable). Clear white space identified: no competitor combines generation + ban risk intelligence + community mimicry. Table stakes validated against free tools (F5Bot, SubredditStats). |
-| Architecture | **HIGH** | Event-driven async pipeline is the standard pattern for long-running data processing. FastAPI + Celery integration extensively documented. Monorepo with Turborepo is proven approach for Next.js + backend. RAG pattern for LLM context grounding is established best practice. |
-| Pitfalls | **HIGH** | RLS breach (Moltbook incident Jan 2026 with 1.5M API keys exposed) and Reddit's legal action against Perplexity are recent, well-documented cases. Shadowban heuristics validated through Reddit community sources and moderation tools. AI detection statistics (15% of posts AI-generated) from Originality.AI study. |
+| Stack | HIGH | All technologies have official docs, established integration patterns verified across multiple production deployments |
+| Features | MEDIUM-HIGH | Competitor analysis solid (7 tools analyzed), but some features (ISC, behavioral mimicry) are BC-RAO innovations requiring validation |
+| Architecture | HIGH | Standard patterns for Reddit scraping + LLM platforms, extensive FastAPI + Celery production guides, Supabase RLS best practices well-documented |
+| Pitfalls | HIGH | Multiple authoritative sources (Reddit legal actions, OWASP LLM security, Celery GitHub issues), but some risks (ToS enforcement) unpredictable |
 
-**Overall confidence:** **HIGH**
+**Overall confidence:** HIGH
 
-Research is grounded in official documentation, recent case studies (2025-2026), and competitive analysis of active products. Key risks (shadowbans, RLS security, API compliance) are well-documented with concrete prevention strategies.
+The locked stack is production-validated, architecture patterns are established, and pitfalls have documented mitigation strategies. Main uncertainty is market validation (GummySearch's closure suggests demand, but need to test pricing/positioning) and Reddit's ToS enforcement unpredictability.
 
 ### Gaps to Address
 
-Despite high confidence, some areas require validation during implementation:
+**During Phase 2 planning:**
+- **Apify actor reliability:** Research shows "Under Maintenance" risk, but specific actor for Reddit (trudax/reddit-scraper) needs evaluation. May need direct Reddit API fallback.
+- **Rate limit coordination:** Apify actors handle OAuth internally, but coordination with direct API calls (if fallback needed) requires testing.
 
-- **SpaCy ISC Scoring Accuracy:** Weight matrix for rhythm analysis is BC-RAO-specific. Research provides the framework (sentence length, clause density, transitional patterns) but exact weights need tuning with real Reddit data. Plan to iterate on scoring engine in Phase 3 based on human evaluation of 100+ posts.
+**During Phase 3 planning:**
+- **ISC scoring algorithm:** No competitor publishes methodology. Requires original research: analyze correlation between subreddit rules, removal rates, and successful post patterns.
+- **SpaCy rhythm analysis:** en_core_web_md vectors sufficient for MVP, but may need upgrade to en_core_web_lg for production quality.
 
-- **Shadowban Detection Heuristics:** Reddit doesn't provide official shadowban API. Detection relies on heuristics (profile accessibility, zero engagement, invisibility in incognito mode). These may evolve as Reddit's anti-spam systems change. Plan to continuously validate detection accuracy in Phase 5 with test accounts and user reports.
+**During Phase 5 planning:**
+- **Shadowban detection accuracy:** Research shows false positive risk, but exact signals Reddit uses are undocumented. Requires experimental validation with test accounts across multiple subreddits.
 
-- **OpenRouter SDK Stability:** Released Jan 2026, marked as beta. May have breaking changes. Mitigation: Pin to specific version in Phase 4, monitor changelog, implement adapter pattern to isolate SDK dependency (easy to swap if necessary).
-
-- **LLM Mimicry Bypass Rate:** Research shows creative essayist style achieves 84% AI detector bypass vs. 7% for standard generation, but this is based on general content, not Reddit-specific. Plan to validate with GPTZero and Reddit moderator feedback in Phase 4 beta testing.
-
-- **Apify Data Structure Stability:** Apify Reddit Scraper is third-party service. Data format could change without notice. Mitigation: Build flexible parsing layer in Module 1 with schema validation (Pydantic), monitor for API changes, have fallback to direct Reddit API if Apify fails.
-
-**Validation strategy:** Build each module with testability in mind (unit tests for core logic, integration tests for external APIs). Plan 2-week buffer after Phase 4 for beta testing with 10-20 real users to validate mimicry quality and ban avoidance before public launch.
+**Ongoing validation:**
+- **Cost model viability:** Research confirms Apify + OpenRouter costs manageable with filtering, but real-world COGS need monitoring in first 100 users to validate $49 Starter pricing.
+- **Legal compliance:** Reddit's API ToS evolving (Jan 2025 enforcement changes), monitor for updates during development.
 
 ## Sources
 
 ### Primary (HIGH confidence)
+- **Official Documentation:**
+  - [Next.js 15 Release Notes](https://nextjs.org/blog/next-15) — App Router stability, React 19 support
+  - [FastAPI Documentation](https://fastapi.tiangolo.com/) — Pydantic v2 integration, async patterns
+  - [Celery 5.6 Documentation](https://docs.celeryq.dev/en/main/) — Memory leak fixes, worker configuration
+  - [Supabase Guides](https://supabase.com/docs) — RLS best practices, pgvector integration
+  - [OpenRouter API Reference](https://openrouter.ai/docs/api/reference/overview) — Model routing, pricing
 
-**Official Documentation:**
-- Next.js 15/16 Release Notes — verified React 19 support, Turbopack stability
-- FastAPI Documentation (0.128.2) — confirmed Pydantic v2 requirement, async patterns
-- Celery 2026 Overview — verified Python 3.9-3.13 support, Redis/RabbitMQ broker compatibility
-- SpaCy Processing Pipelines — confirmed en_core_web_md model compatibility, production optimization
-- Supabase Python Client (2.27.3) — verified async operations, RLS integration
-- OpenRouter API Docs — confirmed prompt caching (0.25x cost), provider routing, max price limits
-- Stripe Python SDK (14.3.0) — verified API version 2026-01-28.clover, webhook handling
-- Reddit API Documentation — verified 60 requests/minute rate limit, OAuth requirements
-
-**Security Incidents:**
-- Moltbook Data Breach (Jan 2026) — 1.5M API keys + 35K emails exposed due to disabled Supabase RLS
-- Reddit vs. Perplexity Legal Case — Reddit pursued legal action for TOS violations (scraping without consent)
-
-**Market Research:**
-- Competitive landscape analysis: GummySearch (defunct Nov 2025), Subreddit Signals ($20-50/mo), ReplyAgent ($3/post), Redreach, Brand24
-- AI content statistics: 15% of Reddit posts AI-generated (Originality.AI study 2025)
-- Shadowban risk data: 70-90% ban rate for new accounts (multiple community sources)
+- **Integration Guides:**
+  - [Supabase Connection Scaling for FastAPI](https://medium.com/@papansarkar101/supabase-connection-scaling-the-essential-guide-for-fastapi-developers-2dc5c428b638) — Transaction Mode with disabled prepared statements
+  - [Complete Guide to Background Processing with FastAPI × Celery](https://blog.greeden.me/en/2026/01/27/the-complete-guide-to-background-processing-with-fastapi-x-celery-redishow-to-separate-heavy-work-from-your-api-to-keep-services-stable/) — API-first async patterns
 
 ### Secondary (MEDIUM confidence)
+- **Competitor Analysis:**
+  - [7 Best Reddit Marketing Tools 2026](https://www.subredditsignals.com/blog/the-ultimate-guide-to-reddit-marketing-tools-2026-update) — Feature comparison
+  - [7 Best GummySearch Alternatives](https://painonsocial.com/blog/gummysearch-alternatives-reddit-market-research) — Gap analysis post-closure
+  - [Reddit Comment Services With Managed Accounts](https://www.replyagent.ai/blog/reddit-comment-services-with-managed-accounts) — Competitive positioning
 
-**Technical Integration Guides:**
-- FastAPI + Celery + Redis integration patterns (blog.greeden.me, testdriven.io)
-- Turborepo + Next.js monorepo setup (Turborepo official guide, Strapi blog)
-- Supabase + SQLAlchemy connection pooling best practices (GitHub discussions)
-- Railway FastAPI deployment guides (official Railway docs)
+- **Security & Compliance:**
+  - [Reddit API Rate Limits Guide 2026](https://painonsocial.com/blog/reddit-api-rate-limits-guide) — 60 req/min limit, OAuth requirements
+  - [How to Scrape Reddit Legally 2026](https://painonsocial.com/blog/how-to-scrape-reddit-legally) — ToS compliance, legal risk analysis
+  - [OWASP LLM01:2025 Prompt Injection](https://genai.owasp.org/llmrisk/llm01-prompt-injection/) — Sanitization requirements
+  - [Reddit Launches Legal Action Against AI Data Scrapers](https://www.socialmediatoday.com/news/reddit-launches-legal-action-against-ai-data-scrapers/803572/) — Enforcement precedent
 
-**AI Detection Research:**
-- Stylometry: AI writing fingerprints (NetusAI blog, Johns Hopkins study)
-- AI humanization bypass rates: 84% for essayist style vs. 7% for standard (Medium research)
-- Reddit moderator AI detection strategies (Cornell AI study, ArXiv papers)
-
-**LLM Cost Optimization:**
-- Prompt compression techniques: LLMLingua 20x compression (Machine Learning Mastery)
-- OpenRouter State of AI 2025: 100T token usage study
-- LLM cost reduction strategies: 80% savings potential (Koombea blog)
+- **Cost & Performance:**
+  - [OpenRouter API Pricing 2026](https://zenmux.ai/blog/openrouter-api-pricing-2026-full-breakdown-of-rates-tiers-and-usage-costs) — Token cost analysis
+  - [Apify Review 2026](https://hackceleration.com/apify-review/) — Pricing, reliability data
+  - [Supabase RLS Performance Best Practices](https://supabase.com/docs/guides/troubleshooting/rls-performance-and-best-practices-Z5Jjwv) — Index requirements
 
 ### Tertiary (LOW confidence, needs validation)
+- **Shadowban Detection:**
+  - [Reddit Shadowbans 2025: How They Work](https://reddifier.com/blog/reddit-shadowbans-2025-how-they-work-how-to-detect-them-and-what-to-do-next) — Detection heuristics (Reddit doesn't publish official signals)
+  - [Apify Reddit Shadowban Checker](https://apify.com/iskander/reddit-shadowban-checker) — Actor implementation approach
 
-**Community Knowledge:**
-- Reddit account warming strategies — multiple blogs (Multilogin, AdsPower, Dicloak) with similar advice but no official Reddit guidance
-- Shadowban heuristics — community-developed tools (Reddit Shadowban Checker, PixelScan) without official API
-- Karma/age requirements per subreddit — user-reported data (PostIz, RedKarmas) not systematically verified
-- AI detector bypass techniques — rapidly evolving landscape, strategies may be outdated by implementation
-
-**Validation plan for tertiary sources:**
-- Account warming: Test with 3-5 fresh accounts following different strategies, track ban rates
-- Shadowban heuristics: Validate with known shadowbanned accounts (create test accounts, intentionally trigger bans)
-- Karma requirements: Scrape public subreddit rules, cross-reference with user reports, update database quarterly
-- AI bypass techniques: Continuous A/B testing with GPTZero and real Reddit moderator feedback
+- **NLP for Social Media:**
+  - SpaCy rhythm analysis for Reddit content — no direct research found, inferred from general NLP patterns
+  - Community Sensitivity Index scoring — BC-RAO innovation, no precedent found
 
 ---
 *Research completed: 2026-02-07*
