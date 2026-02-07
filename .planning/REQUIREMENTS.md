@@ -144,22 +144,85 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01 to AUTH-05 | TBD | Pending |
-| CAMP-01 to CAMP-05 | TBD | Pending |
-| COLL-01 to COLL-07 | TBD | Pending |
-| PATN-01 to PATN-06 | TBD | Pending |
-| GENR-01 to GENR-09 | TBD | Pending |
-| ORCH-01 to ORCH-07 | TBD | Pending |
-| EMAL-01 to EMAL-05 | TBD | Pending |
-| BILL-01 to BILL-07 | TBD | Pending |
-| DASH-01 to DASH-08 | TBD | Pending |
-| INFR-01 to INFR-06 | TBD | Pending |
+| AUTH-01 | Phase 1 | Pending |
+| AUTH-02 | Phase 1 | Pending |
+| AUTH-03 | Phase 1 | Pending |
+| AUTH-04 | Phase 1 | Pending |
+| AUTH-05 | Phase 6 | Pending |
+| CAMP-01 | Phase 1 | Pending |
+| CAMP-02 | Phase 1 | Pending |
+| CAMP-03 | Phase 1 | Pending |
+| CAMP-04 | Phase 1 | Pending |
+| CAMP-05 | Phase 6 | Pending |
+| COLL-01 | Phase 2 | Pending |
+| COLL-02 | Phase 2 | Pending |
+| COLL-03 | Phase 2 | Pending |
+| COLL-04 | Phase 2 | Pending |
+| COLL-05 | Phase 2 | Pending |
+| COLL-06 | Phase 2 | Pending |
+| COLL-07 | Phase 2 | Pending |
+| PATN-01 | Phase 3 | Pending |
+| PATN-02 | Phase 3 | Pending |
+| PATN-03 | Phase 3 | Pending |
+| PATN-04 | Phase 3 | Pending |
+| PATN-05 | Phase 3 | Pending |
+| PATN-06 | Phase 3 | Pending |
+| GENR-01 | Phase 4 | Pending |
+| GENR-02 | Phase 4 | Pending |
+| GENR-03 | Phase 4 | Pending |
+| GENR-04 | Phase 4 | Pending |
+| GENR-05 | Phase 4 | Pending |
+| GENR-06 | Phase 4 | Pending |
+| GENR-07 | Phase 4 | Pending |
+| GENR-08 | Phase 4 | Pending |
+| GENR-09 | Phase 4 | Pending |
+| ORCH-01 | Phase 5 | Pending |
+| ORCH-02 | Phase 5 | Pending |
+| ORCH-03 | Phase 5 | Pending |
+| ORCH-04 | Phase 5 | Pending |
+| ORCH-05 | Phase 5 | Pending |
+| ORCH-06 | Phase 5 | Pending |
+| ORCH-07 | Phase 5 | Pending |
+| EMAL-01 | Phase 5 | Pending |
+| EMAL-02 | Phase 5 | Pending |
+| EMAL-03 | Phase 5 | Pending |
+| EMAL-04 | Phase 6 | Pending |
+| EMAL-05 | Phase 6 | Pending |
+| BILL-01 | Phase 6 | Pending |
+| BILL-02 | Phase 6 | Pending |
+| BILL-03 | Phase 6 | Pending |
+| BILL-04 | Phase 6 | Pending |
+| BILL-05 | Phase 6 | Pending |
+| BILL-06 | Phase 6 | Pending |
+| BILL-07 | Phase 6 | Pending |
+| DASH-01 | Phase 4 | Pending |
+| DASH-02 | Phase 4 | Pending |
+| DASH-03 | Phase 4 | Pending |
+| DASH-04 | Phase 4 | Pending |
+| DASH-05 | Phase 5 | Pending |
+| DASH-06 | Phase 5 | Pending |
+| DASH-07 | Phase 5 | Pending |
+| DASH-08 | Phase 6 | Pending |
+| INFR-01 | Phase 1 | Pending |
+| INFR-02 | Phase 1 | Pending |
+| INFR-03 | Phase 1 | Pending |
+| INFR-04 | Phase 1 | Pending |
+| INFR-05 | Phase 1 | Pending |
+| INFR-06 | Phase 1 | Pending |
 
 **Coverage:**
 - v1 requirements: 60 total
-- Mapped to phases: 0
-- Unmapped: 60 (pending roadmap creation)
+- Mapped to phases: 60
+- Unmapped: 0
+
+**Coverage by phase:**
+- Phase 1 (Foundation & Core Setup): 14 requirements
+- Phase 2 (Collection Pipeline): 7 requirements
+- Phase 3 (Pattern Engine): 6 requirements
+- Phase 4 (Draft Generation): 13 requirements
+- Phase 5 (Monitoring & Feedback Loop): 10 requirements
+- Phase 6 (Billing & Production Polish): 10 requirements
 
 ---
 *Requirements defined: 2026-02-07*
-*Last updated: 2026-02-07 after initial definition*
+*Last updated: 2026-02-07 after roadmap creation - 100% coverage achieved*
