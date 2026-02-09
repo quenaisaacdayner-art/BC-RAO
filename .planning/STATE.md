@@ -11,28 +11,28 @@ See: .planning/PROJECT.md (updated 2026-02-07)
 ## Current Position
 
 Phase: 1 of 6 (Foundation & Core Setup)
-Plan: 0 of TBD (ready to plan)
-Status: Ready to plan
-Last activity: 2026-02-07 - Roadmap created with 6 phases covering 60 v1 requirements
+Plan: 1 of 6 (backend foundation complete)
+Status: In progress
+Last activity: 2026-02-09 - Completed 01-01-PLAN.md (backend foundation)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█░░░░░░░░░] 17% (1/6 Phase 1 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 0
-- Average duration: N/A
-- Total execution time: 0.0 hours
+- Total plans completed: 1
+- Average duration: 6 minutes
+- Total execution time: 0.1 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| 1. Foundation & Core Setup | 1 | 6 min | 6 min |
 
 **Recent Trend:**
-- Last 5 plans: None yet
-- Trend: N/A
+- Last 5 plans: 01-01 (6min)
+- Trend: Just started
 
 *Updated after each plan completion*
 
@@ -48,6 +48,8 @@ Recent decisions affecting current work:
 - Stub auth during core loop build: Move faster on module development, add real Supabase Auth when connecting frontend
 - Real integrations from start (no mocks): Apify and OpenRouter ready, skip mock layer complexity
 - Full dashboard from start: End-to-end UI (Next.js) not just API - user wants to see the value loop visually
+- Made Supabase env vars optional (01-01): Allows imports without .env file, production must set explicitly
+- Removed pyproject.toml scripts section (01-01): Invalid format, developers run uvicorn manually
 
 ### Pending Todos
 
@@ -59,6 +61,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-07 (roadmap creation)
-Stopped at: Roadmap and state files created
+Last session: 2026-02-09 (plan 01-01 execution)
+Stopped at: Completed 01-01-PLAN.md - backend foundation with database schema and FastAPI scaffold
 Resume file: None
