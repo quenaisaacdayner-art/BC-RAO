@@ -1,0 +1,274 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
+import Link from "next/link";
+import { toast } from "sonner";
+import { createClient } from "@/lib/supabase/client";
+import { apiClient } from "@/lib/api";
+import { DeleteCampaignDialog } from "@/components/campaigns/delete-campaign-dialog";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChevronLeft, Edit } from "lucide-react";
+
+interface Campaign {
+  id: string;
+  name: string;
+  status: "active" | "paused" | "archived";
+  product_context: string;
+  product_url?: string;
+  keywords: string[];
+  target_subreddits: string[];
+  created_at: string;
+  updated_at: string;
+  stats: {
+    posts_collected: number;
+    drafts_generated: number;
+    active_monitors: number;
+  };
+}
+
+export default function CampaignDetailPage() {
+  const router = useRouter();
+  const params = useParams();
+  const campaignId = params.id as string;
+  const [campaign, setCampaign] = useState<Campaign | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchCampaign();
+  }, [campaignId]);
+
+  const fetchCampaign = async () => {
+    setIsLoading(true);
+    try {
+      const supabase = createClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session?.access_token) {
+        toast.error("Authentication required. Please log in again.");
+        router.push("/login");
+        return;
+      }
+
+      const response = await apiClient.get<Campaign>(
+        `/campaigns/${campaignId}`,
+        session.access_token
+      );
+
+      if (response.error) {
+        toast.error(response.error.message || "Failed to fetch campaign");
+        router.push("/dashboard/campaigns");
+        return;
+      }
+
+      setCampaign(response.data!);
+    } catch (error) {
+      toast.error("An unexpected error occurred");
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const statusColors = {
+    active: "bg-green-500/10 text-green-500 border-green-500/20",
+    paused: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
+    archived: "bg-gray-500/10 text-gray-500 border-gray-500/20",
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-2">
+          <Link
+            href="/dashboard/campaigns"
+            className="flex items-center text-sm text-muted-foreground hover:text-foreground"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Back to campaigns
+          </Link>
+        </div>
+        <div className="h-8 w-1/3 bg-muted rounded animate-pulse" />
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <Card key={i}>
+              <CardHeader>
+                <div className="h-6 w-1/4 bg-muted rounded" />
+              </CardHeader>
+              <CardContent>
+                <div className="h-4 bg-muted rounded" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (!campaign) {
+    return null;
+  }
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  return (
+    <div className="mx-auto max-w-4xl space-y-6">
+      <div className="flex items-center gap-2">
+        <Link
+          href="/dashboard/campaigns"
+          className="flex items-center text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          Back to campaigns
+        </Link>
+      </div>
+
+      <div className="flex items-start justify-between">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold">{campaign.name}</h1>
+          <span
+            className={`inline-block rounded-full border px-3 py-1 text-xs font-medium ${
+              statusColors[campaign.status]
+            }`}
+          >
+            {campaign.status}
+          </span>
+        </div>
+        <div className="flex gap-2">
+          <Button asChild variant="outline">
+            <Link href={`/dashboard/campaigns/${campaign.id}/edit`}>
+              <Edit className="mr-2 h-4 w-4" />
+              Edit
+            </Link>
+          </Button>
+          <DeleteCampaignDialog
+            campaignId={campaign.id}
+            campaignName={campaign.name}
+          />
+        </div>
+      </div>
+
+      <div className="grid gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Product Context</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm">{campaign.product_context}</p>
+          </CardContent>
+        </Card>
+
+        {campaign.product_url && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Product URL</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <a
+                href={campaign.product_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-primary hover:underline"
+              >
+                {campaign.product_url}
+              </a>
+            </CardContent>
+          </Card>
+        )}
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Keywords</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              {campaign.keywords.map((keyword) => (
+                <span
+                  key={keyword}
+                  className="rounded-md bg-secondary px-3 py-1 text-sm"
+                >
+                  {keyword}
+                </span>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Target Subreddits</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-1">
+              {campaign.target_subreddits.map((subreddit) => (
+                <div key={subreddit} className="text-sm">
+                  <a
+                    href={`https://reddit.com/r/${subreddit}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    r/{subreddit}
+                  </a>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Statistics</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-3">
+              <div>
+                <p className="text-sm text-muted-foreground">Posts Collected</p>
+                <p className="text-2xl font-bold">{campaign.stats.posts_collected}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Drafts Generated</p>
+                <p className="text-2xl font-bold">{campaign.stats.drafts_generated}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Active Monitors</p>
+                <p className="text-2xl font-bold">{campaign.stats.active_monitors}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Metadata</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Created</span>
+              <span>{formatDate(campaign.created_at)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Last Updated</span>
+              <span>{formatDate(campaign.updated_at)}</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-dashed">
+          <CardContent className="py-6 text-center text-sm text-muted-foreground">
+            Collection, analysis, and generation features coming in future phases.
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
