@@ -39,7 +39,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 Plans:
 - [x] 01-01-PLAN.md — Backend foundation: DB schema + RLS, FastAPI scaffold, error handling, JWT dependency (completed 2026-02-09)
-- [ ] 01-02-PLAN.md — Frontend foundation: Next.js + Tailwind + Shadcn/UI, Supabase middleware, theme provider
+- [x] 01-02-PLAN.md — Frontend foundation: Next.js + Tailwind + Shadcn/UI, Supabase middleware, theme provider (completed 2026-02-09)
 - [ ] 01-03-PLAN.md — Auth system: Backend auth endpoints + frontend login/signup pages
 - [ ] 01-04-PLAN.md — Worker infrastructure: Celery + Redis, InferenceClient, cost tracking
 - [ ] 01-05-PLAN.md — Campaign API + dashboard shell: CRUD endpoints, sidebar, overview page
@@ -178,7 +178,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Core Setup | 1/6 | In progress | - |
+| 1. Foundation & Core Setup | 2/6 | In progress | - |
 | 2. Collection Pipeline | 0/TBD | Not started | - |
 | 3. Pattern Engine | 0/TBD | Not started | - |
 | 4. Draft Generation | 0/TBD | Not started | - |
@@ -187,4 +187,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 ---
 *Roadmap created: 2026-02-07*
-*Last updated: 2026-02-09*
+*Last updated: 2026-02-09 (plan 01-02 complete)*

@@ -11,28 +11,28 @@ See: .planning/PROJECT.md (updated 2026-02-07)
 ## Current Position
 
 Phase: 1 of 6 (Foundation & Core Setup)
-Plan: 1 of 6 (backend foundation complete)
+Plan: 2 of 6 (frontend foundation complete)
 Status: In progress
-Last activity: 2026-02-09 - Completed 01-01-PLAN.md (backend foundation)
+Last activity: 2026-02-09 - Completed 01-02-PLAN.md (frontend foundation)
 
-Progress: [█░░░░░░░░░] 17% (1/6 Phase 1 plans complete)
+Progress: [██░░░░░░░░] 33% (2/6 Phase 1 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 6 minutes
-- Total execution time: 0.1 hours
+- Total plans completed: 2
+- Average duration: 7.5 minutes
+- Total execution time: 0.25 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1. Foundation & Core Setup | 1 | 6 min | 6 min |
+| 1. Foundation & Core Setup | 2 | 15 min | 7.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (6min)
-- Trend: Just started
+- Last 5 plans: 01-01 (6min), 01-02 (9min)
+- Trend: Consistent execution speed
 
 *Updated after each plan completion*
 
@@ -50,6 +50,10 @@ Recent decisions affecting current work:
 - Full dashboard from start: End-to-end UI (Next.js) not just API - user wants to see the value loop visually
 - Made Supabase env vars optional (01-01): Allows imports without .env file, production must set explicitly
 - Removed pyproject.toml scripts section (01-01): Invalid format, developers run uvicorn manually
+- Used Next.js 16.1 instead of 15.5 (01-02): Latest stable, Shadcn/UI compatible, Turbopack faster builds
+- Tailwind CSS v4 with @import directive (01-02): No tailwind.config.ts needed, simpler setup
+- Middleware at project root (01-02): Required Next.js convention for SSR token refresh
+- Inter font over Geist (01-02): Professional SaaS aesthetic aligned with research patterns
 
 ### Pending Todos
 
@@ -61,6 +65,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-09 (plan 01-01 execution)
-Stopped at: Completed 01-01-PLAN.md - backend foundation with database schema and FastAPI scaffold
+Last session: 2026-02-09 (plan 01-02 execution)
+Stopped at: Completed 01-02-PLAN.md - frontend foundation with Next.js, Supabase SSR, and Shadcn/UI
 Resume file: None
