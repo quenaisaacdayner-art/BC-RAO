@@ -11,28 +11,28 @@ See: .planning/PROJECT.md (updated 2026-02-07)
 ## Current Position
 
 Phase: 1 of 6 (Foundation & Core Setup)
-Plan: 2 of 6 (frontend foundation complete)
+Plan: 4 of 6 (worker infrastructure complete)
 Status: In progress
-Last activity: 2026-02-09 - Completed 01-02-PLAN.md (frontend foundation)
+Last activity: 2026-02-09 - Completed 01-04-PLAN.md (worker infrastructure)
 
-Progress: [██░░░░░░░░] 33% (2/6 Phase 1 plans complete)
+Progress: [████░░░░░░] 67% (4/6 Phase 1 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 2
-- Average duration: 7.5 minutes
-- Total execution time: 0.25 hours
+- Total plans completed: 4
+- Average duration: 6.75 minutes
+- Total execution time: 0.45 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1. Foundation & Core Setup | 2 | 15 min | 7.5 min |
+| 1. Foundation & Core Setup | 4 | 27 min | 6.75 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (6min), 01-02 (9min)
-- Trend: Consistent execution speed
+- Last 5 plans: 01-01 (6min), 01-02 (9min), 01-03 (6min), 01-04 (6min)
+- Trend: Fast and consistent execution speed
 
 *Updated after each plan completion*
 
@@ -54,6 +54,11 @@ Recent decisions affecting current work:
 - Tailwind CSS v4 with @import directive (01-02): No tailwind.config.ts needed, simpler setup
 - Middleware at project root (01-02): Required Next.js convention for SSR token refresh
 - Inter font over Geist (01-02): Professional SaaS aesthetic aligned with research patterns
+- Client-side Supabase Auth (01-03): Forms call supabase.auth SDK directly, simpler than backend proxy
+- Profile auto-creation via DB trigger (01-03): DB trigger from 01-01 ensures profile + subscription always created atomically
+- JSON serialization for Celery (01-04): Security best practice, no pickle execution risk
+- Budget checked before LLM calls (01-04): Prevents mid-call failures, immediate PLAN_LIMIT_REACHED error
+- Fallback models on primary failure (01-04): Improves reliability, try Gemini Flash if Claude Haiku fails
 
 ### Pending Todos
 
@@ -65,6 +70,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-09 (plan 01-02 execution)
-Stopped at: Completed 01-02-PLAN.md - frontend foundation with Next.js, Supabase SSR, and Shadcn/UI
+Last session: 2026-02-09 (plan 01-04 execution)
+Stopped at: Completed 01-04-PLAN.md - worker infrastructure with Celery, Redis, and InferenceClient
 Resume file: None

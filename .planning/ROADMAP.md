@@ -40,8 +40,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 Plans:
 - [x] 01-01-PLAN.md — Backend foundation: DB schema + RLS, FastAPI scaffold, error handling, JWT dependency (completed 2026-02-09)
 - [x] 01-02-PLAN.md — Frontend foundation: Next.js + Tailwind + Shadcn/UI, Supabase middleware, theme provider (completed 2026-02-09)
-- [ ] 01-03-PLAN.md — Auth system: Backend auth endpoints + frontend login/signup pages
-- [ ] 01-04-PLAN.md — Worker infrastructure: Celery + Redis, InferenceClient, cost tracking
+- [x] 01-03-PLAN.md — Auth system: Backend auth endpoints + frontend login/signup pages (completed 2026-02-09)
+- [x] 01-04-PLAN.md — Worker infrastructure: Celery + Redis, InferenceClient, cost tracking (completed 2026-02-09)
 - [ ] 01-05-PLAN.md — Campaign API + dashboard shell: CRUD endpoints, sidebar, overview page
 - [ ] 01-06-PLAN.md — Campaign UI: Create form with subreddit autocomplete, list, edit, delete
 
