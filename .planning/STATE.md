@@ -11,29 +11,29 @@ See: .planning/PROJECT.md (updated 2026-02-07)
 ## Current Position
 
 Phase: 2 of 6 (Collection Pipeline)
-Plan: 1 of 3 (collection pipeline core complete)
+Plan: 2 of 3 (collection API integration complete)
 Status: In progress
-Last activity: 2026-02-10 - Completed 02-01-PLAN.md (collection pipeline core)
+Last activity: 2026-02-10 - Completed 02-02-PLAN.md (collection API integration)
 
-Progress: [█████░░░░░] 50% (1/3 Phase 2 plans complete)
+Progress: [██████░░░░] 66% (2/3 Phase 2 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
-- Average duration: 6.2 minutes
-- Total execution time: 0.62 hours
+- Total plans completed: 7
+- Average duration: 6.0 minutes
+- Total execution time: 0.70 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Foundation & Core Setup | 5 | 32 min | 6.4 min |
-| 2. Collection Pipeline | 1 | 5 min | 5.0 min |
+| 2. Collection Pipeline | 2 | 10 min | 5.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-02 (9min), 01-03 (6min), 01-04 (6min), 01-05 (5min), 02-01 (5min)
-- Trend: Excellent velocity maintained, Phase 2 starting strong
+- Last 5 plans: 01-03 (6min), 01-04 (6min), 01-05 (5min), 02-01 (5min), 02-02 (5min)
+- Trend: Excellent velocity maintained, Phase 2 blazing fast at 5min average
 
 *Updated after each plan completion*
 
@@ -67,6 +67,10 @@ Recent decisions affecting current work:
 - Partial failure handling in pipelines (02-01): Continue on subreddit errors, return partial results with error list
 - Database-level deduplication (02-01): Supabase upsert with ignore_duplicates instead of app-level checks
 - Regex pre-filter before LLM (02-01): Module-level compiled patterns score posts 0-10, target ~80% rejection
+- SSE endpoint no authentication (02-02): task_id acts as unguessable UUID bearer token, simplifies EventSource usage
+- Async/sync bridging with asyncio.run (02-02): Bridge async CollectionService to sync Celery task
+- 500ms SSE polling interval (02-02): Balances smooth progress updates with backend load
+- Billing limits deferred to Phase 6 (02-02): Focus on core loop before monetization
 
 ### Pending Todos
 
@@ -78,6 +82,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-10 (plan 02-01 execution)
-Stopped at: Completed 02-01-PLAN.md - collection pipeline core
+Last session: 2026-02-10 (plan 02-02 execution)
+Stopped at: Completed 02-02-PLAN.md - collection API integration
 Resume file: None
