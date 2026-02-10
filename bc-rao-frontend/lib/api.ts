@@ -3,7 +3,15 @@
  * Handles requests to FastAPI backend with proper error handling.
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api'
+// Always use Next.js API routes. For local FastAPI dev, set NEXT_PUBLIC_API_URL=http://localhost:8000/v1
+const API_BASE_URL = (() => {
+  const envUrl = process.env.NEXT_PUBLIC_API_URL;
+  // Only use env var if explicitly set to a non-frontend URL (e.g. localhost FastAPI)
+  if (envUrl && envUrl.includes('localhost')) {
+    return envUrl;
+  }
+  return '/api';
+})();
 
 interface ApiError {
   code: string
