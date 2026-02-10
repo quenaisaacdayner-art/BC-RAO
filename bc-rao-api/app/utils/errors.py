@@ -88,8 +88,10 @@ async def generic_error_handler(request: Request, exc: Exception) -> JSONRespons
     logging.error(f"Unhandled error on {request.method} {request.url.path}: {type(exc).__name__}: {exc}")
 
     from app.config import settings
+    error_message = "An unexpected error occurred"
     details = {}
     if settings.APP_ENV != "production":
+        error_message = f"[{type(exc).__name__}] {exc}"
         details = {"type": type(exc).__name__, "message": str(exc)}
 
     return JSONResponse(
@@ -97,7 +99,7 @@ async def generic_error_handler(request: Request, exc: Exception) -> JSONRespons
         content={
             "error": {
                 "code": ErrorCode.INTERNAL_ERROR,
-                "message": "An unexpected error occurred",
+                "message": error_message,
                 "details": details
             }
         }
