@@ -113,7 +113,7 @@ class CostTracker:
         user_result = self.supabase.table("subscriptions") \
             .select("plan") \
             .eq("user_id", user_id) \
-            .single() \
+            .maybe_single() \
             .execute()
 
         plan = user_result.data.get("plan", "trial") if user_result.data else "trial"

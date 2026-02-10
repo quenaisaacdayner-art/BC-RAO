@@ -69,7 +69,7 @@ class CollectionService:
         errors = []
 
         # Fetch campaign
-        response = self.supabase.table("campaigns").select("*").eq("id", campaign_id).eq("user_id", user_id).single().execute()
+        response = self.supabase.table("campaigns").select("*").eq("id", campaign_id).eq("user_id", user_id).maybe_single().execute()
 
         if not response.data:
             raise AppError(
@@ -451,7 +451,7 @@ Respond with JSON only:
         Raises:
             AppError: NOT_FOUND if post doesn't exist or not owned by user
         """
-        response = self.supabase.table("raw_posts").select("*").eq("id", post_id).single().execute()
+        response = self.supabase.table("raw_posts").select("*").eq("id", post_id).maybe_single().execute()
 
         if not response.data:
             raise AppError(

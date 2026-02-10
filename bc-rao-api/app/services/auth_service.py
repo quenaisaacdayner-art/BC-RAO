@@ -175,7 +175,7 @@ class AuthService:
         """
         try:
             # Query user profile
-            profile_response = self.supabase.table("profiles").select("*").eq("id", user_id).single().execute()
+            profile_response = self.supabase.table("profiles").select("*").eq("id", user_id).maybe_single().execute()
 
             if not profile_response.data:
                 raise AppError(
@@ -187,7 +187,7 @@ class AuthService:
             profile = profile_response.data
 
             # Query active subscription
-            subscription_response = self.supabase.table("subscriptions").select("*").eq("user_id", user_id).eq("status", "active").single().execute()
+            subscription_response = self.supabase.table("subscriptions").select("*").eq("user_id", user_id).eq("status", "active").maybe_single().execute()
 
             subscription = subscription_response.data if subscription_response.data else None
 
