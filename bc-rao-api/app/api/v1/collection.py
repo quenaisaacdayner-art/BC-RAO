@@ -2,7 +2,7 @@
 Collection API endpoints for triggering, monitoring, and querying Reddit post collection.
 
 Endpoints:
-- POST /campaigns/{campaign_id}/collect: Trigger async collection via Celery
+- POST /campaigns/{campaign_id}/collect: Trigger async collection
 - GET /collection/{task_id}/progress: Stream real-time progress via SSE
 - GET /campaigns/{campaign_id}/posts: Fetch posts with filters and pagination
 - GET /campaigns/{campaign_id}/posts/{post_id}: Get post detail for modal
@@ -15,10 +15,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import StreamingResponse
-from celery.result import AsyncResult
 
-from app.workers.celery_app import celery_app
-from app.workers.collection_worker import collect_campaign_data
+from app.workers.task_runner import generate_task_id, run_collection_background, get_task_state
 from app.services.collection_service import CollectionService
 from app.models.raw_posts import RawPostListResponse, RawPostResponse
 from app.dependencies import get_current_user
@@ -26,10 +24,11 @@ from app.integrations.supabase_client import get_supabase_client
 from app.utils.errors import AppError, ErrorCode
 
 
-router = APIRouter(prefix="/campaigns", tags=["collection"])
+# All collection endpoints under /collection prefix
+router = APIRouter(prefix="/collection", tags=["collection"])
 
 
-@router.post("/{campaign_id}/collect", status_code=status.HTTP_202_ACCEPTED)
+@router.post("/campaigns/{campaign_id}/collect", status_code=status.HTTP_202_ACCEPTED)
 async def trigger_collection(
     campaign_id: UUID,
     user: Dict[str, Any] = Depends(get_current_user)
@@ -72,11 +71,14 @@ async def trigger_collection(
     profile_response = supabase.table("profiles").select("plan").eq("id", user_id).single().execute()
     plan = profile_response.data.get("plan", "trial") if profile_response.data else "trial"
 
-    # Queue Celery task
-    result = collect_campaign_data.delay(str(campaign_id), user_id, plan)
+    # Run collection as background task
+    task_id = generate_task_id()
+    asyncio.create_task(
+        run_collection_background(task_id, str(campaign_id), user_id, plan)
+    )
 
     return {
-        "task_id": result.id,
+        "task_id": task_id,
         "status": "queued"
     }
 
@@ -101,49 +103,30 @@ async def stream_progress(task_id: str):
     """
 
     async def progress_stream():
-        """Generator function for SSE stream."""
-        result = AsyncResult(task_id, app=celery_app)
+        """Generator function for SSE stream. Reads task state from Redis."""
+        terminal_states = {"SUCCESS", "FAILURE"}
 
-        # Poll task state until completion
-        while not result.ready():
-            state = result.state
-            info = result.info or {}
+        while True:
+            task = get_task_state(task_id)
+            state = task["state"]
+            meta = task["meta"]
 
             if state == "PROGRESS":
-                # Emit progress event with metadata
-                yield f"event: progress\n"
-                yield f"data: {json.dumps(info)}\n\n"
-
+                yield f"event: progress\ndata: {json.dumps(meta)}\n\n"
             elif state == "STARTED":
-                # Task started but no progress yet
-                yield f"event: started\n"
-                yield f"data: {json.dumps({'state': 'started'})}\n\n"
-
+                yield f"event: started\ndata: {json.dumps({'state': 'started'})}\n\n"
             elif state == "PENDING":
-                # Task queued but not started
-                yield f"event: pending\n"
-                yield f"data: {json.dumps({'state': 'pending'})}\n\n"
+                yield f"event: pending\ndata: {json.dumps({'state': 'pending'})}\n\n"
+            elif state == "SUCCESS":
+                yield f"event: success\ndata: {json.dumps(meta)}\n\n"
+                yield f"event: done\ndata: {{}}\n\n"
+                break
+            elif state == "FAILURE":
+                yield f"event: error\ndata: {json.dumps(meta)}\n\n"
+                yield f"event: done\ndata: {{}}\n\n"
+                break
 
-            # Sleep 500ms between polls
             await asyncio.sleep(0.5)
-
-        # Task completed - send final event
-        final_state = result.state
-
-        if final_state == "SUCCESS":
-            # Collection succeeded
-            yield f"event: success\n"
-            yield f"data: {json.dumps(result.result)}\n\n"
-
-        elif final_state == "FAILURE":
-            # Collection failed
-            error_info = result.info or {}
-            yield f"event: error\n"
-            yield f"data: {json.dumps(error_info)}\n\n"
-
-        # Send done event to signal stream completion
-        yield f"event: done\n"
-        yield f"data: {{}}\n\n"
 
     return StreamingResponse(
         progress_stream(),
@@ -156,7 +139,7 @@ async def stream_progress(task_id: str):
     )
 
 
-@router.get("/{campaign_id}/posts", response_model=RawPostListResponse)
+@router.get("/campaigns/{campaign_id}/posts", response_model=RawPostListResponse)
 async def get_posts(
     campaign_id: UUID,
     archetype: Optional[str] = Query(None, description="Filter by archetype"),
@@ -203,7 +186,7 @@ async def get_posts(
     return result
 
 
-@router.get("/{campaign_id}/posts/{post_id}", response_model=RawPostResponse)
+@router.get("/campaigns/{campaign_id}/posts/{post_id}", response_model=RawPostResponse)
 async def get_post_detail(
     campaign_id: UUID,
     post_id: UUID,
@@ -243,7 +226,7 @@ async def get_post_detail(
         )
 
 
-@router.get("/{campaign_id}/collection-stats")
+@router.get("/campaigns/{campaign_id}/stats")
 async def get_collection_stats(
     campaign_id: UUID,
     user: Dict[str, Any] = Depends(get_current_user)
