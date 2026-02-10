@@ -3,7 +3,7 @@
  * Handles requests to FastAPI backend with proper error handling.
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/v1'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api'
 
 interface ApiError {
   code: string
