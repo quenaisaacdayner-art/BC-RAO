@@ -6,33 +6,34 @@ See: .planning/PROJECT.md (updated 2026-02-07)
 
 **Core value:** Founders can generate Reddit posts that survive moderation and earn genuine engagement by mimicking native community behavior patterns, not by guessing.
 
-**Current focus:** Phase 1 - Foundation & Core Setup
+**Current focus:** Phase 2 - Collection Pipeline
 
 ## Current Position
 
-Phase: 1 of 6 (Foundation & Core Setup)
-Plan: 5 of 6 (campaign API and dashboard shell complete)
+Phase: 2 of 6 (Collection Pipeline)
+Plan: 1 of 3 (collection pipeline core complete)
 Status: In progress
-Last activity: 2026-02-09 - Completed 01-05-PLAN.md (campaign API and dashboard shell)
+Last activity: 2026-02-10 - Completed 02-01-PLAN.md (collection pipeline core)
 
-Progress: [████▓░░░░░] 83% (5/6 Phase 1 plans complete)
+Progress: [█████░░░░░] 50% (1/3 Phase 2 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
-- Average duration: 6.4 minutes
-- Total execution time: 0.53 hours
+- Total plans completed: 6
+- Average duration: 6.2 minutes
+- Total execution time: 0.62 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Foundation & Core Setup | 5 | 32 min | 6.4 min |
+| 2. Collection Pipeline | 1 | 5 min | 5.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (6min), 01-02 (9min), 01-03 (6min), 01-04 (6min), 01-05 (5min)
-- Trend: Fast and consistent execution speed, improving with experience
+- Last 5 plans: 01-02 (9min), 01-03 (6min), 01-04 (6min), 01-05 (5min), 02-01 (5min)
+- Trend: Excellent velocity maintained, Phase 2 starting strong
 
 *Updated after each plan completion*
 
@@ -62,6 +63,10 @@ Recent decisions affecting current work:
 - Campaign stats use placeholder zeros (01-05): Collector, analyzer, monitor phases will populate real data
 - Overview page conditional empty state (01-05): Better UX for new users, clear onboarding flow
 - Collapsible sidebar with icon mode (01-05): Balances screen space, matches Vercel dashboard style
+- Top 10% LLM classification sampling (02-01): Control costs by only classifying highest-scoring filtered posts
+- Partial failure handling in pipelines (02-01): Continue on subreddit errors, return partial results with error list
+- Database-level deduplication (02-01): Supabase upsert with ignore_duplicates instead of app-level checks
+- Regex pre-filter before LLM (02-01): Module-level compiled patterns score posts 0-10, target ~80% rejection
 
 ### Pending Todos
 
@@ -73,6 +78,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-09 (plan 01-05 execution)
-Stopped at: Completed 01-05-PLAN.md - campaign API and dashboard shell
+Last session: 2026-02-10 (plan 02-01 execution)
+Stopped at: Completed 02-01-PLAN.md - collection pipeline core
 Resume file: None
