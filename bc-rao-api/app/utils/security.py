@@ -17,7 +17,7 @@ def _get_jwks_keys() -> List[Dict]:
     global _jwks_cache
     if _jwks_cache is None:
         url = f"{settings.SUPABASE_URL}/auth/v1/.well-known/jwks"
-        response = httpx.get(url, timeout=10)
+        response = httpx.get(url, headers={"apikey": settings.SUPABASE_ANON_KEY}, timeout=10)
         response.raise_for_status()
         _jwks_cache = response.json().get("keys", [])
     return _jwks_cache
