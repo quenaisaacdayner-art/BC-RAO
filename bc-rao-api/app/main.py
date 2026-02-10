@@ -49,3 +49,33 @@ async def health_check():
     Returns 200 OK if service is running.
     """
     return {"status": "healthy"}
+
+
+@app.get("/debug/config")
+async def debug_config():
+    """Temporary diagnostic endpoint. Remove after debugging."""
+    return {
+        "supabase_url_set": bool(settings.SUPABASE_URL),
+        "supabase_url_prefix": settings.SUPABASE_URL[:20] + "..." if settings.SUPABASE_URL else "",
+        "jwt_secret_set": bool(settings.SUPABASE_JWT_SECRET),
+        "jwt_secret_length": len(settings.SUPABASE_JWT_SECRET),
+        "anon_key_set": bool(settings.SUPABASE_ANON_KEY),
+        "service_role_key_set": bool(settings.SUPABASE_SERVICE_ROLE_KEY),
+        "redis_url_set": bool(settings.REDIS_URL),
+        "cors_origins": settings.CORS_ORIGINS,
+        "app_env": settings.APP_ENV,
+    }
+
+
+@app.get("/debug/test-jwt")
+async def debug_jwt(authorization: str = ""):
+    """Temporary: test JWT validation. Pass ?authorization=Bearer+xxx"""
+    from app.utils.security import verify_jwt
+    if not authorization.startswith("Bearer "):
+        return {"error": "Pass ?authorization=Bearer+YOUR_TOKEN"}
+    token = authorization[7:]
+    try:
+        payload = verify_jwt(token)
+        return {"success": True, "sub": payload.get("sub"), "exp": payload.get("exp")}
+    except Exception as e:
+        return {"success": False, "error": str(e), "type": type(e).__name__}
