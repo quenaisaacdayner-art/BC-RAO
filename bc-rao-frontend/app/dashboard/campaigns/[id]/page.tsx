@@ -9,7 +9,7 @@ import { apiClient } from "@/lib/api";
 import { DeleteCampaignDialog } from "@/components/campaigns/delete-campaign-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChevronLeft, Edit } from "lucide-react";
+import { ChevronLeft, Edit, Database } from "lucide-react";
 
 interface Campaign {
   id: string;
@@ -144,6 +144,12 @@ export default function CampaignDetailPage() {
           </span>
         </div>
         <div className="flex gap-2">
+          <Button asChild>
+            <Link href={`/dashboard/campaigns/${campaign.id}/collect`}>
+              <Database className="mr-2 h-4 w-4" />
+              Collect Data
+            </Link>
+          </Button>
           <Button asChild variant="outline">
             <Link href={`/dashboard/campaigns/${campaign.id}/edit`}>
               <Edit className="mr-2 h-4 w-4" />
@@ -260,12 +266,6 @@ export default function CampaignDetailPage() {
               <span className="text-muted-foreground">Last Updated</span>
               <span>{formatDate(campaign.updated_at)}</span>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-dashed">
-          <CardContent className="py-6 text-center text-sm text-muted-foreground">
-            Collection, analysis, and generation features coming in future phases.
           </CardContent>
         </Card>
       </div>

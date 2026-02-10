@@ -6,9 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import ProgressTracker from "@/components/collection/ProgressTracker";
+import FunnelStats from "@/components/collection/FunnelStats";
+import PostFilters from "@/components/collection/PostFilters";
+import PostGrid from "@/components/collection/PostGrid";
+import PostDetailModal from "@/components/collection/PostDetailModal";
 import { createClient } from "@/lib/supabase/client";
 
-type Phase = "idle" | "collecting" | "complete";
+type Phase = "idle" | "collecting" | "complete" | "results";
 
 interface Campaign {
   id: string;
@@ -23,6 +27,32 @@ interface CollectionResult {
   errors: string[];
 }
 
+interface CollectionStats {
+  scraped: number;
+  filtered: number;
+  classified: number;
+  filter_rate: number;
+  by_archetype: {
+    Journey: number;
+    ProblemSolution: number;
+    Feedback: number;
+  };
+  by_subreddit: Record<string, number>;
+}
+
+interface Post {
+  id: string;
+  title: string;
+  raw_text: string;
+  subreddit: string;
+  archetype: "Journey" | "ProblemSolution" | "Feedback";
+  success_score: number;
+  author?: string;
+  reddit_created_at?: string;
+  upvote_ratio?: number;
+  comment_count?: number;
+}
+
 export default function CollectPage() {
   const params = useParams();
   const router = useRouter();
@@ -32,13 +62,21 @@ export default function CollectPage() {
   const [taskId, setTaskId] = useState<string | null>(null);
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [result, setResult] = useState<CollectionResult | null>(null);
+  const [stats, setStats] = useState<CollectionStats | null>(null);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [filters, setFilters] = useState({
+    archetype: null as string | null,
+    subreddit: null as string | null,
+    minScore: 0,
+    maxScore: 10,
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [triggering, setTriggering] = useState(false);
 
-  // Fetch campaign details on mount
+  // Fetch campaign details and check for existing posts on mount
   useEffect(() => {
-    async function fetchCampaign() {
+    async function fetchCampaignAndStats() {
       try {
         const supabase = createClient();
         const { data: { session } } = await supabase.auth.getSession();
@@ -48,22 +86,40 @@ export default function CollectPage() {
           return;
         }
 
-        const response = await fetch(`/api/campaigns/${campaignId}`, {
+        // Fetch campaign details
+        const campaignResponse = await fetch(`/api/campaigns/${campaignId}`, {
           headers: {
             Authorization: `Bearer ${session.access_token}`,
           },
         });
 
-        if (!response.ok) {
+        if (!campaignResponse.ok) {
           throw new Error("Failed to load campaign");
         }
 
-        const data = await response.json();
+        const campaignData = await campaignResponse.json();
         setCampaign({
-          id: data.id,
-          name: data.name,
-          target_subreddits: data.target_subreddits || [],
+          id: campaignData.id,
+          name: campaignData.name,
+          target_subreddits: campaignData.target_subreddits || [],
         });
+
+        // Check if posts already exist for this campaign
+        const statsResponse = await fetch(`/api/campaigns/${campaignId}/collection-stats`, {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+
+        if (statsResponse.ok) {
+          const statsData = await statsResponse.json();
+
+          // If we have collected posts, show results view
+          if (statsData.classified > 0) {
+            setStats(statsData);
+            setPhase("results");
+          }
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load campaign");
       } finally {
@@ -71,7 +127,7 @@ export default function CollectPage() {
       }
     }
 
-    fetchCampaign();
+    fetchCampaignAndStats();
   }, [campaignId, router]);
 
   // Navigation guard during collection
@@ -128,17 +184,41 @@ export default function CollectPage() {
   }
 
   // Handle collection completion
-  function handleComplete(collectionResult: CollectionResult) {
+  async function handleComplete(collectionResult: CollectionResult) {
     setResult(collectionResult);
-    setPhase("complete");
+
+    // Fetch updated stats
+    try {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (session) {
+        const statsResponse = await fetch(`/api/campaigns/${campaignId}/collection-stats`, {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+
+        if (statsResponse.ok) {
+          const statsData = await statsResponse.json();
+          setStats(statsData);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch stats:", err);
+    }
+
+    setPhase("results");
   }
 
-  // Restart collection
-  function restartCollection() {
+  // Restart collection (for "Collect More")
+  async function collectMore() {
     setPhase("idle");
     setTaskId(null);
     setResult(null);
     setError(null);
+    // Trigger collection immediately
+    await startCollection();
   }
 
   if (loading) {
@@ -244,67 +324,54 @@ export default function CollectPage() {
         </div>
       )}
 
-      {/* COMPLETE PHASE */}
-      {phase === "complete" && result && (
-        <div className="grid gap-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Collection Complete</CardTitle>
-              <CardDescription>Your data has been collected and classified</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Final Stats */}
-              <div className="rounded-lg border bg-card p-4">
-                <div className="flex items-center justify-center gap-3 text-sm">
-                  <div className="text-center">
-                    <p className="text-3xl font-bold">{result.scraped}</p>
-                    <p className="text-xs text-muted-foreground">Scraped</p>
-                  </div>
+      {/* RESULTS PHASE */}
+      {phase === "results" && stats && campaign && (
+        <div className="space-y-4">
+          {/* Collect More Button */}
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-lg font-semibold">Collected Posts</h3>
+              <p className="text-sm text-muted-foreground">
+                Browse and filter your collected posts
+              </p>
+            </div>
+            <Button onClick={collectMore} variant="outline">
+              Collect More (4 remaining)
+            </Button>
+          </div>
 
-                  <span className="text-muted-foreground">→</span>
+          {/* Partial Failure Warning */}
+          {result?.errors && result.errors.length > 0 && (
+            <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
+              <p className="text-sm font-medium text-yellow-800">Partial Collection</p>
+              <p className="text-sm text-yellow-700 mt-1">
+                Failed to collect from: {result.errors.join(", ")}. You can try again with Collect More.
+              </p>
+            </div>
+          )}
 
-                  <div className="text-center">
-                    <p className="text-3xl font-bold">{result.filtered}</p>
-                    <p className="text-xs text-muted-foreground">Passed Regex</p>
-                  </div>
+          {/* Funnel Stats */}
+          <FunnelStats stats={stats} />
 
-                  <span className="text-muted-foreground">→</span>
+          {/* Filters */}
+          <PostFilters
+            subreddits={campaign.target_subreddits}
+            onFiltersChange={setFilters}
+          />
 
-                  <div className="text-center">
-                    <p className="text-3xl font-bold">{result.classified}</p>
-                    <p className="text-xs text-muted-foreground">Classified</p>
-                  </div>
-                </div>
-              </div>
+          {/* Post Grid */}
+          <PostGrid
+            campaignId={campaignId}
+            filters={filters}
+            onPostClick={setSelectedPost}
+          />
 
-              {/* Partial Failure Warning */}
-              {result.errors.length > 0 && (
-                <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
-                  <p className="text-sm font-medium text-yellow-800">Partial Collection</p>
-                  <p className="text-sm text-yellow-700 mt-1">
-                    Failed to collect from: {result.errors.join(", ")}. You can try again with Collect More.
-                  </p>
-                </div>
-              )}
-
-              {/* Action Buttons */}
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => router.push(`/dashboard/campaigns/${campaignId}/browse`)}
-                  className="flex-1"
-                >
-                  View Results
-                </Button>
-                <Button
-                  onClick={restartCollection}
-                  variant="outline"
-                  className="flex-1"
-                >
-                  Collect More (4 remaining)
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Post Detail Modal */}
+          <PostDetailModal
+            post={selectedPost}
+            open={!!selectedPost}
+            onClose={() => setSelectedPost(null)}
+          />
         </div>
       )}
     </div>
