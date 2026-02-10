@@ -1,7 +1,7 @@
 """
 Worker package for background task processing.
-Re-exports celery_app for convenience.
+Uses lightweight in-process task runner with Redis state tracking.
 """
-from app.workers.celery_app import celery_app, ping
+from app.workers.task_runner import generate_task_id, run_collection_background, get_task_state
 
-__all__ = ["celery_app", "ping"]
+__all__ = ["generate_task_id", "run_collection_background", "get_task_state"]
