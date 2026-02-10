@@ -61,12 +61,13 @@ Plans:
   4. User can view collected posts filtered by archetype, subreddit, and success score
   5. Collection runs as async Celery task without blocking dashboard
 
-**Plans**: TBD (estimate 3-4 plans)
+**Plans**: 4 plans
 
 Plans:
-- [ ] 02-01: TBD during planning
-- [ ] 02-02: TBD during planning
-- [ ] 02-03: TBD during planning
+- [ ] 02-01-PLAN.md — Backend pipeline core: Apify client, regex pre-filter, collection service, raw_posts models
+- [ ] 02-02-PLAN.md — Celery collection worker with progress tracking + FastAPI collection endpoints (trigger, SSE, posts query)
+- [ ] 02-03-PLAN.md — Frontend collection trigger page with live SSE progress tracking
+- [ ] 02-04-PLAN.md — Frontend post browsing: card grid, filters, detail modal, funnel stats + human verification
 
 ---
 
@@ -179,7 +180,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Core Setup | 2/6 | In progress | - |
-| 2. Collection Pipeline | 0/TBD | Not started | - |
+| 2. Collection Pipeline | 0/4 | Not started | - |
 | 3. Pattern Engine | 0/TBD | Not started | - |
 | 4. Draft Generation | 0/TBD | Not started | - |
 | 5. Monitoring & Feedback Loop | 0/TBD | Not started | - |
@@ -187,4 +188,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 ---
 *Roadmap created: 2026-02-07*
-*Last updated: 2026-02-09 (plan 01-02 complete)*
+*Last updated: 2026-02-10 (Phase 2 planned: 4 plans in 4 waves)*
