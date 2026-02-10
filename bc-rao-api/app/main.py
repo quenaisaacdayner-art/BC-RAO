@@ -79,3 +79,55 @@ async def debug_jwt(authorization: str = ""):
         return {"success": True, "sub": payload.get("sub"), "exp": payload.get("exp")}
     except Exception as e:
         return {"success": False, "error": str(e), "type": type(e).__name__}
+
+
+@app.get("/debug/test-collect/{campaign_id}")
+async def debug_collect(campaign_id: str, authorization: str = ""):
+    """Temporary: test collect flow step by step. Pass ?authorization=Bearer+xxx"""
+    steps = {}
+
+    # Step 1: JWT
+    from app.utils.security import verify_jwt
+    if not authorization.startswith("Bearer "):
+        return {"error": "Pass ?authorization=Bearer+YOUR_TOKEN"}
+    token = authorization[7:]
+    try:
+        payload = verify_jwt(token)
+        user_id = payload.get("sub")
+        steps["jwt"] = {"ok": True, "user_id": user_id}
+    except Exception as e:
+        return {"steps": steps, "failed_at": "jwt", "error": str(e), "type": type(e).__name__}
+
+    # Step 2: Supabase client
+    try:
+        from app.integrations.supabase_client import get_supabase_client
+        supabase = get_supabase_client()
+        steps["supabase_client"] = {"ok": True}
+    except Exception as e:
+        return {"steps": steps, "failed_at": "supabase_client", "error": str(e), "type": type(e).__name__}
+
+    # Step 3: Campaign query
+    try:
+        response = supabase.table("campaigns").select("id, user_id").eq("id", campaign_id).eq("user_id", user_id).maybe_single().execute()
+        steps["campaign_query"] = {"ok": True, "found": bool(response.data), "data": response.data}
+    except Exception as e:
+        return {"steps": steps, "failed_at": "campaign_query", "error": str(e), "type": type(e).__name__}
+
+    # Step 4: Profile query
+    try:
+        profile_response = supabase.table("profiles").select("plan").eq("id", user_id).maybe_single().execute()
+        steps["profile_query"] = {"ok": True, "found": bool(profile_response.data), "data": profile_response.data}
+    except Exception as e:
+        return {"steps": steps, "failed_at": "profile_query", "error": str(e), "type": type(e).__name__}
+
+    # Step 5: Redis
+    try:
+        from app.workers.task_runner import get_redis, generate_task_id
+        r = get_redis()
+        r.ping()
+        task_id = generate_task_id()
+        steps["redis"] = {"ok": True, "task_id": task_id}
+    except Exception as e:
+        return {"steps": steps, "failed_at": "redis", "error": str(e), "type": type(e).__name__}
+
+    return {"steps": steps, "all_ok": True}
