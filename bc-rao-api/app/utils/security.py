@@ -35,7 +35,7 @@ def _find_jwk_key(kid: str) -> Optional[Dict]:
 def verify_jwt(token: str) -> Dict[str, Any]:
     """
     Verify and decode a Supabase JWT token.
-    Automatically detects HS256 (legacy) vs ES256 (new) signing.
+    Always tries HS256 with legacy secret first. Falls back to JWKS if available.
 
     Args:
         token: JWT token string from Authorization header
@@ -47,40 +47,42 @@ def verify_jwt(token: str) -> Dict[str, Any]:
         AppError: If token is invalid or expired
     """
     try:
-        # Read token header to determine algorithm
-        header = jwt.get_unverified_header(token)
-        alg = header.get("alg", "HS256")
-        kid = header.get("kid")
-
-        if alg == "HS256":
-            # Legacy: verify with shared secret
+        # Always try HS256 with legacy secret first (works for most Supabase projects)
+        try:
             payload = jwt.decode(
                 token,
                 settings.SUPABASE_JWT_SECRET,
                 algorithms=["HS256"],
                 options={"verify_aud": False}
             )
-        else:
-            # ES256/RS256: verify with JWKS public key
-            if not kid:
-                raise JWTError("Token missing 'kid' header for asymmetric verification")
+            return payload
+        except JWTError:
+            pass  # HS256 failed, try JWKS below
 
+        # HS256 failed — try asymmetric verification via JWKS
+        header = jwt.get_unverified_header(token)
+        alg = header.get("alg", "HS256")
+        kid = header.get("kid")
+
+        if not kid:
+            raise JWTError("Token verification failed: HS256 secret mismatch and no 'kid' for JWKS")
+
+        jwk_key = _find_jwk_key(kid)
+        if not jwk_key:
+            # Clear cache and retry (key might have rotated)
+            global _jwks_cache
+            _jwks_cache = None
             jwk_key = _find_jwk_key(kid)
-            if not jwk_key:
-                # Clear cache and retry (key might have rotated)
-                global _jwks_cache
-                _jwks_cache = None
-                jwk_key = _find_jwk_key(kid)
 
-            if not jwk_key:
-                raise JWTError(f"No matching JWK key found for kid: {kid}")
+        if not jwk_key:
+            raise JWTError(f"No matching JWK key found for kid: {kid}")
 
-            payload = jwt.decode(
-                token,
-                jwk_key,
-                algorithms=[alg],
-                options={"verify_aud": False}
-            )
+        payload = jwt.decode(
+            token,
+            jwk_key,
+            algorithms=[alg],
+            options={"verify_aud": False}
+        )
 
         return payload
     except JWTError as e:
