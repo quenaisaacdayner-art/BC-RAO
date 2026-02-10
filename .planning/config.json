@@ -8,5 +8,11 @@
     "research": true,
     "plan_check": true,
     "verifier": true
+  },
+  "deployment": {
+    "test_environment": "vercel",
+    "vercel_url": "https://bc-rao-frontend.vercel.app/",
+    "github_repo": "https://github.com/quenaisaacdayner-art/BC-RAO.git",
+    "auto_commit_and_push": true
   }
 }

@@ -62,6 +62,15 @@ Founders can generate Reddit posts that survive moderation and earn genuine enga
 
 **Cost control is critical:** Apify credits + LLM tokens are the main variable cost. Regex pre-filtering reduces AI volume by ~80%. Only top 10% of posts get full LLM processing. SpaCy runs locally for zero-cost NLP. Per-plan cost caps enforced.
 
+## Deployment Rules (LAW)
+
+- **Testing environment:** All UAT testing is done on Vercel via the production deploy, NOT localhost
+- **Vercel URL:** https://bc-rao-frontend.vercel.app/
+- **GitHub repo:** https://github.com/quenaisaacdayner-art/BC-RAO.git
+- **Auto-commit:** Every code change MUST be committed and pushed to GitHub automatically — no waiting for user confirmation
+- **Deploy flow:** Code change → git commit → git push → Vercel auto-deploys from GitHub
+- **These rules are permanent and override any defaults**
+
 ## Constraints
 
 - **Tech stack**: Next.js 15 + Tailwind + Shadcn/UI (frontend), Python 3.11+ / FastAPI (backend), Supabase (database + auth), Celery + Redis (workers), OpenRouter (AI), Apify (scraping) — locked per system spec
