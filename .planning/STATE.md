@@ -11,29 +11,29 @@ See: .planning/PROJECT.md (updated 2026-02-07)
 ## Current Position
 
 Phase: 2 of 6 (Collection Pipeline)
-Plan: 2 of 3 (collection API integration complete)
-Status: In progress
-Last activity: 2026-02-10 - Completed 02-02-PLAN.md (collection API integration)
+Plan: 3 of 3 (collection UI with SSE progress tracking complete)
+Status: Phase complete
+Last activity: 2026-02-10 - Completed 02-03-PLAN.md (collection UI)
 
-Progress: [██████░░░░] 66% (2/3 Phase 2 plans complete)
+Progress: [█████████░] 100% (3/3 Phase 2 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
-- Average duration: 6.0 minutes
-- Total execution time: 0.70 hours
+- Total plans completed: 8
+- Average duration: 5.9 minutes
+- Total execution time: 0.78 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Foundation & Core Setup | 5 | 32 min | 6.4 min |
-| 2. Collection Pipeline | 2 | 10 min | 5.0 min |
+| 2. Collection Pipeline | 3 | 17 min | 5.7 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-03 (6min), 01-04 (6min), 01-05 (5min), 02-01 (5min), 02-02 (5min)
-- Trend: Excellent velocity maintained, Phase 2 blazing fast at 5min average
+- Last 5 plans: 01-04 (6min), 01-05 (5min), 02-01 (5min), 02-02 (5min), 02-03 (7min)
+- Trend: Excellent velocity maintained, Phase 2 complete at 5.7min average
 
 *Updated after each plan completion*
 
@@ -71,6 +71,10 @@ Recent decisions affecting current work:
 - Async/sync bridging with asyncio.run (02-02): Bridge async CollectionService to sync Celery task
 - 500ms SSE polling interval (02-02): Balances smooth progress updates with backend load
 - Billing limits deferred to Phase 6 (02-02): Focus on core loop before monetization
+- SSE proxy pattern (02-03): Next.js API routes proxy FastAPI SSE to browser EventSource, validate ownership on trigger
+- EventSource cleanup pattern (02-03): Always close() in useEffect return to prevent connection leaks
+- Three-phase collection flow (02-03): Idle → collecting → complete with navigation guards and auto-transitions
+- Hardcoded remaining runs UI (02-03): Display "5 remaining" for trial tier, backend enforcement in Phase 6
 
 ### Pending Todos
 
@@ -82,6 +86,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-10 (plan 02-02 execution)
-Stopped at: Completed 02-02-PLAN.md - collection API integration
+Last session: 2026-02-10 (plan 02-03 execution)
+Stopped at: Completed 02-03-PLAN.md - collection UI with SSE progress tracking
 Resume file: None
