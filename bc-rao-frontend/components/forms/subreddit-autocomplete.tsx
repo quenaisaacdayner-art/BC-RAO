@@ -43,14 +43,7 @@ export function SubredditAutocomplete({
       setIsLoading(true);
       try {
         const response = await fetch(
-          `https://www.reddit.com/subreddits/search.json?q=${encodeURIComponent(
-            debouncedQuery
-          )}&limit=10`,
-          {
-            headers: {
-              "User-Agent": "BC-RAO/1.0",
-            },
-          }
+          `/api/subreddits/search?q=${encodeURIComponent(debouncedQuery)}`
         );
 
         if (response.ok) {
