@@ -82,15 +82,23 @@ async def validation_error_handler(
 async def generic_error_handler(request: Request, exc: Exception) -> JSONResponse:
     """
     Handler for unexpected exceptions.
-    Returns generic error message to avoid leaking implementation details.
+    Logs the real error and returns details in non-production environments.
     """
+    import logging
+    logging.error(f"Unhandled error on {request.method} {request.url.path}: {type(exc).__name__}: {exc}")
+
+    from app.config import settings
+    details = {}
+    if settings.APP_ENV != "production":
+        details = {"type": type(exc).__name__, "message": str(exc)}
+
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={
             "error": {
                 "code": ErrorCode.INTERNAL_ERROR,
                 "message": "An unexpected error occurred",
-                "details": {}
+                "details": details
             }
         }
     )

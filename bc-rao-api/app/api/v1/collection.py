@@ -55,7 +55,7 @@ async def trigger_collection(
 
     # Validate campaign exists and belongs to user
     supabase = get_supabase_client()
-    response = supabase.table("campaigns").select("id, user_id").eq("id", str(campaign_id)).eq("user_id", user_id).single().execute()
+    response = supabase.table("campaigns").select("id, user_id").eq("id", str(campaign_id)).eq("user_id", user_id).maybe_single().execute()
 
     if not response.data:
         raise HTTPException(
@@ -68,7 +68,7 @@ async def trigger_collection(
         )
 
     # Get user plan (default to trial if not found)
-    profile_response = supabase.table("profiles").select("plan").eq("id", user_id).single().execute()
+    profile_response = supabase.table("profiles").select("plan").eq("id", user_id).maybe_single().execute()
     plan = profile_response.data.get("plan", "trial") if profile_response.data else "trial"
 
     # Run collection as background task
