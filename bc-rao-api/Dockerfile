@@ -9,11 +9,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-# Make start script executable
-RUN chmod +x start.sh
-
 # Default port
 ENV PORT=8000
 
-# Start both API and Celery worker
-CMD ["./start.sh"]
+# Start FastAPI server directly (no shell script = no CRLF issues)
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT}"]
