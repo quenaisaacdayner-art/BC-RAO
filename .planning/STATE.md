@@ -6,7 +6,7 @@ See: .planning/PROJECT.md (updated 2026-02-07)
 
 **Core value:** Founders can generate Reddit posts that survive moderation and earn genuine engagement by mimicking native community behavior patterns, not by guessing.
 
-**Current focus:** Phase 4 (Draft Generation) - Building LLM-powered draft generation with ISC gating
+**Current focus:** Phase 4 complete — ready for Phase 5 (Monitoring & Feedback Loop)
 
 ## Current Position
 

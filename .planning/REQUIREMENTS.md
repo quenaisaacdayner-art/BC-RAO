@@ -44,15 +44,15 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Module 3 — Conditioning Generator
 
-- [ ] **GENR-01**: User can generate conditioned drafts by selecting subreddit, archetype, and optional user context
-- [ ] **GENR-02**: Generation pipeline loads community profile + syntax blacklist before building dynamic LLM prompt
-- [ ] **GENR-03**: ISC gating blocks risky archetypes when ISC > 7.5 (forces Feedback with max vulnerability, zero links)
-- [ ] **GENR-04**: Account status decision tree enforced (New = warm-up mode, comments only; Established = full generation)
-- [ ] **GENR-05**: Post-processing validates drafts against regex blacklist, link density, sentence length, and jargon scan
-- [ ] **GENR-06**: Each draft stored with archetype, vulnerability_score, rhythm_match_score, model_used, token_cost
-- [ ] **GENR-07**: User can view, edit, approve, or discard generated drafts in draft editor
-- [ ] **GENR-08**: User can regenerate a draft with optional feedback
-- [ ] **GENR-09**: Draft generation enforces monthly plan limits (drafts/month per tier)
+- [x] **GENR-01**: User can generate conditioned drafts by selecting subreddit, archetype, and optional user context
+- [x] **GENR-02**: Generation pipeline loads community profile + syntax blacklist before building dynamic LLM prompt
+- [x] **GENR-03**: ISC gating blocks risky archetypes when ISC > 7.5 (forces Feedback with max vulnerability, zero links)
+- [x] **GENR-04**: Account status decision tree enforced (New = warm-up mode, comments only; Established = full generation)
+- [x] **GENR-05**: Post-processing validates drafts against regex blacklist, link density, sentence length, and jargon scan
+- [x] **GENR-06**: Each draft stored with archetype, vulnerability_score, rhythm_match_score, model_used, token_cost
+- [x] **GENR-07**: User can view, edit, approve, or discard generated drafts in draft editor
+- [x] **GENR-08**: User can regenerate a draft with optional feedback
+- [x] **GENR-09**: Draft generation enforces monthly plan limits (drafts/month per tier)
 
 ### Module 4 — Orchestrator
 
@@ -84,10 +84,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Dashboard & UX
 
-- [ ] **DASH-01**: Project Briefing stage — user adds SaaS details, system maps ideal subreddits and scrapes conversation DNA
-- [ ] **DASH-02**: Strategic Selection stage — user selects archetype ("Attack Card": Journey, Solution, Feedback), system analyzes community rules
-- [ ] **DASH-03**: Community Intelligence stage — user views "Community Etiquette Manual" with ISC, ban risk level, forbidden patterns
-- [ ] **DASH-04**: Alchemical Transmutation stage — user provides rough draft or leaves empty, system creates/refines post with mimicry filters
+- [x] **DASH-01**: Project Briefing stage — user adds SaaS details, system maps ideal subreddits and scrapes conversation DNA
+- [x] **DASH-02**: Strategic Selection stage — user selects archetype ("Attack Card": Journey, Solution, Feedback), system analyzes community rules
+- [x] **DASH-03**: Community Intelligence stage — user views "Community Etiquette Manual" with ISC, ban risk level, forbidden patterns
+- [x] **DASH-04**: Alchemical Transmutation stage — user provides rough draft or leaves empty, system creates/refines post with mimicry filters
 - [ ] **DASH-05**: Deployment & Sentinel stage — user copies text, posts on Reddit, pastes URL, system validates and starts monitoring
 - [ ] **DASH-06**: Post-Audit & Loop stage — user tracks progress via dashboard, reads instruction emails, system evaluates success/pivot
 - [ ] **DASH-07**: Monitoring dashboard showing active/removed/shadowbanned counts, success rate, recent alerts
@@ -167,15 +167,15 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PATN-04 | Phase 3 | Complete |
 | PATN-05 | Phase 3 | Complete |
 | PATN-06 | Phase 3 | Complete |
-| GENR-01 | Phase 4 | Pending |
-| GENR-02 | Phase 4 | Pending |
-| GENR-03 | Phase 4 | Pending |
-| GENR-04 | Phase 4 | Pending |
-| GENR-05 | Phase 4 | Pending |
-| GENR-06 | Phase 4 | Pending |
-| GENR-07 | Phase 4 | Pending |
-| GENR-08 | Phase 4 | Pending |
-| GENR-09 | Phase 4 | Pending |
+| GENR-01 | Phase 4 | Complete |
+| GENR-02 | Phase 4 | Complete |
+| GENR-03 | Phase 4 | Complete |
+| GENR-04 | Phase 4 | Complete |
+| GENR-05 | Phase 4 | Complete |
+| GENR-06 | Phase 4 | Complete |
+| GENR-07 | Phase 4 | Complete |
+| GENR-08 | Phase 4 | Complete |
+| GENR-09 | Phase 4 | Complete |
 | ORCH-01 | Phase 5 | Pending |
 | ORCH-02 | Phase 5 | Pending |
 | ORCH-03 | Phase 5 | Pending |
@@ -195,10 +195,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | BILL-05 | Phase 6 | Pending |
 | BILL-06 | Phase 6 | Pending |
 | BILL-07 | Phase 6 | Pending |
-| DASH-01 | Phase 4 | Pending |
-| DASH-02 | Phase 4 | Pending |
-| DASH-03 | Phase 4 | Pending |
-| DASH-04 | Phase 4 | Pending |
+| DASH-01 | Phase 4 | Complete |
+| DASH-02 | Phase 4 | Complete |
+| DASH-03 | Phase 4 | Complete |
+| DASH-04 | Phase 4 | Complete |
 | DASH-05 | Phase 5 | Pending |
 | DASH-06 | Phase 5 | Pending |
 | DASH-07 | Phase 5 | Pending |

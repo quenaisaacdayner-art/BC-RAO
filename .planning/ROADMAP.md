@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 1: Foundation & Core Setup** - Auth, dashboard scaffold, campaign management, infrastructure
 - [ ] **Phase 2: Collection Pipeline** - Module 1 with Apify scraping, regex filtering, archetype classification
 - [x] **Phase 3: Pattern Engine** - Module 2 with SpaCy rhythm analysis, ISC scoring, community profiling
-- [ ] **Phase 4: Draft Generation** - Module 3 with conditioned generation, blacklist enforcement, ISC gating
+- [x] **Phase 4: Draft Generation** - Module 3 with conditioned generation, blacklist enforcement, ISC gating
 - [ ] **Phase 5: Monitoring & Feedback Loop** - Module 4 with dual-check shadowban detection, negative reinforcement
 - [ ] **Phase 6: Billing & Production Polish** - Stripe integration, usage enforcement, trial lifecycle
 
@@ -113,11 +113,11 @@ Plans:
 **Plans**: 5 plans
 
 Plans:
-- [ ] 04-01-PLAN.md — Backend generation core: prompt builder, ISC gating, blacklist validator, generation service, draft models
-- [ ] 04-02-PLAN.md — Backend API endpoints: draft generate/list/update/regenerate/delete, Celery worker, SSE streaming
-- [ ] 04-03-PLAN.md — Frontend generation form with ISC gating UX, SSE streaming, draft list page
-- [ ] 04-04-PLAN.md — Frontend draft editor with score sidebar, draft actions (approve/discard/regenerate/copy)
-- [ ] 04-05-PLAN.md — Campaign stage indicator, linear progression enforcement, Stage 4 content on campaign page
+- [x] 04-01-PLAN.md — Backend generation core: prompt builder, ISC gating, blacklist validator, generation service, draft models (completed 2026-02-11)
+- [x] 04-02-PLAN.md — Backend API endpoints: draft generate/list/update/regenerate/delete, Celery worker, SSE streaming (completed 2026-02-11)
+- [x] 04-03-PLAN.md — Frontend generation form with ISC gating UX, SSE streaming, draft list page (completed 2026-02-11)
+- [x] 04-04-PLAN.md — Frontend draft editor with score sidebar, draft actions (approve/discard/regenerate/copy) (completed 2026-02-11)
+- [x] 04-05-PLAN.md — Campaign stage indicator, linear progression enforcement, Stage 4 content on campaign page (completed 2026-02-11)
 
 ---
 
@@ -184,10 +184,10 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 1. Foundation & Core Setup | 6/6 | Complete | 2026-02-09 |
 | 2. Collection Pipeline | 4/4 | Complete | 2026-02-10 |
 | 3. Pattern Engine | 4/4 | Complete | 2026-02-11 |
-| 4. Draft Generation | 0/5 | Not started | - |
+| 4. Draft Generation | 5/5 | Complete | 2026-02-11 |
 | 5. Monitoring & Feedback Loop | 0/TBD | Not started | - |
 | 6. Billing & Production Polish | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-02-07*
-*Last updated: 2026-02-11 (Phase 4 planned: 5 plans in 4 waves)*
+*Last updated: 2026-02-11 (Phase 4 complete: 5 plans executed, verified 6/6 must-haves)*
