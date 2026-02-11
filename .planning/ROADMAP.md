@@ -85,12 +85,13 @@ Plans:
   4. User can view scoring breakdown for individual posts showing how vulnerability, rhythm, and penalties contributed to success score
   5. Pattern analysis runs locally via SpaCy with zero external API cost
 
-**Plans**: TBD (estimate 3-4 plans)
+**Plans**: 4 plans
 
 Plans:
-- [ ] 03-01: TBD during planning
-- [ ] 03-02: TBD during planning
-- [ ] 03-03: TBD during planning
+- [ ] 03-01-PLAN.md — SpaCy NLP pipeline with custom components, post scoring algorithms, forbidden pattern extraction
+- [ ] 03-02-PLAN.md — Analysis service, background worker with auto-trigger from collection, API endpoints for profiles/scoring/blacklist
+- [ ] 03-03-PLAN.md — Frontend community profiles: comparison table, tabbed detail with ISC gauge and archetype chart, SSE progress
+- [ ] 03-04-PLAN.md — Frontend analysis page with scoring breakdowns and inline penalty highlighting, blacklist management page
 
 ---
 
@@ -181,11 +182,11 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 |-------|----------------|--------|-----------|
 | 1. Foundation & Core Setup | 2/6 | In progress | - |
 | 2. Collection Pipeline | 0/4 | Not started | - |
-| 3. Pattern Engine | 0/TBD | Not started | - |
+| 3. Pattern Engine | 0/4 | Not started | - |
 | 4. Draft Generation | 0/TBD | Not started | - |
 | 5. Monitoring & Feedback Loop | 0/TBD | Not started | - |
 | 6. Billing & Production Polish | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-02-07*
-*Last updated: 2026-02-10 (Phase 2 planned: 4 plans in 4 waves)*
+*Last updated: 2026-02-10 (Phase 3 planned: 4 plans in 3 waves)*
