@@ -11,18 +11,18 @@ See: .planning/PROJECT.md (updated 2026-02-07)
 ## Current Position
 
 Phase: 4 of 6 (Draft Generation)
-Plan: 3 of 5 complete
-Status: In progress
-Last activity: 2026-02-11 - Completed 04-03-PLAN.md (Drafts Frontend)
+Plan: 5 of 5 complete
+Status: Phase complete
+Last activity: 2026-02-11 - Completed 04-05-PLAN.md (Dashboard Journey Stages)
 
-Progress: [████████████░░░░░░░░░░░░] 60% (3/5 Phase 4 plans complete)
+Progress: [████████████████████████] 100% (5/5 Phase 4 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 15
-- Average duration: 6.0 minutes
-- Total execution time: 1.50 hours
+- Total plans completed: 17
+- Average duration: 5.8 minutes
+- Total execution time: 1.65 hours
 
 **By Phase:**
 
@@ -31,11 +31,11 @@ Progress: [████████████░░░░░░░░░░░
 | 1. Foundation & Core Setup | 5 | 32 min | 6.4 min |
 | 2. Collection Pipeline | 3 | 17 min | 5.7 min |
 | 3. Pattern Engine | 4 | 28 min | 7.0 min |
-| 4. Draft Generation | 3 | 25 min | 8.3 min |
+| 4. Draft Generation | 5 | 33 min | 6.6 min |
 
 **Recent Trend:**
-- Last 5 plans: 03-03 (9min), 03-04 (7min), 04-01 (15min), 04-02 (4min), 04-03 (6min)
-- Trend: Phase 4 varying (04-01 heavy setup at 15min, 04-02 fast API at 4min, 04-03 UI at 6min)
+- Last 5 plans: 04-01 (15min), 04-02 (4min), 04-03 (6min), 04-04 (4min), 04-05 (4min)
+- Trend: Phase 4 complete - initial setup heavy (15min), subsequent plans fast (4-6min average)
 
 *Updated after each plan completion*
 
@@ -100,6 +100,9 @@ Recent decisions affecting current work:
 - ISC gating enforced on frontend (04-03): Inline warning + auto-switch to Feedback when ISC > 7.5
 - Single-form generation UX (04-03): One page with three inputs (subreddit, archetype, context), not wizard
 - Unprofiled subreddits allow generation (04-03): Yellow warning shown, backend uses generic defaults with reduced accuracy
+- 4-stage campaign journey (04-05): Project Briefing → Strategic Selection → Community Intelligence → Alchemical Transmutation
+- Linear stage progression (04-05): Each stage locked until previous completes, auto-advance toast when unlocked
+- Stage 4 on campaign page (04-05): Generate button + recent drafts preview, locked until Stage 3 complete
 
 ### Pending Todos
 
@@ -111,6 +114,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-11 (Phase 4 Plan 03 execution complete)
-Stopped at: Completed 04-03-PLAN.md (Drafts Frontend)
+Last session: 2026-02-11 (Phase 4 Plan 05 execution complete)
+Stopped at: Completed 04-05-PLAN.md (Dashboard Journey Stages) - Phase 4 complete
 Resume file: None
