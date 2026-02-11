@@ -119,3 +119,54 @@ async def run_analysis_background_task(task_id: str, campaign_id: str, force_ref
     from app.workers.analysis_worker import run_analysis_background
 
     await run_analysis_background(task_id, campaign_id, force_refresh)
+
+
+async def run_monitoring_check_background_task(task_id: str, shadow_id: str):
+    """
+    Run monitoring check as an asyncio background task.
+    Stores progress in Redis for SSE streaming.
+
+    Args:
+        task_id: Task UUID for Redis state tracking
+        shadow_id: Shadow entry UUID
+    """
+    from app.workers.monitoring_worker import run_monitoring_check
+
+    await run_monitoring_check(task_id, shadow_id)
+
+
+async def run_audit_background_task(task_id: str, shadow_id: str):
+    """
+    Run 7-day post audit as an asyncio background task.
+    Stores progress in Redis for SSE streaming.
+
+    Args:
+        task_id: Task UUID for Redis state tracking
+        shadow_id: Shadow entry UUID
+    """
+    from app.workers.monitoring_worker import run_post_audit
+
+    await run_post_audit(task_id, shadow_id)
+
+
+async def schedule_periodic_monitoring():
+    """
+    Schedule periodic monitoring checks every 15 minutes.
+
+    Creates a recurring asyncio task that dispatches pending checks.
+    Runs indefinitely in the background.
+    """
+    from app.workers.monitoring_worker import dispatch_pending_checks
+    import logging
+
+    logger = logging.getLogger(__name__)
+    logger.info("Starting periodic monitoring scheduler (15-min interval)")
+
+    while True:
+        try:
+            await dispatch_pending_checks()
+        except Exception as e:
+            logger.error(f"Periodic monitoring dispatch error: {e}")
+
+        # Sleep for 15 minutes
+        await asyncio.sleep(900)
