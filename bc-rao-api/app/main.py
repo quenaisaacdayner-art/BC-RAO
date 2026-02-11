@@ -108,15 +108,17 @@ async def debug_collect(campaign_id: str, authorization: str = ""):
 
     # Step 3: Campaign query
     try:
-        response = supabase.table("campaigns").select("id, user_id").eq("id", campaign_id).eq("user_id", user_id).maybe_single().execute()
-        steps["campaign_query"] = {"ok": True, "found": bool(response.data), "data": response.data}
+        response = supabase.table("campaigns").select("id, user_id").eq("id", campaign_id).eq("user_id", user_id).execute()
+        campaign = response.data[0] if response.data else None
+        steps["campaign_query"] = {"ok": True, "found": bool(campaign), "data": campaign}
     except Exception as e:
         return {"steps": steps, "failed_at": "campaign_query", "error": str(e), "type": type(e).__name__}
 
     # Step 4: Profile query
     try:
-        profile_response = supabase.table("profiles").select("plan").eq("id", user_id).maybe_single().execute()
-        steps["profile_query"] = {"ok": True, "found": bool(profile_response.data), "data": profile_response.data}
+        profile_response = supabase.table("profiles").select("plan").eq("id", user_id).execute()
+        profile = profile_response.data[0] if profile_response.data else None
+        steps["profile_query"] = {"ok": True, "found": bool(profile), "data": profile}
     except Exception as e:
         return {"steps": steps, "failed_at": "profile_query", "error": str(e), "type": type(e).__name__}
 

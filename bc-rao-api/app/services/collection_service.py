@@ -69,17 +69,16 @@ class CollectionService:
         errors = []
 
         # Fetch campaign
-        response = self.supabase.table("campaigns").select("*").eq("id", campaign_id).eq("user_id", user_id).maybe_single().execute()
+        response = self.supabase.table("campaigns").select("*").eq("id", campaign_id).eq("user_id", user_id).execute()
+        campaign = response.data[0] if response.data else None
 
-        if not response.data:
+        if not campaign:
             raise AppError(
                 code=ErrorCode.RESOURCE_NOT_FOUND,
                 message="Campaign not found or access denied",
                 details={"campaign_id": campaign_id},
                 status_code=404
             )
-
-        campaign = response.data
         target_subreddits = campaign.get("target_subreddits", [])
         keywords = campaign.get("keywords", [])
 
@@ -451,9 +450,10 @@ Respond with JSON only:
         Raises:
             AppError: NOT_FOUND if post doesn't exist or not owned by user
         """
-        response = self.supabase.table("raw_posts").select("*").eq("id", post_id).maybe_single().execute()
+        response = self.supabase.table("raw_posts").select("*").eq("id", post_id).execute()
+        post = response.data[0] if response.data else None
 
-        if not response.data:
+        if not post:
             raise AppError(
                 code=ErrorCode.RESOURCE_NOT_FOUND,
                 message="Post not found",
@@ -461,7 +461,7 @@ Respond with JSON only:
                 status_code=404
             )
 
-        return RawPostResponse(**response.data)
+        return RawPostResponse(**post)
 
     async def get_collection_stats(
         self,

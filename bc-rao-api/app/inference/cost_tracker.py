@@ -113,10 +113,10 @@ class CostTracker:
         user_result = self.supabase.table("subscriptions") \
             .select("plan") \
             .eq("user_id", user_id) \
-            .maybe_single() \
             .execute()
 
-        plan = user_result.data.get("plan", "trial") if user_result.data else "trial"
+        sub = user_result.data[0] if user_result.data else None
+        plan = sub.get("plan", "trial") if sub else "trial"
         cap = COST_CAPS.get(plan, COST_CAPS["trial"])
         remaining = cap - total_cost
 

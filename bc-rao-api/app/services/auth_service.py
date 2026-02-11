@@ -175,21 +175,19 @@ class AuthService:
         """
         try:
             # Query user profile
-            profile_response = self.supabase.table("profiles").select("*").eq("id", user_id).maybe_single().execute()
+            profile_response = self.supabase.table("profiles").select("*").eq("id", user_id).execute()
+            profile = profile_response.data[0] if profile_response.data else None
 
-            if not profile_response.data:
+            if not profile:
                 raise AppError(
                     code=ErrorCode.RESOURCE_NOT_FOUND,
                     message="User profile not found",
                     status_code=404
                 )
 
-            profile = profile_response.data
-
             # Query active subscription
-            subscription_response = self.supabase.table("subscriptions").select("*").eq("user_id", user_id).eq("status", "active").maybe_single().execute()
-
-            subscription = subscription_response.data if subscription_response.data else None
+            subscription_response = self.supabase.table("subscriptions").select("*").eq("user_id", user_id).eq("status", "active").execute()
+            subscription = subscription_response.data[0] if subscription_response.data else None
 
             return {
                 "id": profile["id"],
