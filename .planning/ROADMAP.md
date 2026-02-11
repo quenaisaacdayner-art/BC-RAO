@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [ ] **Phase 1: Foundation & Core Setup** - Auth, dashboard scaffold, campaign management, infrastructure
 - [ ] **Phase 2: Collection Pipeline** - Module 1 with Apify scraping, regex filtering, archetype classification
-- [ ] **Phase 3: Pattern Engine** - Module 2 with SpaCy rhythm analysis, ISC scoring, community profiling
+- [x] **Phase 3: Pattern Engine** - Module 2 with SpaCy rhythm analysis, ISC scoring, community profiling
 - [ ] **Phase 4: Draft Generation** - Module 3 with conditioned generation, blacklist enforcement, ISC gating
 - [ ] **Phase 5: Monitoring & Feedback Loop** - Module 4 with dual-check shadowban detection, negative reinforcement
 - [ ] **Phase 6: Billing & Production Polish** - Stripe integration, usage enforcement, trial lifecycle
@@ -88,10 +88,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — SpaCy NLP pipeline with custom components, post scoring algorithms, forbidden pattern extraction
-- [ ] 03-02-PLAN.md — Analysis service, background worker with auto-trigger from collection, API endpoints for profiles/scoring/blacklist
-- [ ] 03-03-PLAN.md — Frontend community profiles: comparison table, tabbed detail with ISC gauge and archetype chart, SSE progress
-- [ ] 03-04-PLAN.md — Frontend analysis page with scoring breakdowns and inline penalty highlighting, blacklist management page
+- [x] 03-01-PLAN.md — SpaCy NLP pipeline with custom components, post scoring algorithms, forbidden pattern extraction (completed 2026-02-11)
+- [x] 03-02-PLAN.md — Analysis service, background worker with auto-trigger from collection, API endpoints for profiles/scoring/blacklist (completed 2026-02-11)
+- [x] 03-03-PLAN.md — Frontend community profiles: comparison table, tabbed detail with ISC gauge and archetype chart, SSE progress (completed 2026-02-11)
+- [x] 03-04-PLAN.md — Frontend analysis page with scoring breakdowns and inline penalty highlighting, blacklist management page (completed 2026-02-11)
 
 ---
 
@@ -180,13 +180,13 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Core Setup | 2/6 | In progress | - |
-| 2. Collection Pipeline | 0/4 | Not started | - |
-| 3. Pattern Engine | 0/4 | Not started | - |
+| 1. Foundation & Core Setup | 6/6 | Complete | 2026-02-09 |
+| 2. Collection Pipeline | 4/4 | Complete | 2026-02-10 |
+| 3. Pattern Engine | 4/4 | Complete | 2026-02-11 |
 | 4. Draft Generation | 0/TBD | Not started | - |
 | 5. Monitoring & Feedback Loop | 0/TBD | Not started | - |
 | 6. Billing & Production Polish | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-02-07*
-*Last updated: 2026-02-10 (Phase 3 planned: 4 plans in 3 waves)*
+*Last updated: 2026-02-11 (Phase 3 complete: 4 plans executed, verified)*

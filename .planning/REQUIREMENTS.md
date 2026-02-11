@@ -35,12 +35,12 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Module 2 — Pattern Engine
 
-- [ ] **PATN-01**: System performs SpaCy local NLP analysis on collected posts (sentence length, formality, tone, vocabulary complexity)
-- [ ] **PATN-02**: System classifies post archetypes and stores rhythm_metadata in raw_posts
-- [ ] **PATN-03**: System aggregates per-subreddit community profiles with ISC score, dominant tone, archetype distribution, forbidden patterns, and success hooks
-- [ ] **PATN-04**: System calculates post success scores using vulnerability weight, thread depth, rhythm adherence, marketing jargon penalty, and link density penalty
-- [ ] **PATN-05**: User can view community profile for each target subreddit (ISC, rhythm patterns, archetypes, forbidden patterns)
-- [ ] **PATN-06**: User can view scoring breakdown for individual posts
+- [x] **PATN-01**: System performs SpaCy local NLP analysis on collected posts (sentence length, formality, tone, vocabulary complexity)
+- [x] **PATN-02**: System classifies post archetypes and stores rhythm_metadata in raw_posts
+- [x] **PATN-03**: System aggregates per-subreddit community profiles with ISC score, dominant tone, archetype distribution, forbidden patterns, and success hooks
+- [x] **PATN-04**: System calculates post success scores using vulnerability weight, thread depth, rhythm adherence, marketing jargon penalty, and link density penalty
+- [x] **PATN-05**: User can view community profile for each target subreddit (ISC, rhythm patterns, archetypes, forbidden patterns)
+- [x] **PATN-06**: User can view scoring breakdown for individual posts
 
 ### Module 3 — Conditioning Generator
 
@@ -161,12 +161,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | COLL-05 | Phase 2 | Pending |
 | COLL-06 | Phase 2 | Pending |
 | COLL-07 | Phase 2 | Pending |
-| PATN-01 | Phase 3 | Pending |
-| PATN-02 | Phase 3 | Pending |
-| PATN-03 | Phase 3 | Pending |
-| PATN-04 | Phase 3 | Pending |
-| PATN-05 | Phase 3 | Pending |
-| PATN-06 | Phase 3 | Pending |
+| PATN-01 | Phase 3 | Complete |
+| PATN-02 | Phase 3 | Complete |
+| PATN-03 | Phase 3 | Complete |
+| PATN-04 | Phase 3 | Complete |
+| PATN-05 | Phase 3 | Complete |
+| PATN-06 | Phase 3 | Complete |
 | GENR-01 | Phase 4 | Pending |
 | GENR-02 | Phase 4 | Pending |
 | GENR-03 | Phase 4 | Pending |
