@@ -71,7 +71,7 @@ export default function PostDetailModal({ post, open, onClose }: PostDetailModal
             </Badge>
             <Badge variant="outline">r/{post.subreddit}</Badge>
             <Badge variant="secondary">
-              Score: {post.success_score.toFixed(1)}/10
+              Score: {(post.success_score ?? 0).toFixed(1)}/10
             </Badge>
           </div>
 
@@ -107,10 +107,10 @@ export default function PostDetailModal({ post, open, onClose }: PostDetailModal
             <p className="text-sm font-medium">Success Score</p>
             <div className="flex items-center gap-3">
               <span className="text-lg font-bold">
-                {post.success_score.toFixed(1)}/10
+                {(post.success_score ?? 0).toFixed(1)}/10
               </span>
               <Progress
-                value={(post.success_score / 10) * 100}
+                value={((post.success_score ?? 0) / 10) * 100}
                 className="h-3 flex-1"
               />
             </div>

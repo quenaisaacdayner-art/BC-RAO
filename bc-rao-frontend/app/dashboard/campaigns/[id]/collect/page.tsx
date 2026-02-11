@@ -113,10 +113,22 @@ export default function CollectPage() {
 
         if (statsResponse.ok) {
           const statsData = await statsResponse.json();
+          const total = statsData.total || 0;
 
           // If we have collected posts, show results view
-          if (statsData.classified > 0) {
-            setStats(statsData);
+          if (total > 0) {
+            setStats({
+              scraped: 0,
+              filtered: 0,
+              classified: total,
+              filter_rate: 0,
+              by_archetype: {
+                Journey: statsData.by_archetype?.Journey || 0,
+                ProblemSolution: statsData.by_archetype?.ProblemSolution || 0,
+                Feedback: statsData.by_archetype?.Feedback || 0,
+              },
+              by_subreddit: statsData.by_subreddit || {},
+            });
             setPhase("results");
           }
         }
@@ -187,7 +199,22 @@ export default function CollectPage() {
   async function handleComplete(collectionResult: CollectionResult) {
     setResult(collectionResult);
 
-    // Fetch updated stats
+    // Build stats by combining SSE result (scraped/filtered/classified) with backend stats (by_archetype/by_subreddit)
+    const filter_rate = collectionResult.scraped > 0
+      ? ((collectionResult.scraped - collectionResult.filtered) / collectionResult.scraped) * 100
+      : 0;
+
+    // Default stats from SSE result
+    let mergedStats: CollectionStats = {
+      scraped: collectionResult.scraped,
+      filtered: collectionResult.filtered,
+      classified: collectionResult.classified,
+      filter_rate,
+      by_archetype: { Journey: 0, ProblemSolution: 0, Feedback: 0 },
+      by_subreddit: {},
+    };
+
+    // Fetch archetype/subreddit breakdown from backend
     try {
       const supabase = createClient();
       const { data: { session } } = await supabase.auth.getSession();
@@ -201,13 +228,19 @@ export default function CollectPage() {
 
         if (statsResponse.ok) {
           const statsData = await statsResponse.json();
-          setStats(statsData);
+          mergedStats.by_archetype = {
+            Journey: statsData.by_archetype?.Journey || 0,
+            ProblemSolution: statsData.by_archetype?.ProblemSolution || 0,
+            Feedback: statsData.by_archetype?.Feedback || 0,
+          };
+          mergedStats.by_subreddit = statsData.by_subreddit || {};
         }
       }
     } catch (err) {
       console.error("Failed to fetch stats:", err);
     }
 
+    setStats(mergedStats);
     setPhase("results");
   }
 

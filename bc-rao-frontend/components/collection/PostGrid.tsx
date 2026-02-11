@@ -186,10 +186,10 @@ export default function PostGrid({ campaignId, filters, onPostClick }: PostGridP
               {/* Score display */}
               <div className="flex items-center gap-2">
                 <span className="text-xs font-medium">
-                  {post.success_score.toFixed(1)}/10
+                  {(post.success_score ?? 0).toFixed(1)}/10
                 </span>
                 <Progress
-                  value={(post.success_score / 10) * 100}
+                  value={((post.success_score ?? 0) / 10) * 100}
                   className="h-2 flex-1"
                   style={{ maxWidth: "80px" }}
                 />

@@ -74,11 +74,11 @@ export default function DraftCard({ draft }: DraftCardProps) {
         <div className="flex gap-4 text-sm">
           <div>
             <span className="text-muted-foreground">Vulnerability:</span>{" "}
-            <span className="font-medium">{draft.vulnerability_score.toFixed(1)}/10</span>
+            <span className="font-medium">{(draft.vulnerability_score ?? 0).toFixed(1)}/10</span>
           </div>
           <div>
             <span className="text-muted-foreground">Rhythm:</span>{" "}
-            <span className="font-medium">{draft.rhythm_score.toFixed(1)}/10</span>
+            <span className="font-medium">{(draft.rhythm_score ?? 0).toFixed(1)}/10</span>
           </div>
         </div>
       </CardContent>

@@ -53,7 +53,7 @@ export default function FunnelStats({ stats }: FunnelStatsProps) {
 
         {/* Filter rate summary */}
         <div className="text-center text-sm text-muted-foreground">
-          {stats.filter_rate.toFixed(1)}% filtered out by quality pre-screening
+          {(stats.filter_rate ?? 0).toFixed(1)}% filtered out by quality pre-screening
         </div>
 
         {/* Expandable filter details */}
@@ -73,7 +73,7 @@ export default function FunnelStats({ stats }: FunnelStatsProps) {
           {showFilterDetails && (
             <div className="mt-3 space-y-2 text-sm">
               <p className="text-muted-foreground">
-                Posts filtered: {stats.scraped - stats.filtered} ({stats.filter_rate.toFixed(1)}%)
+                Posts filtered: {(stats.scraped || 0) - (stats.filtered || 0)} ({(stats.filter_rate ?? 0).toFixed(1)}%)
               </p>
               <p className="text-muted-foreground">
                 Regex pre-filter identified low-quality content (short posts, spam patterns, irrelevant topics)
