@@ -506,24 +506,44 @@ class AnalysisService:
                 })
 
         # Fetch custom user patterns from syntax_blacklist table
+        # Custom patterns are identified by confidence=1.0 and no source_post_id
         try:
-            custom_response = self.supabase.table("syntax_blacklist").select(
-                "id, category, forbidden_pattern, subreddit"
-            ).eq("campaign_id", campaign_id).eq("is_system", False).execute()
+            # Get campaign's target subreddits to scope the query
+            campaign_resp = self.supabase.table("campaigns").select(
+                "target_subreddits"
+            ).eq("id", campaign_id).execute()
+            target_subs = []
+            if campaign_resp.data:
+                target_subs = campaign_resp.data[0].get("target_subreddits", [])
 
-            for custom in custom_response.data:
-                cat = custom.get("category", "Custom")
-                all_patterns.append({
-                    "category": cat,
-                    "pattern": custom["forbidden_pattern"],
-                    "subreddit": custom.get("subreddit"),
-                    "is_system": False,
-                    "count": 0,
-                })
+            if target_subs:
+                custom_response = self.supabase.table("syntax_blacklist").select(
+                    "id, subreddit, forbidden_pattern, confidence"
+                ).in_("subreddit", target_subs).eq(
+                    "confidence", 1.0
+                ).is_("source_post_id", "null").execute()
 
-                patterns_by_category[cat] = patterns_by_category.get(cat, 0) + 1
+                for custom in custom_response.data:
+                    fp = custom["forbidden_pattern"]
+                    # Parse category from prefix format [CAT:xxx]
+                    cat = "Custom"
+                    actual_pattern = fp
+                    if fp.startswith("[CAT:") and "]" in fp:
+                        end = fp.index("]")
+                        cat = fp[5:end]
+                        actual_pattern = fp[end + 1:]
+
+                    all_patterns.append({
+                        "category": cat,
+                        "pattern": actual_pattern,
+                        "subreddit": custom.get("subreddit"),
+                        "is_system": False,
+                        "count": 0,
+                    })
+
+                    patterns_by_category[cat] = patterns_by_category.get(cat, 0) + 1
         except Exception:
-            # Table columns may not exist yet, skip gracefully
+            # Table query failed, skip gracefully
             pass
 
         return {
@@ -543,6 +563,10 @@ class AnalysisService:
         """
         Add custom forbidden pattern.
 
+        Uses existing syntax_blacklist columns. Custom patterns are identified
+        by confidence=1.0 and source_post_id=NULL. Category is encoded as a
+        prefix in forbidden_pattern: [CAT:Promotional]actual pattern.
+
         Args:
             campaign_id: Campaign UUID
             user_id: User UUID
@@ -556,10 +580,10 @@ class AnalysisService:
         Raises:
             AppError: If campaign not found or access denied
         """
-        # Validate campaign ownership
-        campaign_response = self.supabase.table("campaigns").select("id").eq(
-            "id", campaign_id
-        ).eq("user_id", user_id).execute()
+        # Validate campaign ownership and get target subreddits
+        campaign_response = self.supabase.table("campaigns").select(
+            "id, target_subreddits"
+        ).eq("id", campaign_id).eq("user_id", user_id).execute()
 
         if not campaign_response.data:
             raise AppError(
@@ -568,31 +592,55 @@ class AnalysisService:
                 {"campaign_id": campaign_id}
             )
 
-        # Insert custom pattern into syntax_blacklist
-        try:
-            pattern_data = {
-                "campaign_id": campaign_id,
-                "category": category,
-                "forbidden_pattern": pattern,
-                "is_system": False,
-            }
+        campaign = campaign_response.data[0]
 
-            if subreddit:
-                pattern_data["subreddit"] = subreddit
+        # Determine which subreddits to add the pattern for
+        if subreddit:
+            target_subs = [subreddit]
+        else:
+            target_subs = campaign.get("target_subreddits", [])
 
-            response = self.supabase.table("syntax_blacklist").insert(pattern_data).execute()
-            result = response.data[0]
-            # Normalize response for frontend
-            return {
-                "id": result["id"],
-                "category": result.get("category", "Custom"),
-                "pattern": result["forbidden_pattern"],
-                "subreddit": result.get("subreddit"),
-                "is_system": False,
-            }
-        except Exception as e:
+        if not target_subs:
             raise AppError(
-                ErrorCode.DATABASE_ERROR,
-                f"Failed to add custom pattern: {str(e)}",
+                ErrorCode.VALIDATION_ERROR,
+                "No target subreddits available",
                 {"campaign_id": campaign_id}
             )
+
+        # Encode category into forbidden_pattern as prefix
+        encoded_pattern = f"[CAT:{category}]{pattern}"
+
+        # Insert for each target subreddit
+        results = []
+        for sub in target_subs:
+            try:
+                pattern_data = {
+                    "subreddit": sub,
+                    "forbidden_pattern": encoded_pattern,
+                    "failure_type": "AdminRemoval",
+                    "confidence": 1.0,
+                    "is_global": len(target_subs) > 1,
+                }
+
+                response = self.supabase.table("syntax_blacklist").insert(
+                    pattern_data
+                ).execute()
+                if response.data:
+                    results.append(response.data[0])
+            except Exception:
+                pass  # Skip duplicates
+
+        if not results:
+            raise AppError(
+                ErrorCode.DATABASE_ERROR,
+                "Failed to add custom pattern (may already exist)",
+                {"campaign_id": campaign_id}
+            )
+
+        return {
+            "id": results[0]["id"],
+            "category": category,
+            "pattern": pattern,
+            "subreddit": subreddit,
+            "is_system": False,
+        }
