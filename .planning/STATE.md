@@ -10,19 +10,19 @@ See: .planning/PROJECT.md (updated 2026-02-07)
 
 ## Current Position
 
-Phase: 4 of 6 (Draft Generation)
-Plan: 5 of 5 complete
-Status: Phase complete
-Last activity: 2026-02-11 - Completed 04-05-PLAN.md (Dashboard Journey Stages)
+Phase: 5 of 6 (Monitoring & Feedback Loop)
+Plan: 1 of 3 complete
+Status: In progress
+Last activity: 2026-02-11 - Completed 05-01-PLAN.md (Monitoring Foundation)
 
-Progress: [████████████████████████] 100% (5/5 Phase 4 plans complete)
+Progress: [█████░░░░░░░░░░░░░░░░░░░] 33% (1/3 Phase 5 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 17
+- Total plans completed: 18
 - Average duration: 5.8 minutes
-- Total execution time: 1.65 hours
+- Total execution time: 1.75 hours
 
 **By Phase:**
 
@@ -32,10 +32,11 @@ Progress: [███████████████████████
 | 2. Collection Pipeline | 3 | 17 min | 5.7 min |
 | 3. Pattern Engine | 4 | 28 min | 7.0 min |
 | 4. Draft Generation | 5 | 33 min | 6.6 min |
+| 5. Monitoring & Feedback Loop | 1 | 6 min | 6.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 04-01 (15min), 04-02 (4min), 04-03 (6min), 04-04 (4min), 04-05 (4min)
-- Trend: Phase 4 complete - initial setup heavy (15min), subsequent plans fast (4-6min average)
+- Last 5 plans: 04-02 (4min), 04-03 (6min), 04-04 (4min), 04-05 (4min), 05-01 (6min)
+- Trend: Consistent 4-6min velocity across Phase 4-5
 
 *Updated after each plan completion*
 
@@ -103,6 +104,11 @@ Recent decisions affecting current work:
 - 4-stage campaign journey (04-05): Project Briefing → Strategic Selection → Community Intelligence → Alchemical Transmutation
 - Linear stage progression (04-05): Each stage locked until previous completes, auto-advance toast when unlocked
 - Stage 4 on campaign page (04-05): Generate button + recent drafts preview, locked until Stage 3 complete
+- Reddit httpx over PRAW (05-01): Lightweight HTTP-only Reddit client using .json endpoints, no heavy wrapper
+- OAuth token caching (05-01): Cache Reddit tokens for 3500s to avoid repeated requests
+- Dual-check shadowban detection (05-01): Auth sees post but anon doesn't = shadowbanned
+- Email rate limiting (05-01): Max 1 emergency shadowban alert per 24h per user
+- Graceful email fallback (05-01): Skip email sends if RESEND_API_KEY empty (development mode)
 
 ### Pending Todos
 
@@ -110,10 +116,12 @@ None yet.
 
 ### Blockers/Concerns
 
-None yet.
+**Phase 5 Plan 01 concerns:**
+- Account status tracking using subscription.plan as proxy - proper account_status field should be added to profiles table
+- Email alert metadata (check_result dict) logged but not persisted to database - consider JSONB metadata column for shadow_table
 
 ## Session Continuity
 
-Last session: 2026-02-11 (Phase 4 Plan 05 execution complete)
-Stopped at: Completed 04-05-PLAN.md (Dashboard Journey Stages) - Phase 4 complete
+Last session: 2026-02-11 (Phase 5 Plan 01 execution complete)
+Stopped at: Completed 05-01-PLAN.md (Monitoring Foundation)
 Resume file: None
