@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress } from "@/components/ui/progress";
 import GenerationForm from "@/components/drafts/GenerationForm";
 import { createClient } from "@/lib/supabase/client";
+import { getSSEUrl } from "@/lib/sse";
 
 interface Campaign {
   id: string;
@@ -138,7 +139,7 @@ export default function NewDraftPage() {
 
       // Open SSE stream for progress
       const eventSource = new EventSource(
-        `/api/campaigns/${campaignId}/drafts/generate/stream/${result.task_id}`
+        getSSEUrl(`/campaigns/${campaignId}/drafts/generate/stream/${result.task_id}`)
       );
 
       eventSource.onmessage = (event) => {

@@ -7,6 +7,7 @@ import DraftEditor from "@/components/drafts/DraftEditor";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { getSSEUrl } from "@/lib/sse";
 
 interface Draft {
   id: string;
@@ -171,7 +172,7 @@ export default function DraftEditPage({
 
       // Set up SSE for progress tracking
       const eventSource = new EventSource(
-        `/api/campaigns/${resolvedParams.id}/drafts/generate/stream/${task_id}`
+        getSSEUrl(`/campaigns/${resolvedParams.id}/drafts/generate/stream/${task_id}`)
       );
 
       eventSource.addEventListener("progress", (event) => {

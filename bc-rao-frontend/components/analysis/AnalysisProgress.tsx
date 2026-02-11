@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import Link from "next/link";
+import { getSSEUrl } from "@/lib/sse";
 
 interface ProgressData {
   current: number;
@@ -31,64 +32,104 @@ export default function AnalysisProgress({ campaignId, taskId, onComplete }: Ana
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const eventSource = new EventSource(`/api/analysis/${taskId}/progress`);
+    let retryCount = 0;
+    const maxRetries = 5;
+    let eventSource: EventSource | null = null;
+    let closed = false;
 
-    eventSource.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
+    function connect() {
+      if (closed) return;
+      eventSource = new EventSource(getSSEUrl(`/analysis/${taskId}/progress`));
 
-        if (data.state === "PROGRESS") {
-          // Update progress from meta field
-          const meta = data.meta || {};
+      const handleProgress = (event: MessageEvent) => {
+        retryCount = 0;
+        try {
+          const data = JSON.parse(event.data);
           setProgress({
-            current: meta.current || 0,
-            total: meta.total || 0,
-            currentStep: meta.step || "",
-            currentSubreddit: meta.current_subreddit || undefined,
-            warnings: meta.warnings || [],
+            current: data.current || 0,
+            total: data.total || 0,
+            currentStep: data.step || "",
+            currentSubreddit: data.current_subreddit || undefined,
+            warnings: data.warnings || [],
           });
-        } else if (data.state === "SUCCESS") {
-          // Analysis complete
-          setIsComplete(true);
-
-          // Show toast notification with link
-          toast.success("Analysis complete", {
-            description: "Community profiles are ready to view",
-            action: {
-              label: "View Profiles",
-              onClick: () => {
-                window.location.href = `/dashboard/campaigns/${campaignId}/profiles`;
-              },
-            },
-            duration: 10000,
-          });
-
-          onComplete();
-          eventSource.close();
-        } else if (data.state === "FAILURE" || data.error) {
-          // Analysis failed
-          setError(data.error || "Analysis failed");
-          toast.error("Analysis failed", {
-            description: data.error || "An error occurred during analysis",
-          });
-          eventSource.close();
+        } catch (err) {
+          console.error("Failed to parse SSE progress:", err);
         }
-      } catch (err) {
-        console.error("Failed to parse SSE message:", err);
-      }
-    };
+      };
 
-    eventSource.onerror = () => {
-      setError("Connection lost. Please refresh the page.");
-      toast.error("Connection lost", {
-        description: "Please refresh the page to reconnect",
-      });
-      eventSource.close();
-    };
+      const handleSuccess = (event: MessageEvent) => {
+        retryCount = 0;
+        setIsComplete(true);
+        toast.success("Analysis complete", {
+          description: "Community profiles are ready to view",
+          action: {
+            label: "View Profiles",
+            onClick: () => {
+              window.location.href = `/dashboard/campaigns/${campaignId}/profiles`;
+            },
+          },
+          duration: 10000,
+        });
+        onComplete();
+        eventSource?.close();
+        closed = true;
+      };
 
-    // Cleanup: close EventSource on unmount
+      const handleError = (event: MessageEvent) => {
+        try {
+          const data = JSON.parse(event.data);
+          setError(data.error || "Analysis failed");
+        } catch {
+          setError("Analysis failed");
+        }
+        toast.error("Analysis failed");
+        eventSource?.close();
+        closed = true;
+      };
+
+      // Listen for named events from backend
+      eventSource.addEventListener("progress", handleProgress);
+      eventSource.addEventListener("started", () => { retryCount = 0; });
+      eventSource.addEventListener("pending", () => { retryCount = 0; });
+      eventSource.addEventListener("success", handleSuccess);
+      eventSource.addEventListener("error", handleError);
+
+      // Fallback for unnamed events
+      eventSource.onmessage = (event) => {
+        retryCount = 0;
+        try {
+          const data = JSON.parse(event.data);
+          if (data.state === "PROGRESS") handleProgress(event);
+          else if (data.state === "SUCCESS") handleSuccess(event);
+          else if (data.state === "FAILURE") handleError(event);
+        } catch (err) {
+          console.error("Failed to parse SSE message:", err);
+        }
+      };
+
+      eventSource.onerror = () => {
+        eventSource?.close();
+        if (closed) return;
+
+        retryCount++;
+        if (retryCount <= maxRetries) {
+          const delay = Math.min(1000 * Math.pow(2, retryCount - 1), 16000);
+          console.log(`SSE reconnecting in ${delay}ms (attempt ${retryCount}/${maxRetries})`);
+          setTimeout(connect, delay);
+        } else {
+          setError("Connection lost after multiple retries. Please refresh the page.");
+          toast.error("Connection lost", {
+            description: "Please refresh the page to reconnect",
+          });
+        }
+      };
+    }
+
+    connect();
+
     return () => {
-      eventSource.close();
+      closed = true;
+      eventSource?.close();
     };
   }, [taskId, campaignId, onComplete]);
 

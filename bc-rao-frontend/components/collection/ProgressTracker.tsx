@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Progress } from "@/components/ui/progress";
+import { getSSEUrl } from "@/lib/sse";
 
 interface ProgressData {
   scraped: number;
@@ -39,7 +40,7 @@ export default function ProgressTracker({ taskId, onComplete }: ProgressTrackerP
 
     function connect() {
       if (closed) return;
-      eventSource = new EventSource(`/api/collection/${taskId}/progress`);
+      eventSource = new EventSource(getSSEUrl(`/collection/${taskId}/progress`));
 
       // Handle named SSE events from backend
       const handleEvent = (event: MessageEvent) => {
