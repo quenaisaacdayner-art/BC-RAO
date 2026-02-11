@@ -11,18 +11,18 @@ See: .planning/PROJECT.md (updated 2026-02-07)
 ## Current Position
 
 Phase: 5 of 6 (Monitoring & Feedback Loop)
-Plan: 2 of 3 complete
-Status: In progress
-Last activity: 2026-02-11 - Completed 05-02-PLAN.md (Monitoring API & Worker)
+Plan: 3 of 3 complete
+Status: Phase complete
+Last activity: 2026-02-11 - Completed 05-04-PLAN.md (Stage 5 UI & "I Posted This" Button)
 
-Progress: [██████████░░░░░░░░░░░░░░] 67% (2/3 Phase 5 plans complete)
+Progress: [████████████░░░░░░░░░░░░] 100% (3/3 Phase 5 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 19
-- Average duration: 5.9 minutes
-- Total execution time: 1.88 hours
+- Total plans completed: 20
+- Average duration: 6.0 minutes
+- Total execution time: 2.01 hours
 
 **By Phase:**
 
@@ -32,10 +32,10 @@ Progress: [██████████░░░░░░░░░░░░░
 | 2. Collection Pipeline | 3 | 17 min | 5.7 min |
 | 3. Pattern Engine | 4 | 28 min | 7.0 min |
 | 4. Draft Generation | 5 | 33 min | 6.6 min |
-| 5. Monitoring & Feedback Loop | 2 | 14 min | 7.0 min |
+| 5. Monitoring & Feedback Loop | 3 | 22 min | 7.3 min |
 
 **Recent Trend:**
-- Last 5 plans: 04-03 (6min), 04-04 (4min), 04-05 (4min), 05-01 (6min), 05-02 (8min)
+- Last 5 plans: 04-04 (4min), 04-05 (4min), 05-01 (6min), 05-02 (8min), 05-04 (8min)
 - Trend: Slight uptick in Phase 5 (more integration complexity)
 
 *Updated after each plan completion*
@@ -113,6 +113,11 @@ Recent decisions affecting current work:
 - Pattern extraction reuses existing check_post_penalties (05-02): Regex-based extractor from pattern_extractor.py, no new LLM-based extractor
 - 15-min asyncio monitoring scheduler (05-02): While-loop with asyncio.sleep(900), no APScheduler/Celery beat needed
 - Pattern injection with upsert (05-02): Ignore duplicates on syntax_blacklist to avoid constraint errors
+- 5-stage campaign journey (05-04): Stage 5 "Deployment & Monitoring" locked until Stage 4 (drafts generated) complete
+- monitored_posts stat field (05-04): Campaign.stats.monitored_posts tracks Stage 5 completion
+- "I posted this" button entry point (05-04): Draft editor post registration for approved/posted drafts
+- Inline URL input UX (05-04): Lightweight expandable form below button, not modal
+- Client-side Reddit URL validation (05-04): Regex pattern validates before POST to /api/monitoring
 
 ### Pending Todos
 
@@ -131,6 +136,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-11 (Phase 5 Plan 02 execution complete)
-Stopped at: Completed 05-02-PLAN.md (Monitoring API & Worker)
+Last session: 2026-02-11 (Phase 5 Plan 04 execution complete)
+Stopped at: Completed 05-04-PLAN.md (Stage 5 UI & "I Posted This" Button)
 Resume file: None
