@@ -114,13 +114,8 @@ async def debug_collect(campaign_id: str, authorization: str = ""):
     except Exception as e:
         return {"steps": steps, "failed_at": "campaign_query", "error": str(e), "type": type(e).__name__}
 
-    # Step 4: Profile query
-    try:
-        profile_response = supabase.table("profiles").select("plan").eq("id", user_id).execute()
-        profile = profile_response.data[0] if profile_response.data else None
-        steps["profile_query"] = {"ok": True, "found": bool(profile), "data": profile}
-    except Exception as e:
-        return {"steps": steps, "failed_at": "profile_query", "error": str(e), "type": type(e).__name__}
+    # Step 4: Profile query (plan column doesn't exist yet — Phase 6)
+    steps["profile_query"] = {"ok": True, "note": "skipped — plan defaults to trial until Phase 6"}
 
     # Step 5: Redis
     try:

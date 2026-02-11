@@ -68,10 +68,8 @@ async def trigger_collection(
             }
         )
 
-    # Get user plan (default to trial if not found)
-    profile_response = supabase.table("profiles").select("plan").eq("id", user_id).execute()
-    profile = profile_response.data[0] if profile_response.data else None
-    plan = profile.get("plan", "trial") if profile else "trial"
+    # User plan — defaults to "trial" until billing (Phase 6) is implemented
+    plan = "trial"
 
     # Run collection as background task
     task_id = generate_task_id()
