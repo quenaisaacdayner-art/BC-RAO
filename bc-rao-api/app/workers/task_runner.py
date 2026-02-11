@@ -53,6 +53,8 @@ async def run_collection_background(task_id: str, campaign_id: str, user_id: str
     """
     Run collection pipeline as an asyncio background task.
     Stores progress in Redis for SSE streaming.
+
+    After successful collection, auto-triggers analysis pipeline (LOCKED user decision).
     """
     from app.services.collection_service import CollectionService
     from app.models.raw_posts import CollectionProgress
@@ -80,15 +82,40 @@ async def run_collection_background(task_id: str, campaign_id: str, user_id: str
             progress_callback=progress_callback
         )
 
+        # Auto-trigger analysis after successful collection (LOCKED user decision)
+        analysis_task_id = generate_task_id()
+
         update_task_state(task_id, "SUCCESS", {
             "status": result.status,
             "scraped": result.scraped,
             "filtered": result.filtered,
             "classified": result.classified,
-            "errors": result.errors
+            "errors": result.errors,
+            "analysis_task_id": analysis_task_id  # Frontend can track analysis progress
         })
+
+        # Launch analysis as background task
+        asyncio.create_task(
+            run_analysis_background_task(analysis_task_id, campaign_id)
+        )
+
     except Exception as e:
         update_task_state(task_id, "FAILURE", {
             "error": str(e),
             "type": type(e).__name__
         })
+
+
+async def run_analysis_background_task(task_id: str, campaign_id: str, force_refresh: bool = False):
+    """
+    Run analysis pipeline as an asyncio background task.
+    Stores progress in Redis for SSE streaming.
+
+    Args:
+        task_id: Task UUID for Redis state tracking
+        campaign_id: Campaign UUID
+        force_refresh: If True, re-analyze even if profiles exist
+    """
+    from app.workers.analysis_worker import run_analysis_background
+
+    await run_analysis_background(task_id, campaign_id, force_refresh)
