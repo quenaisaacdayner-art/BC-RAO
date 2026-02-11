@@ -11,18 +11,18 @@ See: .planning/PROJECT.md (updated 2026-02-07)
 ## Current Position
 
 Phase: 4 of 6 (Draft Generation)
-Plan: 4 of 5 complete
+Plan: 3 of 5 complete
 Status: In progress
-Last activity: 2026-02-11 - Completed 04-04-PLAN.md (Draft Editor UI)
+Last activity: 2026-02-11 - Completed 04-03-PLAN.md (Drafts Frontend)
 
-Progress: [████████████████░░░░░░░░] 80% (4/5 Phase 4 plans complete)
+Progress: [████████████░░░░░░░░░░░░] 60% (3/5 Phase 4 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 16
-- Average duration: 5.9 minutes
-- Total execution time: 1.58 hours
+- Total plans completed: 15
+- Average duration: 6.0 minutes
+- Total execution time: 1.50 hours
 
 **By Phase:**
 
@@ -31,11 +31,11 @@ Progress: [████████████████░░░░░░░
 | 1. Foundation & Core Setup | 5 | 32 min | 6.4 min |
 | 2. Collection Pipeline | 3 | 17 min | 5.7 min |
 | 3. Pattern Engine | 4 | 28 min | 7.0 min |
-| 4. Draft Generation | 4 | 27 min | 6.8 min |
+| 4. Draft Generation | 3 | 25 min | 8.3 min |
 
 **Recent Trend:**
-- Last 5 plans: 03-04 (7min), 04-01 (15min), 04-02 (4min), 04-03 (4min), 04-04 (4min)
-- Trend: Phase 4 stabilizing at 6.8min avg (04-01 heavy setup, subsequent plans faster)
+- Last 5 plans: 03-03 (9min), 03-04 (7min), 04-01 (15min), 04-02 (4min), 04-03 (6min)
+- Trend: Phase 4 varying (04-01 heavy setup at 15min, 04-02 fast API at 4min, 04-03 UI at 6min)
 
 *Updated after each plan completion*
 
@@ -97,10 +97,9 @@ Recent decisions affecting current work:
 - Monthly draft limits enforced (04-02): Trial=10, Starter=50, Growth=unlimited drafts/month, 403 when exceeded
 - SSE streaming for generation progress (04-02): Same 500ms polling pattern as collection, no auth on stream endpoint
 - Background tasks via asyncio for Railway (04-02): Celery tasks preserved for horizontal scaling reference
-- Two-column draft editor layout (04-04): Text editor left, scores/actions sidebar right (320px fixed width)
-- No re-scoring on manual edits (04-04): Scores reflect generated draft only, editing is free-form with no re-scoring
-- Copy button visual feedback (04-04): Copy icon changes to Check for 2 seconds after successful clipboard copy
-- Collapsible regeneration feedback (04-04): Optional textarea for iteration guidance, can leave blank for variation
+- ISC gating enforced on frontend (04-03): Inline warning + auto-switch to Feedback when ISC > 7.5
+- Single-form generation UX (04-03): One page with three inputs (subreddit, archetype, context), not wizard
+- Unprofiled subreddits allow generation (04-03): Yellow warning shown, backend uses generic defaults with reduced accuracy
 
 ### Pending Todos
 
@@ -112,6 +111,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-11 (Phase 4 Plan 04 execution complete)
-Stopped at: Completed 04-04-PLAN.md (Draft Editor UI)
+Last session: 2026-02-11 (Phase 4 Plan 03 execution complete)
+Stopped at: Completed 04-03-PLAN.md (Drafts Frontend)
 Resume file: None
