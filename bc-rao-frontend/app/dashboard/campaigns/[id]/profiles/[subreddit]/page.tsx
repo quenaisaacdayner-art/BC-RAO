@@ -14,8 +14,8 @@ interface CommunityProfile {
   avg_sentence_length: number | null;
   dominant_tone: string | null;
   formality_level: number | null;
-  top_success_hooks: string[];
-  forbidden_patterns: Record<string, number>;
+  top_success_hooks: string[] | null;
+  forbidden_patterns: Record<string, number> | null;
   archetype_distribution: Record<string, number>;
   sample_size: number;
   last_analyzed_at: string;
@@ -128,7 +128,7 @@ export default async function SubredditProfilePage({
   }
 
   // Transform archetype distribution for chart
-  const archetypeData = Object.entries(profile.archetype_distribution).map(([archetype, count]) => ({
+  const archetypeData = Object.entries(profile.archetype_distribution || {}).map(([archetype, count]) => ({
     archetype,
     count,
   }));
@@ -217,9 +217,9 @@ export default async function SubredditProfilePage({
           {/* Top Success Hooks */}
           <div className="rounded-lg border p-6">
             <h3 className="text-sm font-medium mb-4">Top Success Hooks</h3>
-            {profile.top_success_hooks.length > 0 ? (
+            {(profile.top_success_hooks?.length ?? 0) > 0 ? (
               <ul className="space-y-2">
-                {profile.top_success_hooks.map((hook, idx) => (
+                {(profile.top_success_hooks || []).map((hook, idx) => (
                   <li key={idx} className="text-sm border-l-2 border-primary pl-3">
                     {hook}
                   </li>
@@ -289,7 +289,7 @@ export default async function SubredditProfilePage({
           <div className="rounded-lg border p-6">
             <h3 className="text-sm font-medium mb-4">Pattern Categories</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {Object.entries(profile.forbidden_patterns).map(([category, count]) => (
+              {Object.entries(profile.forbidden_patterns || {}).map(([category, count]) => (
                 <div key={category} className="flex items-center justify-between rounded-lg border p-4">
                   <span className="text-sm font-medium">{category}</span>
                   <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${getSeverityColor(count)}`}>

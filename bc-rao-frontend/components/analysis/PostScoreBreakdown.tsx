@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 import PenaltyHighlighter from "./PenaltyHighlighter";
 
 interface PostScoreBreakdownProps {
@@ -51,12 +52,14 @@ export default function PostScoreBreakdown({
       setError(null);
 
       try {
-        const token = localStorage.getItem("supabase.auth.token");
+        const supabase = createClient();
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token;
         const response = await fetch(
           `/api/campaigns/${campaignId}/scoring-breakdown?post_id=${postId}`,
           {
             headers: {
-              Authorization: `Bearer ${token}`,
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
             },
           }
         );

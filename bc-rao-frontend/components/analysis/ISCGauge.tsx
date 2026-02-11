@@ -7,27 +7,27 @@ interface ISCGaugeProps {
   tier: string;
 }
 
-// Color coding by tier
+// Color coding by tier (backend returns "X Sensitivity" format)
 const tierColors: Record<string, { text: string; bg: string; progress: string }> = {
-  "Low": { text: "text-green-700", bg: "bg-green-100", progress: "bg-green-500" },
-  "Moderate": { text: "text-yellow-700", bg: "bg-yellow-100", progress: "bg-yellow-500" },
-  "High": { text: "text-orange-700", bg: "bg-orange-100", progress: "bg-orange-500" },
-  "Very High": { text: "text-red-700", bg: "bg-red-100", progress: "bg-red-500" },
+  "Low Sensitivity": { text: "text-green-700", bg: "bg-green-100", progress: "bg-green-500" },
+  "Moderate Sensitivity": { text: "text-yellow-700", bg: "bg-yellow-100", progress: "bg-yellow-500" },
+  "High Sensitivity": { text: "text-orange-700", bg: "bg-orange-100", progress: "bg-orange-500" },
+  "Very High Sensitivity": { text: "text-red-700", bg: "bg-red-100", progress: "bg-red-500" },
 };
 
 export default function ISCGauge({ score, tier }: ISCGaugeProps) {
-  const colors = tierColors[tier] || tierColors["Moderate"];
-  const progressValue = (score / 10) * 100;
+  const colors = tierColors[tier] || tierColors["Moderate Sensitivity"];
+  const progressValue = ((score ?? 0) / 10) * 100;
 
   return (
     <div className="space-y-4">
       {/* Score Display */}
       <div className="text-center">
         <div className="text-5xl font-bold tabular-nums mb-2">
-          {score.toFixed(1)}
+          {(score ?? 0).toFixed(1)}
         </div>
         <div className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${colors.bg} ${colors.text}`}>
-          {tier} Sensitivity
+          {tier}
         </div>
       </div>
 
@@ -50,10 +50,10 @@ export default function ISCGauge({ score, tier }: ISCGaugeProps) {
 
       {/* Tier Description */}
       <p className="text-xs text-muted-foreground text-center">
-        {tier === "Low" && "Community has relaxed content standards"}
-        {tier === "Moderate" && "Community has balanced moderation"}
-        {tier === "High" && "Community is strict about content quality"}
-        {tier === "Very High" && "Community is extremely sensitive to promotional content"}
+        {tier === "Low Sensitivity" && "Community has relaxed content standards"}
+        {tier === "Moderate Sensitivity" && "Community has balanced moderation"}
+        {tier === "High Sensitivity" && "Community is strict about content quality"}
+        {tier === "Very High Sensitivity" && "Community is extremely sensitive to promotional content"}
       </p>
     </div>
   );

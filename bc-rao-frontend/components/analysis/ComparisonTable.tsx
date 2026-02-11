@@ -70,12 +70,12 @@ export default function ComparisonTable({ profiles, campaignId }: ComparisonTabl
     router.push(`/dashboard/campaigns/${campaignId}/profiles/${subreddit}`);
   };
 
-  // Tier color mapping
+  // Tier color mapping (backend returns "X Sensitivity" format)
   const tierColors: Record<string, string> = {
-    "Low": "bg-green-100 text-green-700",
-    "Moderate": "bg-yellow-100 text-yellow-700",
-    "High": "bg-orange-100 text-orange-700",
-    "Very High": "bg-red-100 text-red-700",
+    "Low Sensitivity": "bg-green-100 text-green-700",
+    "Moderate Sensitivity": "bg-yellow-100 text-yellow-700",
+    "High Sensitivity": "bg-orange-100 text-orange-700",
+    "Very High Sensitivity": "bg-red-100 text-red-700",
   };
 
   // Formality level display
@@ -87,7 +87,8 @@ export default function ComparisonTable({ profiles, campaignId }: ComparisonTabl
   };
 
   // Get dominant archetype
-  const getDominantArchetype = (distribution: Record<string, number>): string => {
+  const getDominantArchetype = (distribution: Record<string, number> | null): string => {
+    if (!distribution) return "None";
     const entries = Object.entries(distribution);
     if (entries.length === 0) return "None";
     const sorted = entries.sort((a, b) => b[1] - a[1]);
