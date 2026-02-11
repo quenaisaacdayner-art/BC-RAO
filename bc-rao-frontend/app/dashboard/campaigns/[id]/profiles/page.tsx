@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import ComparisonTable from "@/components/analysis/ComparisonTable";
+import ManualAnalysisTrigger from "@/components/analysis/ManualAnalysisTrigger";
 
 interface CommunityProfile {
   id: string;
@@ -103,12 +104,16 @@ export default async function CommunityProfilesPage({
                 Analysis automatically starts after collection completes.
               </p>
             </div>
-            <Link
-              href={`/dashboard/campaigns/${id}/collect`}
-              className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-            >
-              Collect Posts
-            </Link>
+            <div className="flex flex-col items-center gap-3">
+              <Link
+                href={`/dashboard/campaigns/${id}/collect`}
+                className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+              >
+                Collect Posts
+              </Link>
+              <p className="text-xs text-muted-foreground">or</p>
+              <ManualAnalysisTrigger campaignId={id} />
+            </div>
           </div>
         </div>
       </div>

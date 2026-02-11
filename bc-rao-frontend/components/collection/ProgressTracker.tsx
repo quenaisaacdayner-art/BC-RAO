@@ -16,7 +16,7 @@ interface ProgressData {
 
 interface ProgressTrackerProps {
   taskId: string;
-  onComplete: (result: { scraped: number; filtered: number; classified: number; errors: string[] }) => void;
+  onComplete: (result: { scraped: number; filtered: number; classified: number; errors: string[]; analysis_task_id?: string | null }) => void;
 }
 
 export default function ProgressTracker({ taskId, onComplete }: ProgressTrackerProps) {
@@ -71,6 +71,7 @@ export default function ProgressTracker({ taskId, onComplete }: ProgressTrackerP
             filtered: data.filtered || 0,
             classified: data.classified || 0,
             errors: data.errors || [],
+            analysis_task_id: data.analysis_task_id || null,
           });
           eventSource?.close();
           closed = true;

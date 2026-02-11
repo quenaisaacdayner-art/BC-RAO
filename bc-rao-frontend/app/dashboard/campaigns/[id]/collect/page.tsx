@@ -6,13 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import ProgressTracker from "@/components/collection/ProgressTracker";
+import AnalysisProgress from "@/components/analysis/AnalysisProgress";
 import FunnelStats from "@/components/collection/FunnelStats";
 import PostFilters from "@/components/collection/PostFilters";
 import PostGrid from "@/components/collection/PostGrid";
 import PostDetailModal from "@/components/collection/PostDetailModal";
 import { createClient } from "@/lib/supabase/client";
 
-type Phase = "idle" | "collecting" | "complete" | "results";
+type Phase = "idle" | "collecting" | "analyzing" | "complete" | "results";
 
 interface Campaign {
   id: string;
@@ -25,6 +26,7 @@ interface CollectionResult {
   filtered: number;
   classified: number;
   errors: string[];
+  analysis_task_id?: string | null;
 }
 
 interface CollectionStats {
@@ -73,6 +75,7 @@ export default function CollectPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [triggering, setTriggering] = useState(false);
+  const [analysisTaskId, setAnalysisTaskId] = useState<string | null>(null);
 
   // Fetch campaign details and check for existing posts on mount
   useEffect(() => {
@@ -241,7 +244,14 @@ export default function CollectPage() {
     }
 
     setStats(mergedStats);
-    setPhase("results");
+
+    // Auto-trigger analysis if backend started it
+    if (collectionResult.analysis_task_id) {
+      setAnalysisTaskId(collectionResult.analysis_task_id);
+      setPhase("analyzing");
+    } else {
+      setPhase("results");
+    }
   }
 
   // Restart collection (for "Collect More")
@@ -352,6 +362,33 @@ export default function CollectPage() {
             </CardHeader>
             <CardContent>
               <ProgressTracker taskId={taskId} onComplete={handleComplete} />
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* ANALYZING PHASE */}
+      {phase === "analyzing" && analysisTaskId && (
+        <div className="grid gap-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                Analysis in progress
+                <span className="flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                </span>
+              </CardTitle>
+              <CardDescription>
+                Building community profiles from collected posts
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <AnalysisProgress
+                campaignId={campaignId}
+                taskId={analysisTaskId}
+                onComplete={() => setPhase("results")}
+              />
             </CardContent>
           </Card>
         </div>
