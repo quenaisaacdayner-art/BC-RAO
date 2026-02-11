@@ -11,18 +11,18 @@ See: .planning/PROJECT.md (updated 2026-02-07)
 ## Current Position
 
 Phase: 3 of 6 (Pattern Engine)
-Plan: 1 of 4 (NLP pipeline + scoring + pattern detection complete)
+Plan: 2 of 4 (Analysis service + API complete)
 Status: In progress
-Last activity: 2026-02-11 - Completed 03-01-PLAN.md (NLP pipeline)
+Last activity: 2026-02-10 - Completed 03-02-PLAN.md (Analysis service)
 
-Progress: [██████████░] 25% (1/4 Phase 3 plans complete)
+Progress: [████████████████████░] 50% (2/4 Phase 3 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 9
-- Average duration: 6.0 minutes
-- Total execution time: 0.90 hours
+- Total plans completed: 10
+- Average duration: 5.8 minutes
+- Total execution time: 0.96 hours
 
 **By Phase:**
 
@@ -30,11 +30,11 @@ Progress: [██████████░] 25% (1/4 Phase 3 plans complete)
 |-------|-------|-------|----------|
 | 1. Foundation & Core Setup | 5 | 32 min | 6.4 min |
 | 2. Collection Pipeline | 3 | 17 min | 5.7 min |
-| 3. Pattern Engine | 1 | 7 min | 7.0 min |
+| 3. Pattern Engine | 2 | 12 min | 6.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-05 (5min), 02-01 (5min), 02-02 (5min), 02-03 (7min), 03-01 (7min)
-- Trend: Steady velocity, Phase 3 started with 7min (NLP setup overhead)
+- Last 5 plans: 02-01 (5min), 02-02 (5min), 02-03 (7min), 03-01 (7min), 03-02 (5min)
+- Trend: Consistent 5-7min range, Phase 3 settling at 6min average
 
 *Updated after each plan completion*
 
@@ -83,6 +83,9 @@ Recent decisions affecting current work:
 - ISC minimum 10 posts (03-01): Statistical validity requirement for quartile analysis
 - 6 pattern categories (03-01): Promotional, Self-referential, Link patterns, Low-effort, Spam indicators, Off-topic
 - Compiled regex at module level (03-01): One-time compilation, significant performance gain
+- Auto-trigger analysis after collection (03-02): Seamless pipeline flow, analysis_task_id in collection success metadata
+- Block profile creation for < 10 posts (03-02): ISC requires statistical validity for quartile analysis
+- System patterns immutable (03-02): is_system=true patterns from analysis cannot be deleted, users only add custom
 
 ### Pending Todos
 
@@ -94,6 +97,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-11 (plan 03-01 execution)
-Stopped at: Completed 03-01-PLAN.md - NLP pipeline + scoring + pattern detection
+Last session: 2026-02-10 (plan 03-02 execution)
+Stopped at: Completed 03-02-PLAN.md - Analysis service + API endpoints
 Resume file: None
