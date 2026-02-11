@@ -189,12 +189,20 @@ export default function DraftEditPage({
         );
       });
 
-      eventSource.addEventListener("error", (event: MessageEvent) => {
-        const data = JSON.parse(event.data);
-        eventSource.close();
-        setError(data.error || "Regeneration failed");
-        setIsProcessing(false);
-      });
+      // Only handle server-sent "error" events (MessageEvent with data),
+      // NOT native connection errors (plain Event) — those go to onerror for retry
+      eventSource.addEventListener("error", ((event: Event) => {
+        if (event instanceof MessageEvent && event.data) {
+          try {
+            const data = JSON.parse(event.data);
+            eventSource.close();
+            setError(data.error || "Regeneration failed");
+            setIsProcessing(false);
+          } catch {
+            // Ignore parse errors
+          }
+        }
+      }) as EventListener);
 
       eventSource.onerror = () => {
         eventSource.close();

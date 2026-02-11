@@ -95,7 +95,13 @@ export default function ProgressTracker({ taskId, onComplete }: ProgressTrackerP
       eventSource.addEventListener("started", () => { retryCount = 0; });
       eventSource.addEventListener("pending", () => { retryCount = 0; });
       eventSource.addEventListener("success", handleSuccess);
-      eventSource.addEventListener("error", handleError);
+      // Only handle server-sent "error" events (MessageEvent with data),
+      // NOT native connection errors (plain Event) — those go to onerror for retry
+      eventSource.addEventListener("error", ((event: Event) => {
+        if (event instanceof MessageEvent && event.data) {
+          handleError(event);
+        }
+      }) as EventListener);
 
       // Also handle unnamed events as fallback
       eventSource.onmessage = (event) => {

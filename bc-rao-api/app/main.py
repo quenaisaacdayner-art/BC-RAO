@@ -38,6 +38,7 @@ if "https://bc-rao-frontend.vercel.app" not in _cors_origins:
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_cors_origins,
+    allow_origin_regex=r"https://bc-rao-frontend[a-z0-9-]*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
