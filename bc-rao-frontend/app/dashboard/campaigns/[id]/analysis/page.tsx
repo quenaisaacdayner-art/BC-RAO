@@ -11,16 +11,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface AnalyzedPost {
-  post_id: string;
-  post_text: string;
-  post_title?: string;
+  id: string;
+  raw_text: string;
+  title?: string;
   subreddit: string;
-  total_score: number;
-  rhythm_adherence: number;
-  vulnerability_weight: number;
-  formality_match: number;
-  marketing_jargon_penalty: number;
-  link_density_penalty: number;
+  success_score: number;
+  archetype?: string;
+  rhythm_metadata?: Record<string, any>;
+  collected_at?: string;
 }
 
 interface AnalysisResponse {
@@ -282,12 +280,12 @@ export default function AnalysisPage() {
             </div>
             {posts.map((post) => (
               <PostScoreBreakdown
-                key={post.post_id}
-                postId={post.post_id}
+                key={post.id}
+                postId={post.id}
                 campaignId={campaignId}
-                postText={post.post_text}
-                totalScore={post.total_score}
-                postTitle={post.post_title}
+                postText={post.raw_text || ""}
+                totalScore={post.success_score ?? 0}
+                postTitle={post.title}
               />
             ))}
           </div>

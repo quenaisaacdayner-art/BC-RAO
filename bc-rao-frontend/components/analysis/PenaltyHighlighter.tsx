@@ -20,9 +20,11 @@ const SEVERITY_STYLES = {
 };
 
 export default function PenaltyHighlighter({ text, penalties }: PenaltyHighlighterProps) {
+  const safeText = text || "";
+
   // If no penalties, render plain text
   if (!penalties || penalties.length === 0) {
-    return <p className="text-gray-700 whitespace-pre-wrap">{text}</p>;
+    return <p className="text-gray-700 whitespace-pre-wrap">{safeText}</p>;
   }
 
   // Extract search words from penalties
@@ -37,7 +39,7 @@ export default function PenaltyHighlighter({ text, penalties }: PenaltyHighlight
       <Highlighter
         searchWords={searchWords}
         autoEscape={true}
-        textToHighlight={text}
+        textToHighlight={safeText}
         highlightClassName=""
         unhighlightClassName=""
         highlightTag={({ children, highlightIndex }) => {

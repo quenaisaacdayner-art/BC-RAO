@@ -77,8 +77,9 @@ export default function PostScoreBreakdown({
     setIsExpanded(!isExpanded);
   };
 
-  const previewText = postTitle || postText.slice(0, 100) + (postText.length > 100 ? "..." : "");
-  const scoreBadgeClass = getScoreBadgeClass(totalScore);
+  const text = postText || "";
+  const previewText = postTitle || text.slice(0, 100) + (text.length > 100 ? "..." : "");
+  const scoreBadgeClass = getScoreBadgeClass(totalScore ?? 0);
 
   return (
     <div className="border border-gray-200 rounded-lg bg-white shadow-sm">
@@ -89,7 +90,7 @@ export default function PostScoreBreakdown({
       >
         <div className="flex items-center gap-3 flex-1 text-left">
           <span className={`px-2 py-1 text-sm font-medium rounded border ${scoreBadgeClass}`}>
-            {totalScore.toFixed(1)}
+            {(totalScore ?? 0).toFixed(1)}
           </span>
           <p className="text-gray-700 text-sm line-clamp-1">{previewText}</p>
         </div>
