@@ -25,9 +25,19 @@ app = FastAPI(
 )
 
 # CORS middleware configuration
+# Strip whitespace and trailing slashes from origins for reliable matching
+_cors_origins = [
+    origin.strip().rstrip("/")
+    for origin in settings.CORS_ORIGINS.split(",")
+    if origin.strip()
+]
+# Always include the production frontend
+if "https://bc-rao-frontend.vercel.app" not in _cors_origins:
+    _cors_origins.append("https://bc-rao-frontend.vercel.app")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS.split(","),
+    allow_origins=_cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
