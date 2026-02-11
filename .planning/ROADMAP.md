@@ -110,13 +110,14 @@ Plans:
   5. User can regenerate drafts with optional feedback to refine output
   6. Dashboard guides user through Project Briefing → Strategic Selection → Community Intelligence → Alchemical Transmutation stages
 
-**Plans**: TBD (estimate 4-5 plans)
+**Plans**: 5 plans
 
 Plans:
-- [ ] 04-01: TBD during planning
-- [ ] 04-02: TBD during planning
-- [ ] 04-03: TBD during planning
-- [ ] 04-04: TBD during planning
+- [ ] 04-01-PLAN.md — Backend generation core: prompt builder, ISC gating, blacklist validator, generation service, draft models
+- [ ] 04-02-PLAN.md — Backend API endpoints: draft generate/list/update/regenerate/delete, Celery worker, SSE streaming
+- [ ] 04-03-PLAN.md — Frontend generation form with ISC gating UX, SSE streaming, draft list page
+- [ ] 04-04-PLAN.md — Frontend draft editor with score sidebar, draft actions (approve/discard/regenerate/copy)
+- [ ] 04-05-PLAN.md — Campaign stage indicator, linear progression enforcement, Stage 4 content on campaign page
 
 ---
 
@@ -183,10 +184,10 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 1. Foundation & Core Setup | 6/6 | Complete | 2026-02-09 |
 | 2. Collection Pipeline | 4/4 | Complete | 2026-02-10 |
 | 3. Pattern Engine | 4/4 | Complete | 2026-02-11 |
-| 4. Draft Generation | 0/TBD | Not started | - |
+| 4. Draft Generation | 0/5 | Not started | - |
 | 5. Monitoring & Feedback Loop | 0/TBD | Not started | - |
 | 6. Billing & Production Polish | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-02-07*
-*Last updated: 2026-02-11 (Phase 3 complete: 4 plans executed, verified)*
+*Last updated: 2026-02-11 (Phase 4 planned: 5 plans in 4 waves)*
