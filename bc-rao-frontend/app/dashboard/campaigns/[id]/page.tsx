@@ -9,7 +9,7 @@ import { apiClient } from "@/lib/api";
 import { DeleteCampaignDialog } from "@/components/campaigns/delete-campaign-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChevronLeft, Edit, Database, Users, BarChart3, ShieldAlert, Wand2, Lock, FileText } from "lucide-react";
+import { ChevronLeft, Edit, Database, Users, BarChart3, ShieldAlert, Wand2, Lock, FileText, Rocket } from "lucide-react";
 import StageIndicator from "@/components/dashboard/StageIndicator";
 import { computeStages } from "@/lib/campaign-stages";
 import DraftCard from "@/components/drafts/DraftCard";
@@ -28,6 +28,7 @@ interface Campaign {
     posts_collected: number;
     drafts_generated: number;
     active_monitors: number;
+    monitored_posts?: number;
   };
 }
 
@@ -171,6 +172,7 @@ export default function CampaignDetailPage() {
   // Compute stages for StageIndicator
   const stages = computeStages(campaign, profiles);
   const stage3Complete = profiles.length > 0;
+  const stage4Complete = campaign.stats.drafts_generated > 0;
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
@@ -380,6 +382,57 @@ export default function CampaignDetailPage() {
                     </p>
                   </div>
                 )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Stage 5: Deployment & Monitoring */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Rocket className="h-5 w-5 text-orange-600" />
+              Deployment & Monitoring
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {!stage4Complete ? (
+              <div className="text-center py-8">
+                <Lock className="h-12 w-12 text-muted-foreground mx-auto mb-3 opacity-50" />
+                <h3 className="font-semibold text-lg mb-2">Stage Locked</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Complete Alchemical Transmutation (Stage 4) to unlock deployment monitoring.
+                </p>
+                <Button asChild>
+                  <Link href={`/dashboard/campaigns/${campaign.id}/drafts/new`}>
+                    Generate Drafts
+                  </Link>
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Ready to deploy? Post your approved drafts on Reddit, then register the URL here or on the monitoring page to start tracking.
+                </p>
+
+                {/* Monitored posts count */}
+                {(campaign.stats.monitored_posts ?? 0) > 0 && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <p className="text-sm font-semibold text-green-800">
+                      {campaign.stats.monitored_posts} post{campaign.stats.monitored_posts !== 1 ? 's' : ''} currently being monitored
+                    </p>
+                  </div>
+                )}
+
+                {/* Go to Monitoring button */}
+                <div className="flex items-center justify-end">
+                  <Button asChild>
+                    <Link href={`/dashboard/campaigns/${campaign.id}/monitoring`}>
+                      <Rocket className="mr-2 h-4 w-4" />
+                      Go to Monitoring
+                    </Link>
+                  </Button>
+                </div>
               </div>
             )}
           </CardContent>

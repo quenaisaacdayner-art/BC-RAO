@@ -1,5 +1,5 @@
 export interface CampaignStage {
-  id: 1 | 2 | 3 | 4;
+  id: 1 | 2 | 3 | 4 | 5;
   name: string;
   description: string;
   completed: boolean;
@@ -16,6 +16,7 @@ interface Campaign {
   stats: {
     posts_collected: number;
     drafts_generated: number;
+    monitored_posts?: number;
   };
 }
 
@@ -48,6 +49,9 @@ export function computeStages(
 
   // Stage 4: Alchemical Transmutation - completed when drafts generated
   const stage4Complete = campaign.stats.drafts_generated > 0;
+
+  // Stage 5: Deployment & Monitoring - completed when posts are being monitored
+  const stage5Complete = (campaign.stats.monitored_posts ?? 0) > 0;
 
   const stages: CampaignStage[] = [
     {
@@ -86,6 +90,15 @@ export function computeStages(
       url: `/dashboard/campaigns/${campaignId}/drafts/new`,
       locked: !stage3Complete, // Locked until Stage 3 complete
     },
+    {
+      id: 5,
+      name: "Deployment & Monitoring",
+      description: "Post on Reddit, register URL, track performance",
+      completed: stage5Complete,
+      active: stage4Complete && !stage5Complete, // Active if Stage 4 done
+      url: `/dashboard/campaigns/${campaignId}/monitoring`,
+      locked: !stage4Complete, // Locked until Stage 4 complete
+    },
   ];
 
   return stages;
@@ -96,7 +109,7 @@ export function computeStages(
  */
 export function getCurrentStage(stages: CampaignStage[]): number {
   const activeStage = stages.find((s) => s.active);
-  return activeStage?.id ?? 4; // Default to Stage 4 if all complete
+  return activeStage?.id ?? 5; // Default to Stage 5 if all complete
 }
 
 /**
@@ -108,6 +121,7 @@ export function getStageUrl(stageId: number, campaignId: string): string {
     2: `/dashboard/campaigns/${campaignId}/collect`,
     3: `/dashboard/campaigns/${campaignId}/profiles`,
     4: `/dashboard/campaigns/${campaignId}/drafts/new`,
+    5: `/dashboard/campaigns/${campaignId}/monitoring`,
   };
 
   return baseUrls[stageId] || `/dashboard/campaigns/${campaignId}`;
