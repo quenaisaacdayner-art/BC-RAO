@@ -131,20 +131,20 @@ async def stream_progress(task_id: str):
 
     async def progress_stream():
         """Generator function for SSE stream. Reads task state from Redis."""
-        terminal_states = {"SUCCESS", "FAILURE"}
+        last_state = None
+        last_meta = None
+        heartbeat_counter = 0
 
         while True:
             task = get_task_state(task_id)
             state = task["state"]
             meta = task["meta"]
 
-            if state == "PROGRESS":
-                yield f"event: progress\ndata: {json.dumps(meta)}\n\n"
-            elif state == "STARTED":
-                yield f"event: started\ndata: {json.dumps({'state': 'started'})}\n\n"
-            elif state == "PENDING":
-                yield f"event: pending\ndata: {json.dumps({'state': 'pending'})}\n\n"
-            elif state == "SUCCESS":
+            state_changed = (state != last_state or meta != last_meta)
+            last_state = state
+            last_meta = meta
+
+            if state == "SUCCESS":
                 yield f"event: success\ndata: {json.dumps(meta)}\n\n"
                 yield f"event: done\ndata: {{}}\n\n"
                 break
@@ -152,8 +152,21 @@ async def stream_progress(task_id: str):
                 yield f"event: error\ndata: {json.dumps(meta)}\n\n"
                 yield f"event: done\ndata: {{}}\n\n"
                 break
+            elif state_changed:
+                if state == "PROGRESS":
+                    yield f"event: progress\ndata: {json.dumps(meta)}\n\n"
+                elif state == "STARTED":
+                    yield f"event: started\ndata: {json.dumps({'state': 'started'})}\n\n"
+                elif state == "PENDING":
+                    yield f"event: pending\ndata: {json.dumps({'state': 'pending'})}\n\n"
+                heartbeat_counter = 0
+            else:
+                heartbeat_counter += 1
+                if heartbeat_counter >= 10:
+                    yield f": keepalive\n\n"
+                    heartbeat_counter = 0
 
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(1.5)
 
     return StreamingResponse(
         progress_stream(),
