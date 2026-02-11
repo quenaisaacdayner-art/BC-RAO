@@ -2,6 +2,7 @@
 Collection service: Full pipeline orchestration for Reddit post collection.
 Orchestrates: scrape -> filter -> classify -> store with partial failure handling.
 """
+import asyncio
 import json
 from typing import Optional, Callable
 from datetime import datetime
@@ -108,8 +109,9 @@ class CollectionService:
                         errors=errors
                     ))
 
-                # Step 1: Scrape posts
-                scraped_posts = scrape_subreddit(
+                # Step 1: Scrape posts (run in thread pool to avoid blocking event loop)
+                scraped_posts = await asyncio.to_thread(
+                    scrape_subreddit,
                     subreddit=subreddit,
                     keywords=keywords,
                     max_posts=100

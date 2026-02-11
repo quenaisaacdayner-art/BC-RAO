@@ -32,53 +32,104 @@ export default function ProgressTracker({ taskId, onComplete }: ProgressTrackerP
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const eventSource = new EventSource(`/api/collection/${taskId}/progress`);
+    let retryCount = 0;
+    const maxRetries = 5;
+    let eventSource: EventSource | null = null;
+    let closed = false;
 
-    eventSource.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
+    function connect() {
+      if (closed) return;
+      eventSource = new EventSource(`/api/collection/${taskId}/progress`);
 
-        if (data.state === "PROGRESS") {
-          // Update progress from meta field
-          const meta = data.meta || {};
+      // Handle named SSE events from backend
+      const handleEvent = (event: MessageEvent) => {
+        retryCount = 0;
+        try {
+          const data = JSON.parse(event.data);
           setProgress({
-            scraped: meta.scraped || 0,
-            filtered: meta.filtered || 0,
-            classified: meta.classified || 0,
-            currentStep: meta.current_step || 0,
-            totalSteps: meta.total_steps || 0,
-            currentSubreddit: meta.current_subreddit || "",
-            errors: meta.errors || [],
+            scraped: data.scraped || 0,
+            filtered: data.filtered || 0,
+            classified: data.classified || 0,
+            currentStep: data.current_step || 0,
+            totalSteps: data.total_steps || 0,
+            currentSubreddit: data.current_subreddit || "",
+            errors: data.errors || [],
           });
-        } else if (data.state === "SUCCESS") {
-          // Collection complete
-          setIsComplete(true);
-          const result = data.result || {};
-          onComplete({
-            scraped: result.total_scraped || 0,
-            filtered: result.total_filtered || 0,
-            classified: result.total_classified || 0,
-            errors: result.errors || [],
-          });
-          eventSource.close();
-        } else if (data.state === "FAILURE" || data.error) {
-          // Collection failed
-          setError(data.error || "Collection failed");
-          eventSource.close();
+        } catch (err) {
+          console.error("Failed to parse SSE progress:", err);
         }
-      } catch (err) {
-        console.error("Failed to parse SSE message:", err);
-      }
-    };
+      };
 
-    eventSource.onerror = () => {
-      setError("Connection lost. Please refresh the page.");
-      eventSource.close();
-    };
+      const handleSuccess = (event: MessageEvent) => {
+        retryCount = 0;
+        try {
+          const data = JSON.parse(event.data);
+          setIsComplete(true);
+          onComplete({
+            scraped: data.scraped || 0,
+            filtered: data.filtered || 0,
+            classified: data.classified || 0,
+            errors: data.errors || [],
+          });
+          eventSource?.close();
+          closed = true;
+        } catch (err) {
+          console.error("Failed to parse SSE success:", err);
+        }
+      };
+
+      const handleError = (event: MessageEvent) => {
+        try {
+          const data = JSON.parse(event.data);
+          setError(data.error || "Collection failed");
+        } catch {
+          setError("Collection failed");
+        }
+        eventSource?.close();
+        closed = true;
+      };
+
+      // Backend sends named events: progress, started, pending, success, error, done
+      eventSource.addEventListener("progress", handleEvent);
+      eventSource.addEventListener("started", () => { retryCount = 0; });
+      eventSource.addEventListener("pending", () => { retryCount = 0; });
+      eventSource.addEventListener("success", handleSuccess);
+      eventSource.addEventListener("error", handleError);
+
+      // Also handle unnamed events as fallback
+      eventSource.onmessage = (event) => {
+        retryCount = 0;
+        try {
+          const data = JSON.parse(event.data);
+          if (data.state === "PROGRESS") handleEvent(event);
+          else if (data.state === "SUCCESS") handleSuccess(event);
+          else if (data.state === "FAILURE") handleError(event);
+        } catch (err) {
+          console.error("Failed to parse SSE message:", err);
+        }
+      };
+
+      eventSource.onerror = () => {
+        eventSource?.close();
+        if (closed) return;
+
+        retryCount++;
+        if (retryCount <= maxRetries) {
+          const delay = Math.min(1000 * Math.pow(2, retryCount - 1), 16000);
+          console.log(`SSE reconnecting in ${delay}ms (attempt ${retryCount}/${maxRetries})`);
+          setTimeout(connect, delay);
+        } else {
+          setError("Connection lost after multiple retries. Please refresh the page.");
+        }
+      };
+    }
+
+    connect();
 
     // Cleanup: close EventSource on unmount
     return () => {
-      eventSource.close();
+      closed = true;
+      eventSource?.close();
     };
   }, [taskId, onComplete]);
 
