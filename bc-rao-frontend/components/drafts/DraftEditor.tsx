@@ -8,11 +8,13 @@ import DraftActions from "./DraftActions";
 
 interface Draft {
   id: string;
+  campaign_id: string;
   body: string;
   vulnerability_score: number;
   rhythm_match_score: number;
   target_subreddit: string;
   archetype: string;
+  status: string;
   created_at: string;
 }
 
@@ -78,6 +80,8 @@ export default function DraftEditor({
 
         <DraftActions
           draftText={editedBody}
+          draftStatus={draft.status}
+          campaignId={draft.campaign_id}
           isProcessing={isProcessing}
           onApprove={onApprove}
           onDiscard={onDiscard}
