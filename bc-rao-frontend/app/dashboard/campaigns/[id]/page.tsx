@@ -9,7 +9,7 @@ import { apiClient } from "@/lib/api";
 import { DeleteCampaignDialog } from "@/components/campaigns/delete-campaign-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChevronLeft, Edit, Database } from "lucide-react";
+import { ChevronLeft, Edit, Database, Users, BarChart3, ShieldAlert } from "lucide-react";
 
 interface Campaign {
   id: string;
@@ -164,6 +164,63 @@ export default function CampaignDetailPage() {
       </div>
 
       <div className="grid gap-6">
+        {/* Quick Actions */}
+        <div className="grid gap-4 md:grid-cols-3">
+          <Link href={`/dashboard/campaigns/${campaign.id}/profiles`}>
+            <Card className="hover:bg-gray-50 transition-colors cursor-pointer h-full">
+              <CardContent className="pt-6">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Users className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-sm mb-1">Community Profiles</h3>
+                    <p className="text-xs text-muted-foreground">
+                      View subreddit ISC scores and top archetypes
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link href={`/dashboard/campaigns/${campaign.id}/analysis`}>
+            <Card className="hover:bg-gray-50 transition-colors cursor-pointer h-full">
+              <CardContent className="pt-6">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <BarChart3 className="h-5 w-5 text-green-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-sm mb-1">Post Analysis</h3>
+                    <p className="text-xs text-muted-foreground">
+                      Scoring breakdowns with inline penalty highlights
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link href={`/dashboard/campaigns/${campaign.id}/blacklist`}>
+            <Card className="hover:bg-gray-50 transition-colors cursor-pointer h-full">
+              <CardContent className="pt-6">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-red-100 rounded-lg">
+                    <ShieldAlert className="h-5 w-5 text-red-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-sm mb-1">Forbidden Patterns</h3>
+                    <p className="text-xs text-muted-foreground">
+                      Manage blacklisted patterns by subreddit
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+        </div>
+
         <Card>
           <CardHeader>
             <CardTitle>Product Context</CardTitle>
