@@ -52,6 +52,10 @@ class Settings(BaseSettings):
     RESEND_API_KEY: str = ""
     EMAIL_FROM: str = "noreply@bcrao.app"
 
+    # Reddit API
+    REDDIT_CLIENT_ID: str = ""
+    REDDIT_CLIENT_SECRET: str = ""
+
     # App
     APP_ENV: str = "development"
     APP_URL: str = "http://localhost:3000"
