@@ -92,7 +92,7 @@ export default function CampaignDetailPage() {
       // Fetch community profiles for stage computation
       try {
         const profilesResponse = await apiClient.get<{ profiles: CommunityProfile[] }>(
-          `/analysis/campaigns/${campaignId}/community-profiles`,
+          `/campaigns/${campaignId}/community-profiles`,
           session.access_token
         );
         if (!profilesResponse.error && profilesResponse.data?.profiles) {
@@ -105,7 +105,7 @@ export default function CampaignDetailPage() {
       // Fetch recent drafts (top 3)
       try {
         const draftsResponse = await apiClient.get<{ drafts: Draft[] }>(
-          `/drafts/campaigns/${campaignId}?limit=3&status=ready,pending`,
+          `/campaigns/${campaignId}/drafts?limit=3&status=ready,pending`,
           session.access_token
         );
         if (!draftsResponse.error && draftsResponse.data?.drafts) {
