@@ -10,19 +10,19 @@ See: .planning/PROJECT.md (updated 2026-02-07)
 
 ## Current Position
 
-Phase: 2 of 6 (Collection Pipeline)
-Plan: 3 of 3 (collection UI with SSE progress tracking complete)
-Status: Phase complete
-Last activity: 2026-02-10 - Completed 02-03-PLAN.md (collection UI)
+Phase: 3 of 6 (Pattern Engine)
+Plan: 1 of 4 (NLP pipeline + scoring + pattern detection complete)
+Status: In progress
+Last activity: 2026-02-11 - Completed 03-01-PLAN.md (NLP pipeline)
 
-Progress: [█████████░] 100% (3/3 Phase 2 plans complete)
+Progress: [██████████░] 25% (1/4 Phase 3 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8
-- Average duration: 5.9 minutes
-- Total execution time: 0.78 hours
+- Total plans completed: 9
+- Average duration: 6.0 minutes
+- Total execution time: 0.90 hours
 
 **By Phase:**
 
@@ -30,10 +30,11 @@ Progress: [█████████░] 100% (3/3 Phase 2 plans complete)
 |-------|-------|-------|----------|
 | 1. Foundation & Core Setup | 5 | 32 min | 6.4 min |
 | 2. Collection Pipeline | 3 | 17 min | 5.7 min |
+| 3. Pattern Engine | 1 | 7 min | 7.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-04 (6min), 01-05 (5min), 02-01 (5min), 02-02 (5min), 02-03 (7min)
-- Trend: Excellent velocity maintained, Phase 2 complete at 5.7min average
+- Last 5 plans: 01-05 (5min), 02-01 (5min), 02-02 (5min), 02-03 (7min), 03-01 (7min)
+- Trend: Steady velocity, Phase 3 started with 7min (NLP setup overhead)
 
 *Updated after each plan completion*
 
@@ -75,6 +76,13 @@ Recent decisions affecting current work:
 - EventSource cleanup pattern (02-03): Always close() in useEffect return to prevent connection leaks
 - Three-phase collection flow (02-03): Idle → collecting → complete with navigation guards and auto-transitions
 - Hardcoded remaining runs UI (02-03): Display "5 remaining" for trial tier, backend enforcement in Phase 6
+- SpaCy pipeline with 3 custom components (03-01): formality_scorer, tone_classifier, rhythm_analyzer for local NLP
+- Disable NER in SpaCy model (03-01): Named entity recognition not needed, saves memory
+- Vulnerability scoring as authenticity proxy (03-01): Personal pronouns, emotions, questions identify authentic vs promotional
+- Weighted scoring formula (03-01): vulnerability*0.25 + rhythm*0.25 + formality*0.2 - jargon*0.15 - links*0.15
+- ISC minimum 10 posts (03-01): Statistical validity requirement for quartile analysis
+- 6 pattern categories (03-01): Promotional, Self-referential, Link patterns, Low-effort, Spam indicators, Off-topic
+- Compiled regex at module level (03-01): One-time compilation, significant performance gain
 
 ### Pending Todos
 
@@ -86,6 +94,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-10 (plan 02-03 execution)
-Stopped at: Completed 02-03-PLAN.md - collection UI with SSE progress tracking
+Last session: 2026-02-11 (plan 03-01 execution)
+Stopped at: Completed 03-01-PLAN.md - NLP pipeline + scoring + pattern detection
 Resume file: None
