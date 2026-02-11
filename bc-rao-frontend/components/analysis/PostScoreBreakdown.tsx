@@ -19,7 +19,7 @@ interface ScoringBreakdown {
   formality_match: number;
   marketing_jargon_penalty: number;
   link_density_penalty: number;
-  penalties: Array<{
+  penalty_phrases: Array<{
     phrase: string;
     severity: "high" | "medium" | "low";
     category: string;
@@ -122,25 +122,25 @@ export default function PostScoreBreakdown({
                 <div className="bg-gray-50 p-3 rounded border border-gray-200">
                   <p className="text-xs text-gray-500 mb-1">Rhythm Match</p>
                   <p className="text-lg font-semibold text-gray-900">
-                    {breakdown.rhythm_adherence.toFixed(1)}
+                    {(breakdown.rhythm_adherence ?? 0).toFixed(1)}
                   </p>
                 </div>
                 <div className="bg-gray-50 p-3 rounded border border-gray-200">
                   <p className="text-xs text-gray-500 mb-1">Vulnerability</p>
                   <p className="text-lg font-semibold text-gray-900">
-                    {breakdown.vulnerability_weight.toFixed(1)}
+                    {(breakdown.vulnerability_weight ?? 0).toFixed(1)}
                   </p>
                 </div>
                 <div className="bg-gray-50 p-3 rounded border border-gray-200">
                   <p className="text-xs text-gray-500 mb-1">Formality</p>
                   <p className="text-lg font-semibold text-gray-900">
-                    {breakdown.formality_match.toFixed(1)}
+                    {(breakdown.formality_match ?? 0).toFixed(1)}
                   </p>
                 </div>
                 <div className="bg-gray-50 p-3 rounded border border-gray-200">
                   <p className="text-xs text-gray-500 mb-1">Penalties</p>
                   <p className="text-lg font-semibold text-red-600">
-                    -{(breakdown.marketing_jargon_penalty + breakdown.link_density_penalty).toFixed(1)}
+                    -{((breakdown.marketing_jargon_penalty ?? 0) + (breakdown.link_density_penalty ?? 0)).toFixed(1)}
                   </p>
                 </div>
               </div>
@@ -148,11 +148,11 @@ export default function PostScoreBreakdown({
               {/* Full post text with penalty highlighting */}
               <div className="bg-gray-50 p-4 rounded border border-gray-200">
                 <h4 className="text-sm font-medium text-gray-700 mb-2">Post Content</h4>
-                <PenaltyHighlighter text={postText} penalties={breakdown.penalties} />
+                <PenaltyHighlighter text={postText} penalties={breakdown.penalty_phrases || []} />
               </div>
 
               {/* Penalty legend if penalties exist */}
-              {breakdown.penalties.length > 0 && (
+              {(breakdown.penalty_phrases?.length ?? 0) > 0 && (
                 <div className="mt-3 flex items-center gap-4 text-xs text-gray-600">
                   <span className="flex items-center gap-1">
                     <span className="inline-block w-3 h-3 bg-red-100 border-b-2 border-red-500 rounded-sm"></span>
