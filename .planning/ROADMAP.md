@@ -138,13 +138,13 @@ Plans:
   7. User can view monitoring dashboard showing active/removed/shadowbanned counts, success rate, and recent alerts
   8. Dashboard guides user through Deployment & Sentinel → Post-Audit & Loop stages
 
-**Plans**: TBD (estimate 4-5 plans)
+**Plans**: 4 plans
 
 Plans:
-- [ ] 05-01: TBD during planning
-- [ ] 05-02: TBD during planning
-- [ ] 05-03: TBD during planning
-- [ ] 05-04: TBD during planning
+- [ ] 05-01-PLAN.md — Backend monitoring foundation: models, service, Reddit dual-check client, email service
+- [ ] 05-02-PLAN.md — Backend API endpoints, monitoring worker, scheduler, audit task, feedback loop
+- [ ] 05-03-PLAN.md — Frontend monitoring dashboard: stats, post cards, filters, shadowban alert, URL registration
+- [ ] 05-04-PLAN.md — Stage 5 campaign journey integration, "I posted this" button on draft editor
 
 ---
 
@@ -185,9 +185,9 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 2. Collection Pipeline | 4/4 | Complete | 2026-02-10 |
 | 3. Pattern Engine | 4/4 | Complete | 2026-02-11 |
 | 4. Draft Generation | 5/5 | Complete | 2026-02-11 |
-| 5. Monitoring & Feedback Loop | 0/TBD | Not started | - |
+| 5. Monitoring & Feedback Loop | 0/4 | Not started | - |
 | 6. Billing & Production Polish | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-02-07*
-*Last updated: 2026-02-11 (Phase 4 complete: 5 plans executed, verified 6/6 must-haves)*
+*Last updated: 2026-02-11 (Phase 5 planned: 4 plans in 3 waves)*
