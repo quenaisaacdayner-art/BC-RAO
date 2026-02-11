@@ -3,7 +3,7 @@ Main v1 API router.
 Aggregates all v1 endpoint routers.
 """
 from fastapi import APIRouter
-from app.api.v1 import auth, campaigns, collection
+from app.api.v1 import auth, campaigns, collection, analysis
 
 # Create main v1 router
 router = APIRouter()
@@ -17,8 +17,10 @@ router.include_router(campaigns.router, prefix="/campaigns", tags=["campaigns"])
 # Include collection router (Phase 2, Plan 2)
 router.include_router(collection.router, tags=["collection"])
 
+# Include analysis router (Phase 3, Plan 2)
+router.include_router(analysis.router, tags=["analysis"])
+
 # Placeholder for future sub-routers:
-# - analyzer.py (Phase 3)
 # - generator.py (Phase 4)
 # - monitor.py (Phase 5)
 # - billing.py (Phase 6)
