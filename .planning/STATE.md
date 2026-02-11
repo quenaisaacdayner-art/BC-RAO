@@ -11,18 +11,18 @@ See: .planning/PROJECT.md (updated 2026-02-07)
 ## Current Position
 
 Phase: 4 of 6 (Draft Generation)
-Plan: 1 of 5 complete
+Plan: 2 of 5 complete
 Status: In progress
-Last activity: 2026-02-11 - Completed 04-01-PLAN.md (Generation Pipeline Core)
+Last activity: 2026-02-10 - Completed 04-02-PLAN.md (Drafts API Endpoints)
 
-Progress: [█████░░░░░░░░░░░░░░░░░░░] 20% (1/5 Phase 4 plans complete)
+Progress: [██████████░░░░░░░░░░░░░░] 40% (2/5 Phase 4 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 13
-- Average duration: 6.2 minutes
-- Total execution time: 1.35 hours
+- Total plans completed: 14
+- Average duration: 6.1 minutes
+- Total execution time: 1.43 hours
 
 **By Phase:**
 
@@ -31,11 +31,11 @@ Progress: [█████░░░░░░░░░░░░░░░░░░
 | 1. Foundation & Core Setup | 5 | 32 min | 6.4 min |
 | 2. Collection Pipeline | 3 | 17 min | 5.7 min |
 | 3. Pattern Engine | 4 | 28 min | 7.0 min |
-| 4. Draft Generation | 1 | 15 min | 15.0 min |
+| 4. Draft Generation | 2 | 19 min | 9.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 03-01 (7min), 03-02 (5min), 03-03 (9min), 03-04 (7min), 04-01 (15min)
-- Trend: Phase 4 Plan 01 took 15min (generation pipeline core with ISC gating + blacklist validation)
+- Last 5 plans: 03-02 (5min), 03-03 (9min), 03-04 (7min), 04-01 (15min), 04-02 (4min)
+- Trend: Phase 4 averaging 9.5min (04-01 heavy setup, 04-02 fast API layer)
 
 *Updated after each plan completion*
 
@@ -94,6 +94,9 @@ Recent decisions affecting current work:
 - Generic defaults for unprofiled subreddits (04-01): Never crash on missing profile, use GENERIC_DEFAULTS with warning
 - Post-generation blacklist validation (04-01): Catches LLM violations that slip through prompt instructions
 - InferenceClient for all generation (04-01): Uses existing Phase 1 client, not separate OpenAI SDK
+- Monthly draft limits enforced (04-02): Trial=10, Starter=50, Growth=unlimited drafts/month, 403 when exceeded
+- SSE streaming for generation progress (04-02): Same 500ms polling pattern as collection, no auth on stream endpoint
+- Background tasks via asyncio for Railway (04-02): Celery tasks preserved for horizontal scaling reference
 
 ### Pending Todos
 
@@ -105,6 +108,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-11 (Phase 4 Plan 01 execution complete)
-Stopped at: Completed 04-01-PLAN.md (Generation Pipeline Core)
+Last session: 2026-02-10 (Phase 4 Plan 02 execution complete)
+Stopped at: Completed 04-02-PLAN.md (Drafts API Endpoints)
 Resume file: None
