@@ -6,23 +6,23 @@ See: .planning/PROJECT.md (updated 2026-02-07)
 
 **Core value:** Founders can generate Reddit posts that survive moderation and earn genuine engagement by mimicking native community behavior patterns, not by guessing.
 
-**Current focus:** Phase 3 complete — ready for Phase 4 (Draft Generation)
+**Current focus:** Phase 4 (Draft Generation) - Building LLM-powered draft generation with ISC gating
 
 ## Current Position
 
-Phase: 3 of 6 (Pattern Engine)
-Plan: 4 of 4 complete
-Status: Phase complete
-Last activity: 2026-02-11 - Completed 03-03-PLAN.md (Community Profiles Frontend)
+Phase: 4 of 6 (Draft Generation)
+Plan: 1 of 5 complete
+Status: In progress
+Last activity: 2026-02-11 - Completed 04-01-PLAN.md (Generation Pipeline Core)
 
-Progress: [████████████████████████] 100% (4/4 Phase 3 plans complete)
+Progress: [█████░░░░░░░░░░░░░░░░░░░] 20% (1/5 Phase 4 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 12
-- Average duration: 6.0 minutes
-- Total execution time: 1.20 hours
+- Total plans completed: 13
+- Average duration: 6.2 minutes
+- Total execution time: 1.35 hours
 
 **By Phase:**
 
@@ -31,10 +31,11 @@ Progress: [███████████████████████
 | 1. Foundation & Core Setup | 5 | 32 min | 6.4 min |
 | 2. Collection Pipeline | 3 | 17 min | 5.7 min |
 | 3. Pattern Engine | 4 | 28 min | 7.0 min |
+| 4. Draft Generation | 1 | 15 min | 15.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 02-03 (7min), 03-01 (7min), 03-02 (5min), 03-03 (9min), 03-04 (7min)
-- Trend: Phase 3 averaged 7.0min, increase from Phase 2's 5.7min - more complex UI and visualization work
+- Last 5 plans: 03-01 (7min), 03-02 (5min), 03-03 (9min), 03-04 (7min), 04-01 (15min)
+- Trend: Phase 4 Plan 01 took 15min (generation pipeline core with ISC gating + blacklist validation)
 
 *Updated after each plan completion*
 
@@ -89,6 +90,10 @@ Recent decisions affecting current work:
 - PostScoreBreakdown caches fetched data (03-04): Prevents re-fetching when user collapses/re-expands same post
 - Blacklist category cards before table (03-04): Show pattern distribution summary (counts by category) before detailed list
 - Campaign detail navigation cards (03-04): Icon-coded cards link to profiles, analysis, blacklist from main campaign page
+- ISC gating 5-branch decision tree (04-01): New accounts warm-up mode, High ISC > 7.5 blocks risky archetypes, archetype-specific rules
+- Generic defaults for unprofiled subreddits (04-01): Never crash on missing profile, use GENERIC_DEFAULTS with warning
+- Post-generation blacklist validation (04-01): Catches LLM violations that slip through prompt instructions
+- InferenceClient for all generation (04-01): Uses existing Phase 1 client, not separate OpenAI SDK
 
 ### Pending Todos
 
@@ -100,6 +105,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-11 (Phase 3 execution complete)
-Stopped at: Phase 3 complete — all 4 plans executed, verified (21/21 must-haves)
+Last session: 2026-02-11 (Phase 4 Plan 01 execution complete)
+Stopped at: Completed 04-01-PLAN.md (Generation Pipeline Core)
 Resume file: None
