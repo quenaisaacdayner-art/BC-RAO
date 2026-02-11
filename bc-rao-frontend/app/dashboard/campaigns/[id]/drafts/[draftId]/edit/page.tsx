@@ -188,7 +188,7 @@ export default function DraftEditPage({
         );
       });
 
-      eventSource.addEventListener("error", (event) => {
+      eventSource.addEventListener("error", (event: MessageEvent) => {
         const data = JSON.parse(event.data);
         eventSource.close();
         setError(data.error || "Regeneration failed");

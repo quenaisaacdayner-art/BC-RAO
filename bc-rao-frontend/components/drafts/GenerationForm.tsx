@@ -13,9 +13,7 @@ import ISCGatingWarning from "./ISCGatingWarning";
 
 const formSchema = z.object({
   subreddit: z.string().min(1, "Subreddit is required"),
-  archetype: z.enum(["Journey", "ProblemSolution", "Feedback"], {
-    required_error: "Archetype is required",
-  }),
+  archetype: z.enum(["Journey", "ProblemSolution", "Feedback"]),
   context: z.string().max(500, "Context must be 500 characters or less").optional(),
 });
 
