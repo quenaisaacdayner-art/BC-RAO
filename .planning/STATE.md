@@ -11,18 +11,18 @@ See: .planning/PROJECT.md (updated 2026-02-07)
 ## Current Position
 
 Phase: 5 of 6 (Monitoring & Feedback Loop)
-Plan: 1 of 3 complete
+Plan: 2 of 3 complete
 Status: In progress
-Last activity: 2026-02-11 - Completed 05-01-PLAN.md (Monitoring Foundation)
+Last activity: 2026-02-11 - Completed 05-02-PLAN.md (Monitoring API & Worker)
 
-Progress: [█████░░░░░░░░░░░░░░░░░░░] 33% (1/3 Phase 5 plans complete)
+Progress: [██████████░░░░░░░░░░░░░░] 67% (2/3 Phase 5 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 18
-- Average duration: 5.8 minutes
-- Total execution time: 1.75 hours
+- Total plans completed: 19
+- Average duration: 5.9 minutes
+- Total execution time: 1.88 hours
 
 **By Phase:**
 
@@ -32,11 +32,11 @@ Progress: [█████░░░░░░░░░░░░░░░░░░
 | 2. Collection Pipeline | 3 | 17 min | 5.7 min |
 | 3. Pattern Engine | 4 | 28 min | 7.0 min |
 | 4. Draft Generation | 5 | 33 min | 6.6 min |
-| 5. Monitoring & Feedback Loop | 1 | 6 min | 6.0 min |
+| 5. Monitoring & Feedback Loop | 2 | 14 min | 7.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 04-02 (4min), 04-03 (6min), 04-04 (4min), 04-05 (4min), 05-01 (6min)
-- Trend: Consistent 4-6min velocity across Phase 4-5
+- Last 5 plans: 04-03 (6min), 04-04 (4min), 04-05 (4min), 05-01 (6min), 05-02 (8min)
+- Trend: Slight uptick in Phase 5 (more integration complexity)
 
 *Updated after each plan completion*
 
@@ -109,6 +109,10 @@ Recent decisions affecting current work:
 - Dual-check shadowban detection (05-01): Auth sees post but anon doesn't = shadowbanned
 - Email rate limiting (05-01): Max 1 emergency shadowban alert per 24h per user
 - Graceful email fallback (05-01): Skip email sends if RESEND_API_KEY empty (development mode)
+- Consecutive failure logic (05-02): Requires 2 consecutive checks before flagging shadowban (prevents false positives)
+- Pattern extraction reuses existing check_post_penalties (05-02): Regex-based extractor from pattern_extractor.py, no new LLM-based extractor
+- 15-min asyncio monitoring scheduler (05-02): While-loop with asyncio.sleep(900), no APScheduler/Celery beat needed
+- Pattern injection with upsert (05-02): Ignore duplicates on syntax_blacklist to avoid constraint errors
 
 ### Pending Todos
 
@@ -120,8 +124,13 @@ None yet.
 - Account status tracking using subscription.plan as proxy - proper account_status field should be added to profiles table
 - Email alert metadata (check_result dict) logged but not persisted to database - consider JSONB metadata column for shadow_table
 
+**Phase 5 Plan 02 concerns:**
+- Periodic scheduler (schedule_periodic_monitoring) must be launched at app startup - needs integration into main.py or startup event
+- Metadata JSONB column not yet added to shadow_table schema - consecutive failure logic stores last_check_result in metadata field, but this will fail if column doesn't exist. Need to either: (a) add metadata column to shadow_table schema, or (b) store consecutive check state in Redis instead of DB
+- 7-day audit dispatch relies on dispatch_pending_checks catching audit_due_at posts - may miss exact 7-day mark by up to 15 minutes (acceptable for now, can improve in future)
+
 ## Session Continuity
 
-Last session: 2026-02-11 (Phase 5 Plan 01 execution complete)
-Stopped at: Completed 05-01-PLAN.md (Monitoring Foundation)
+Last session: 2026-02-11 (Phase 5 Plan 02 execution complete)
+Stopped at: Completed 05-02-PLAN.md (Monitoring API & Worker)
 Resume file: None
