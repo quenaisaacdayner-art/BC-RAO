@@ -38,7 +38,7 @@ export default function DraftCard({ draft }: DraftCardProps) {
   const router = useRouter();
 
   const handleClick = () => {
-    router.push(`/dashboard/drafts/${draft.id}/edit`);
+    router.push(`/dashboard/campaigns/${draft.campaign_id}/drafts/${draft.id}/edit`);
   };
 
   // Truncate body to 150 characters

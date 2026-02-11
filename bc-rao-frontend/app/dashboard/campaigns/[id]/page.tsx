@@ -9,7 +9,10 @@ import { apiClient } from "@/lib/api";
 import { DeleteCampaignDialog } from "@/components/campaigns/delete-campaign-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChevronLeft, Edit, Database, Users, BarChart3, ShieldAlert } from "lucide-react";
+import { ChevronLeft, Edit, Database, Users, BarChart3, ShieldAlert, Wand2, Lock, FileText } from "lucide-react";
+import StageIndicator from "@/components/dashboard/StageIndicator";
+import { computeStages } from "@/lib/campaign-stages";
+import DraftCard from "@/components/drafts/DraftCard";
 
 interface Campaign {
   id: string;
@@ -28,11 +31,30 @@ interface Campaign {
   };
 }
 
+interface CommunityProfile {
+  id: string;
+  subreddit: string;
+}
+
+interface Draft {
+  id: string;
+  campaign_id: string;
+  subreddit: string;
+  archetype: string;
+  body: string;
+  vulnerability_score: number;
+  rhythm_score: number;
+  status: string;
+  created_at: string;
+}
+
 export default function CampaignDetailPage() {
   const router = useRouter();
   const params = useParams();
   const campaignId = params.id as string;
   const [campaign, setCampaign] = useState<Campaign | null>(null);
+  const [profiles, setProfiles] = useState<CommunityProfile[]>([]);
+  const [recentDrafts, setRecentDrafts] = useState<Draft[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -65,6 +87,32 @@ export default function CampaignDetailPage() {
       }
 
       setCampaign(response.data!);
+
+      // Fetch community profiles for stage computation
+      try {
+        const profilesResponse = await apiClient.get<{ profiles: CommunityProfile[] }>(
+          `/analysis/campaigns/${campaignId}/community-profiles`,
+          session.access_token
+        );
+        if (!profilesResponse.error && profilesResponse.data?.profiles) {
+          setProfiles(profilesResponse.data.profiles);
+        }
+      } catch (error) {
+        console.error("Error fetching profiles:", error);
+      }
+
+      // Fetch recent drafts (top 3)
+      try {
+        const draftsResponse = await apiClient.get<{ drafts: Draft[] }>(
+          `/drafts/campaigns/${campaignId}?limit=3&status=ready,pending`,
+          session.access_token
+        );
+        if (!draftsResponse.error && draftsResponse.data?.drafts) {
+          setRecentDrafts(draftsResponse.data.drafts);
+        }
+      } catch (error) {
+        console.error("Error fetching drafts:", error);
+      }
     } catch (error) {
       toast.error("An unexpected error occurred");
       console.error(error);
@@ -120,6 +168,10 @@ export default function CampaignDetailPage() {
     });
   };
 
+  // Compute stages for StageIndicator
+  const stages = computeStages(campaign, profiles);
+  const stage3Complete = profiles.length > 0;
+
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <div className="flex items-center gap-2">
@@ -163,9 +215,12 @@ export default function CampaignDetailPage() {
         </div>
       </div>
 
+      {/* Stage Indicator */}
+      <StageIndicator stages={stages} />
+
       <div className="grid gap-6">
         {/* Quick Actions */}
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-4">
           <Link href={`/dashboard/campaigns/${campaign.id}/profiles`}>
             <Card className="hover:bg-gray-50 transition-colors cursor-pointer h-full">
               <CardContent className="pt-6">
@@ -219,7 +274,116 @@ export default function CampaignDetailPage() {
               </CardContent>
             </Card>
           </Link>
+
+          {/* Draft Generation Card */}
+          {stage3Complete ? (
+            <Link href={`/dashboard/campaigns/${campaign.id}/drafts/new`}>
+              <Card className="hover:bg-gray-50 transition-colors cursor-pointer h-full">
+                <CardContent className="pt-6">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 bg-purple-100 rounded-lg">
+                      <Wand2 className="h-5 w-5 text-purple-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-sm mb-1">Draft Generation</h3>
+                      <p className="text-xs text-muted-foreground">
+                        Generate posts with community DNA
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ) : (
+            <Card className="opacity-50 cursor-not-allowed h-full">
+              <CardContent className="pt-6">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-gray-100 rounded-lg">
+                    <Lock className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-sm mb-1 text-muted-foreground">
+                      Draft Generation
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      Complete analysis to unlock
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
+
+        {/* Stage 4: Alchemical Transmutation */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Wand2 className="h-5 w-5 text-purple-600" />
+              Alchemical Transmutation
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {!stage3Complete ? (
+              <div className="text-center py-8">
+                <Lock className="h-12 w-12 text-muted-foreground mx-auto mb-3 opacity-50" />
+                <h3 className="font-semibold text-lg mb-2">Stage Locked</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Complete Community Intelligence (Stage 3) to unlock draft generation.
+                </p>
+                <Button asChild>
+                  <Link href={`/dashboard/campaigns/${campaign.id}/profiles`}>
+                    View Community Profiles
+                  </Link>
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {/* Generate Button */}
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-muted-foreground">
+                    Generate Reddit posts that match community behavioral patterns
+                  </p>
+                  <Button asChild>
+                    <Link href={`/dashboard/campaigns/${campaign.id}/drafts/new`}>
+                      <Wand2 className="mr-2 h-4 w-4" />
+                      Generate Draft
+                    </Link>
+                  </Button>
+                </div>
+
+                {/* Recent Drafts */}
+                {recentDrafts.length > 0 && (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-semibold text-sm">Recent Drafts</h4>
+                      <Button asChild variant="link" size="sm">
+                        <Link href={`/dashboard/campaigns/${campaign.id}/drafts`}>
+                          <FileText className="mr-1 h-3 w-3" />
+                          View All
+                        </Link>
+                      </Button>
+                    </div>
+                    <div className="grid gap-3">
+                      {recentDrafts.map((draft) => (
+                        <DraftCard key={draft.id} draft={draft} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Empty State */}
+                {recentDrafts.length === 0 && (
+                  <div className="text-center py-6 border-t">
+                    <p className="text-sm text-muted-foreground">
+                      No drafts yet. Generate your first draft to get started.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>
