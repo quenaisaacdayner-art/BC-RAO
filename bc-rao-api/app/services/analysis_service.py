@@ -506,25 +506,24 @@ class AnalysisService:
                 })
 
         # Fetch custom user patterns from syntax_blacklist table
-        # Note: This table will be created in a future migration, for now skip gracefully
         try:
             custom_response = self.supabase.table("syntax_blacklist").select(
-                "id, category, pattern, subreddit"
+                "id, category, forbidden_pattern, subreddit"
             ).eq("campaign_id", campaign_id).eq("is_system", False).execute()
 
             for custom in custom_response.data:
+                cat = custom.get("category", "Custom")
                 all_patterns.append({
-                    "category": custom["category"],
-                    "pattern": custom["pattern"],
+                    "category": cat,
+                    "pattern": custom["forbidden_pattern"],
                     "subreddit": custom.get("subreddit"),
                     "is_system": False,
-                    "count": 0,  # Custom patterns don't have match counts yet
+                    "count": 0,
                 })
 
-                category = custom["category"]
-                patterns_by_category[category] = patterns_by_category.get(category, 0) + 1
+                patterns_by_category[cat] = patterns_by_category.get(cat, 0) + 1
         except Exception:
-            # Table doesn't exist yet, skip gracefully
+            # Table columns may not exist yet, skip gracefully
             pass
 
         return {
@@ -569,20 +568,28 @@ class AnalysisService:
                 {"campaign_id": campaign_id}
             )
 
-        # Insert custom pattern
-        # Note: This table will be created in a future migration
+        # Insert custom pattern into syntax_blacklist
         try:
             pattern_data = {
                 "campaign_id": campaign_id,
                 "category": category,
-                "pattern": pattern,
-                "subreddit": subreddit,
+                "forbidden_pattern": pattern,
                 "is_system": False,
-                "source": "user",
             }
 
+            if subreddit:
+                pattern_data["subreddit"] = subreddit
+
             response = self.supabase.table("syntax_blacklist").insert(pattern_data).execute()
-            return response.data[0]
+            result = response.data[0]
+            # Normalize response for frontend
+            return {
+                "id": result["id"],
+                "category": result.get("category", "Custom"),
+                "pattern": result["forbidden_pattern"],
+                "subreddit": result.get("subreddit"),
+                "is_system": False,
+            }
         except Exception as e:
             raise AppError(
                 ErrorCode.DATABASE_ERROR,
