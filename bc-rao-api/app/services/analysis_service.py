@@ -250,10 +250,32 @@ class AnalysisService:
                 )
 
                 # Step 7: Upsert community profile
-                self.supabase.table("community_profiles").upsert(
-                    profile_data,
-                    on_conflict="campaign_id,subreddit"
-                ).execute()
+                # Try with full profile first; if style columns don't exist
+                # (migration 003 not applied), retry without them
+                try:
+                    self.supabase.table("community_profiles").upsert(
+                        profile_data,
+                        on_conflict="campaign_id,subreddit"
+                    ).execute()
+                except Exception as upsert_err:
+                    # Check if it's a column-not-found error for style fields
+                    err_msg = str(upsert_err).lower()
+                    if "style_metrics" in err_msg or "style_guide" in err_msg or "column" in err_msg:
+                        # Retry without style columns (migration 003 not applied)
+                        fallback_data = {
+                            k: v for k, v in profile_data.items()
+                            if k not in ("style_metrics", "style_guide")
+                        }
+                        self.supabase.table("community_profiles").upsert(
+                            fallback_data,
+                            on_conflict="campaign_id,subreddit"
+                        ).execute()
+                        errors.append(
+                            f"Style columns missing for r/{subreddit} "
+                            f"(run migration 003). Profile saved without style data."
+                        )
+                    else:
+                        raise  # Re-raise non-style errors
 
                 profiles_created += 1
 

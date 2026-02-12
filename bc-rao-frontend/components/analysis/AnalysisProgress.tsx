@@ -48,7 +48,7 @@ export default function AnalysisProgress({ campaignId, taskId, onComplete }: Ana
           setProgress({
             current: data.current || 0,
             total: data.total || 0,
-            currentStep: data.step || "",
+            currentStep: data.current_step || data.step || "",
             currentSubreddit: data.current_subreddit || undefined,
             warnings: data.warnings || [],
           });
@@ -60,16 +60,34 @@ export default function AnalysisProgress({ campaignId, taskId, onComplete }: Ana
       const handleSuccess = (event: MessageEvent) => {
         retryCount = 0;
         setIsComplete(true);
-        toast.success("Analysis complete", {
-          description: "Community profiles are ready to view",
-          action: {
-            label: "View Profiles",
-            onClick: () => {
-              window.location.href = `/dashboard/campaigns/${campaignId}/profiles`;
+        try {
+          const data = JSON.parse(event.data);
+          const profileCount = data.profiles_created || 0;
+          const description = profileCount > 0
+            ? `${profileCount} community profile${profileCount !== 1 ? "s" : ""} created`
+            : "Community profiles are ready to view";
+          toast.success("Analysis complete", {
+            description,
+            action: {
+              label: "View Profiles",
+              onClick: () => {
+                window.location.href = `/dashboard/campaigns/${campaignId}/profiles`;
+              },
             },
-          },
-          duration: 10000,
-        });
+            duration: 10000,
+          });
+        } catch {
+          toast.success("Analysis complete", {
+            description: "Community profiles are ready to view",
+            action: {
+              label: "View Profiles",
+              onClick: () => {
+                window.location.href = `/dashboard/campaigns/${campaignId}/profiles`;
+              },
+            },
+            duration: 10000,
+          });
+        }
         onComplete();
         eventSource?.close();
         closed = true;

@@ -57,13 +57,25 @@ async def run_analysis_background(
             plan=plan,
         )
 
-        # Update task state to SUCCESS with result data
-        update_task_state(task_id, "SUCCESS", {
-            "status": result.status,
-            "posts_analyzed": result.posts_analyzed,
-            "profiles_created": result.profiles_created,
-            "errors": result.errors,
-        })
+        # Report FAILURE if analysis completed but produced no profiles
+        # (e.g., all subreddits had < 10 posts, or all upserts failed)
+        if result.profiles_created == 0 and result.status != "exists":
+            error_summary = "; ".join(result.errors) if result.errors else "No profiles created"
+            update_task_state(task_id, "FAILURE", {
+                "error": f"Analysis produced no profiles: {error_summary}",
+                "type": "AnalysisNoResults",
+                "posts_analyzed": result.posts_analyzed,
+                "profiles_created": 0,
+                "errors": result.errors,
+            })
+        else:
+            # Update task state to SUCCESS with result data
+            update_task_state(task_id, "SUCCESS", {
+                "status": result.status,
+                "posts_analyzed": result.posts_analyzed,
+                "profiles_created": result.profiles_created,
+                "errors": result.errors,
+            })
 
     except Exception as e:
         # Update task state to FAILURE with error details

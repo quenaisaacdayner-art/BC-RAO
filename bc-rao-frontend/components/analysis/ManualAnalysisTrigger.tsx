@@ -35,7 +35,7 @@ export default function ManualAnalysisTrigger({ campaignId }: ManualAnalysisTrig
           Authorization: `Bearer ${session.access_token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ force_refresh: false }),
+        body: JSON.stringify({ force_refresh: true }),
       });
 
       if (!response.ok) {
