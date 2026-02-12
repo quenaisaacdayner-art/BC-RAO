@@ -297,7 +297,12 @@ class GenerationService:
         ).eq("campaign_id", campaign_id).eq("user_id", user_id)
 
         if status:
-            query = query.eq("status", status)
+            # Support comma-separated status values (e.g. "generated,edited")
+            statuses = [s.strip() for s in status.split(",")]
+            if len(statuses) > 1:
+                query = query.in_("status", statuses)
+            else:
+                query = query.eq("status", status)
 
         if subreddit:
             query = query.eq("subreddit", subreddit)

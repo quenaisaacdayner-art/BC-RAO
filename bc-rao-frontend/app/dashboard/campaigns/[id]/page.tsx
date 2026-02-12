@@ -105,7 +105,7 @@ export default function CampaignDetailPage() {
       // Fetch recent drafts (top 3)
       try {
         const draftsResponse = await apiClient.get<{ drafts: Draft[] }>(
-          `/campaigns/${campaignId}/drafts?limit=3&status=ready,pending`,
+          `/campaigns/${campaignId}/drafts?limit=3`,
           session.access_token
         );
         if (!draftsResponse.error && draftsResponse.data?.drafts) {

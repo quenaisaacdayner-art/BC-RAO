@@ -69,9 +69,9 @@ export default function StageIndicator({ stages, className }: StageIndicatorProp
                 "flex items-center gap-3 rounded-lg border p-4 transition-all w-full text-left",
                 stage.locked && "opacity-50 cursor-not-allowed",
                 !stage.locked && "cursor-pointer hover:shadow-md",
-                stage.completed && "bg-green-50 border-green-400 ring-1 ring-green-300",
-                stage.active && "bg-blue-50 border-blue-300 shadow-sm ring-1 ring-blue-200",
-                !stage.active && !stage.completed && stage.locked && "bg-gray-50 border-gray-200"
+                stage.completed && "bg-green-50 dark:bg-green-950/40 border-green-400 dark:border-green-700 ring-1 ring-green-300 dark:ring-green-800",
+                stage.active && "bg-blue-50 dark:bg-blue-950/40 border-blue-300 dark:border-blue-700 shadow-sm ring-1 ring-blue-200 dark:ring-blue-800",
+                !stage.active && !stage.completed && stage.locked && "bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700"
               )}
             >
               {/* Icon */}

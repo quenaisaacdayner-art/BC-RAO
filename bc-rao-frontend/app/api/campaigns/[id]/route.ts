@@ -59,13 +59,30 @@ export async function GET(
     );
   }
 
-  // Add placeholder stats (real data comes in future phases)
+  // Fetch real stats from related tables
+  const [postsResult, draftsResult, monitorsResult] = await Promise.all([
+    supabase
+      .from("raw_posts")
+      .select("id", { count: "exact", head: true })
+      .eq("campaign_id", id),
+    supabase
+      .from("generated_drafts")
+      .select("id", { count: "exact", head: true })
+      .eq("campaign_id", id)
+      .eq("user_id", user.id),
+    supabase
+      .from("shadow_table")
+      .select("id", { count: "exact", head: true })
+      .eq("campaign_id", id)
+      .eq("user_id", user.id),
+  ]);
+
   return NextResponse.json({
     ...campaign,
     stats: {
-      posts_collected: 0,
-      drafts_generated: 0,
-      active_monitors: 0,
+      posts_collected: postsResult.count ?? 0,
+      drafts_generated: draftsResult.count ?? 0,
+      active_monitors: monitorsResult.count ?? 0,
     },
   });
 }
