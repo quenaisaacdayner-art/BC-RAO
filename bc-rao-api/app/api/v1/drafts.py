@@ -354,6 +354,63 @@ async def get_drafts(
     return result
 
 
+@router.get("/drafts/{draft_id}", response_model=DraftResponse)
+async def get_draft(
+    draft_id: UUID,
+    user: Dict[str, Any] = Depends(get_current_user)
+):
+    """
+    Get a single draft by ID.
+
+    Args:
+        draft_id: Draft UUID
+        user: Current authenticated user from JWT
+
+    Returns:
+        DraftResponse
+
+    Raises:
+        404: Draft not found or access denied
+    """
+    user_id = user["sub"]
+
+    supabase = get_supabase_client()
+    response = supabase.table("generated_drafts").select("*").eq(
+        "id", str(draft_id)
+    ).eq("user_id", user_id).execute()
+
+    if not response.data:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "code": ErrorCode.RESOURCE_NOT_FOUND,
+                "message": "Draft not found or access denied",
+                "details": {"draft_id": str(draft_id)}
+            }
+        )
+
+    draft = response.data[0]
+    return DraftResponse(
+        id=draft["id"],
+        campaign_id=draft["campaign_id"],
+        subreddit=draft["subreddit"],
+        archetype=draft["archetype"],
+        title=draft.get("title"),
+        body=draft["body"],
+        vulnerability_score=draft["vulnerability_score"],
+        rhythm_match_score=draft["rhythm_match_score"],
+        blacklist_violations=draft["blacklist_violations"],
+        model_used=draft["model_used"],
+        token_count=draft["token_count"],
+        token_cost_usd=draft["token_cost_usd"],
+        generation_params=draft.get("generation_params", {}),
+        status=draft["status"],
+        user_edits=draft.get("user_edits"),
+        created_at=draft["created_at"],
+        updated_at=draft["updated_at"],
+    )
+
+
 @router.patch("/drafts/{draft_id}", response_model=DraftResponse)
 async def update_draft(
     draft_id: UUID,

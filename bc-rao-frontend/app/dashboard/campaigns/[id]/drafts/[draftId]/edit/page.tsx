@@ -15,7 +15,7 @@ interface Draft {
   body: string;
   vulnerability_score: number;
   rhythm_match_score: number;
-  target_subreddit: string;
+  subreddit: string;
   archetype: string;
   status: string;
   created_at: string;

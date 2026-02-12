@@ -12,7 +12,7 @@ interface Draft {
   body: string;
   vulnerability_score: number;
   rhythm_match_score: number;
-  target_subreddit: string;
+  subreddit: string;
   archetype: string;
   status: string;
   created_at: string;
@@ -72,7 +72,7 @@ export default function DraftEditor({
           vulnerabilityScore={draft.vulnerability_score}
           rhythmMatchScore={draft.rhythm_match_score}
           metadata={{
-            subreddit: draft.target_subreddit,
+            subreddit: draft.subreddit,
             archetype: draft.archetype,
             generatedAt: draft.created_at,
           }}
