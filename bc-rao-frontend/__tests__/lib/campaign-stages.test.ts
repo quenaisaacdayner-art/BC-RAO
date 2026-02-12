@@ -27,7 +27,7 @@ describe('campaign-stages', () => {
 
     it('should return correct URL for Stage 3 (Community Intelligence)', () => {
       const url = getStageUrl(3, mockCampaignId)
-      expect(url).toBe(`/dashboard/campaigns/${mockCampaignId}/analysis`)
+      expect(url).toBe(`/dashboard/campaigns/${mockCampaignId}/profiles`)
     })
 
     it('should return correct URL for Stage 4 (Alchemical Transmutation)', () => {
@@ -232,7 +232,7 @@ describe('campaign-stages', () => {
         expect(stage3.locked).toBe(false)
         expect(stage3.active).toBe(true)
         expect(stage3.completed).toBe(false)
-        expect(stage3.url).toBe(`/dashboard/campaigns/${mockCampaignId}/analysis`)
+        expect(stage3.url).toBe(`/dashboard/campaigns/${mockCampaignId}/profiles`)
       })
 
       it('should be complete when profiles exist', () => {
