@@ -11,22 +11,17 @@ import {
 } from "@/components/ui/accordion";
 import Link from "next/link";
 
-interface CheckRecord {
-  checked_at: string;
-  auth_visible: boolean;
-  anon_visible: boolean;
-}
-
 interface ShadowEntry {
-  shadow_id: string;
-  post_title: string;
+  id: string;
+  post_url: string;
   subreddit: string;
   status_vida: "Ativo" | "Removido" | "Shadowbanned" | "Auditado";
-  posted_at: string;
-  isc_at_posting: number | null;
-  outcome_classification: "SocialSuccess" | "Rejection" | "Inertia" | null;
-  check_history: CheckRecord[];
+  submitted_at: string;
+  isc_at_post: number;
+  audit_result: "SocialSuccess" | "Rejection" | "Inertia" | null;
   campaign_id: string;
+  total_checks: number;
+  last_check_at: string;
 }
 
 interface PostCardProps {
@@ -64,18 +59,34 @@ function getOutcomeBadgeVariant(outcome: string | null): "default" | "destructiv
 }
 
 export default function PostCard({ post }: PostCardProps) {
-  const timeAgo = formatDistanceToNow(new Date(post.posted_at), { addSuffix: true });
+  const submittedDate = new Date(post.submitted_at);
+  const timeAgo = isNaN(submittedDate.getTime())
+    ? "Unknown"
+    : formatDistanceToNow(submittedDate, { addSuffix: true });
+
+  // Extract a display title from post_url (last path segment)
+  const postTitle = (() => {
+    try {
+      const url = new URL(post.post_url);
+      const segments = url.pathname.split("/").filter(Boolean);
+      // reddit.com/r/sub/comments/id/title -> title is the last segment
+      const titleSegment = segments.length >= 5 ? segments[4] : segments[segments.length - 1];
+      return titleSegment.replace(/_/g, " ");
+    } catch {
+      return post.post_url;
+    }
+  })();
 
   return (
     <Accordion type="single" collapsible>
-      <AccordionItem value={post.shadow_id}>
+      <AccordionItem value={post.id}>
         <Card>
           <CardHeader>
             <AccordionTrigger className="hover:no-underline">
               <div className="flex flex-1 items-start justify-between gap-4 pr-4">
                 <div className="flex-1 min-w-0">
                   <h3 className="font-medium text-left line-clamp-2">
-                    {post.post_title}
+                    {postTitle}
                   </h3>
                   <p className="text-sm text-muted-foreground mt-1">
                     r/{post.subreddit}
@@ -95,55 +106,36 @@ export default function PostCard({ post }: PostCardProps) {
 
           <AccordionContent>
             <CardContent className="space-y-4 pt-4 border-t">
-              {/* Check History */}
+              {/* Monitoring Status */}
               <div>
-                <h4 className="text-sm font-medium mb-2">Check History</h4>
-                <div className="space-y-2">
-                  {post.check_history.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                      No checks performed yet
-                    </p>
-                  ) : (
-                    post.check_history.map((check, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center gap-2 text-sm"
-                      >
-                        <span className="text-muted-foreground">
-                          {formatDistanceToNow(new Date(check.checked_at), {
-                            addSuffix: true,
-                          })}
-                        </span>
-                        <Badge variant={check.auth_visible ? "default" : "secondary"} className="text-xs">
-                          Auth: {check.auth_visible ? "Visible" : "Hidden"}
-                        </Badge>
-                        <Badge variant={check.anon_visible ? "default" : "secondary"} className="text-xs">
-                          Anon: {check.anon_visible ? "Visible" : "Hidden"}
-                        </Badge>
-                      </div>
-                    ))
-                  )}
-                </div>
+                <h4 className="text-sm font-medium mb-2">Monitoring Status</h4>
+                <p className="text-sm text-muted-foreground">
+                  {post.total_checks} check{post.total_checks !== 1 ? "s" : ""} performed
+                  {post.last_check_at && (() => {
+                    const lastCheck = new Date(post.last_check_at);
+                    return isNaN(lastCheck.getTime())
+                      ? ""
+                      : ` — last ${formatDistanceToNow(lastCheck, { addSuffix: true })}`;
+                  })()}
+                </p>
               </div>
 
               {/* ISC at Posting */}
               <div>
                 <h4 className="text-sm font-medium mb-2">ISC at Posting</h4>
                 <div className="text-2xl font-bold">
-                  {post.isc_at_posting !== null
-                    ? post.isc_at_posting.toFixed(2)
-                    : "N/A"}
+                  {post.isc_at_post.toFixed(2)}
                 </div>
               </div>
 
               {/* Outcome Classification (if audited) */}
-              {post.outcome_classification && (
+              {post.audit_result && (
                 <div>
                   <h4 className="text-sm font-medium mb-2">
                     Outcome Classification
                   </h4>
-                  <Badge variant={getOutcomeBadgeVariant(post.outcome_classification)}>
-                    {post.outcome_classification}
+                  <Badge variant={getOutcomeBadgeVariant(post.audit_result)}>
+                    {post.audit_result}
                   </Badge>
                 </div>
               )}

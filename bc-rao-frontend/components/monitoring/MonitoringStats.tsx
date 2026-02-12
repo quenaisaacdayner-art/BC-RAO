@@ -2,10 +2,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface MonitoringStatsProps {
   stats: {
-    active: number;
-    removed: number;
-    shadowbanned: number;
-    total: number;
+    active_count: number;
+    removed_count: number;
+    shadowbanned_count: number;
+    total_count: number;
     success_rate: number;
   };
 }
@@ -22,7 +22,7 @@ export default function MonitoringStats({ stats }: MonitoringStatsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-green-600">
-            {stats.active}
+            {stats.active_count}
           </div>
         </CardContent>
       </Card>
@@ -36,7 +36,7 @@ export default function MonitoringStats({ stats }: MonitoringStatsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-secondary-foreground">
-            {stats.removed}
+            {stats.removed_count}
           </div>
         </CardContent>
       </Card>
@@ -50,7 +50,7 @@ export default function MonitoringStats({ stats }: MonitoringStatsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-destructive">
-            {stats.shadowbanned}
+            {stats.shadowbanned_count}
           </div>
         </CardContent>
       </Card>
@@ -67,7 +67,7 @@ export default function MonitoringStats({ stats }: MonitoringStatsProps) {
             {stats.success_rate.toFixed(1)}%
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            {stats.active} of {stats.total} posts live
+            {stats.active_count} of {stats.total_count} posts live
           </p>
         </CardContent>
       </Card>

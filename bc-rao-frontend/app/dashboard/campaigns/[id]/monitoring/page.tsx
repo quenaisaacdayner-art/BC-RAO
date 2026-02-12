@@ -18,29 +18,24 @@ interface Campaign {
 }
 
 interface DashboardStats {
-  active: number;
-  removed: number;
-  shadowbanned: number;
-  total: number;
+  active_count: number;
+  removed_count: number;
+  shadowbanned_count: number;
+  total_count: number;
   success_rate: number;
 }
 
-interface CheckRecord {
-  checked_at: string;
-  auth_visible: boolean;
-  anon_visible: boolean;
-}
-
 interface ShadowEntry {
-  shadow_id: string;
-  post_title: string;
+  id: string;
+  post_url: string;
   subreddit: string;
   status_vida: "Ativo" | "Removido" | "Shadowbanned" | "Auditado";
-  posted_at: string;
-  isc_at_posting: number | null;
-  outcome_classification: "SocialSuccess" | "Rejection" | "Inertia" | null;
-  check_history: CheckRecord[];
+  submitted_at: string;
+  isc_at_post: number;
+  audit_result: "SocialSuccess" | "Rejection" | "Inertia" | null;
   campaign_id: string;
+  total_checks: number;
+  last_check_at: string;
 }
 
 export default function MonitoringPage() {
@@ -195,16 +190,16 @@ export default function MonitoringPage() {
     );
 
     if (shadowbannedPost) {
-      const dismissKey = `shadowban_alert_dismissed_${shadowbannedPost.shadow_id}`;
+      const dismissKey = `shadowban_alert_dismissed_${shadowbannedPost.id}`;
       const isDismissed = localStorage.getItem(dismissKey);
 
       if (!isDismissed) {
         setShadowbanAlert({
           isOpen: true,
-          postTitle: shadowbannedPost.post_title,
+          postTitle: shadowbannedPost.subreddit,
           subreddit: shadowbannedPost.subreddit,
-          detectedAt: shadowbannedPost.posted_at,
-          shadowId: shadowbannedPost.shadow_id,
+          detectedAt: shadowbannedPost.submitted_at,
+          shadowId: shadowbannedPost.id,
         });
       }
     }
@@ -360,10 +355,10 @@ export default function MonitoringPage() {
           value={statusFilter}
           onChange={setStatusFilter}
           counts={{
-            all: stats.total,
-            active: stats.active,
-            removed: stats.removed,
-            shadowbanned: stats.shadowbanned,
+            all: stats.total_count,
+            active: stats.active_count,
+            removed: stats.removed_count,
+            shadowbanned: stats.shadowbanned_count,
           }}
         />
       )}
@@ -380,7 +375,7 @@ export default function MonitoringPage() {
             </CardContent>
           </Card>
         ) : (
-          filteredPosts.map((post) => <PostCard key={post.shadow_id} post={post} />)
+          filteredPosts.map((post) => <PostCard key={post.id} post={post} />)
         )}
       </div>
 
