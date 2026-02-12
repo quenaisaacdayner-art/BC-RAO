@@ -8,7 +8,13 @@ from app.services.analysis_service import AnalysisService
 from app.models.analysis import AnalysisProgress
 
 
-async def run_analysis_background(task_id: str, campaign_id: str, force_refresh: bool = False):
+async def run_analysis_background(
+    task_id: str,
+    campaign_id: str,
+    force_refresh: bool = False,
+    user_id: str = None,
+    plan: str = None,
+):
     """
     Run analysis pipeline as background task with progress tracking.
 
@@ -19,6 +25,8 @@ async def run_analysis_background(task_id: str, campaign_id: str, force_refresh:
         task_id: Task UUID for Redis state tracking
         campaign_id: Campaign UUID
         force_refresh: If True, re-analyze even if profiles exist
+        user_id: User UUID for LLM style guide cost tracking
+        plan: User plan for budget enforcement
     """
     from app.workers.task_runner import update_task_state
 
@@ -44,7 +52,9 @@ async def run_analysis_background(task_id: str, campaign_id: str, force_refresh:
         result = await service.run_analysis(
             campaign_id=campaign_id,
             force_refresh=force_refresh,
-            progress_callback=progress_callback
+            progress_callback=progress_callback,
+            user_id=user_id,
+            plan=plan,
         )
 
         # Update task state to SUCCESS with result data

@@ -98,10 +98,22 @@ async def trigger_analysis(
             }
         )
 
+    # Get user plan for style guide cost tracking
+    user_plan = "trial"
+    try:
+        sub_resp = supabase.table("subscriptions").select("plan").eq("user_id", user_id).execute()
+        if sub_resp.data:
+            user_plan = sub_resp.data[0].get("plan", "trial")
+    except Exception:
+        pass  # Default to trial if lookup fails
+
     # Run analysis as background task
     task_id = generate_task_id()
     asyncio.create_task(
-        run_analysis_background_task(task_id, str(campaign_id), request.force_refresh)
+        run_analysis_background_task(
+            task_id, str(campaign_id), request.force_refresh,
+            user_id=user_id, plan=user_plan,
+        )
     )
 
     return TriggerAnalysisResponse(

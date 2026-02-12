@@ -1,8 +1,11 @@
 """
 InferenceClient: OpenRouter abstraction with model routing and cost tracking.
 Provides task-based model selection with automatic fallback and budget enforcement.
+
+Supports both single-prompt and system/user message pairs for proper LLM
+persona separation via the Chat Completions API.
 """
-from typing import Optional
+from typing import Optional, List, Dict
 import httpx
 from app.config import settings
 from app.inference.router import MODEL_ROUTING
@@ -38,16 +41,23 @@ class InferenceClient:
         prompt: str,
         user_id: str,
         plan: str,
-        campaign_id: Optional[str] = None
+        campaign_id: Optional[str] = None,
+        system_prompt: Optional[str] = None,
     ) -> dict:
         """
         Make inference call with budget checking and cost tracking.
+
+        When system_prompt is provided, sends proper system + user message pair
+        to the Chat Completions API for better persona adherence and instruction
+        following. When omitted, sends prompt as a single user message (legacy
+        behavior for non-generation tasks).
 
         Args:
             prompt: User prompt/input
             user_id: User UUID for cost tracking
             plan: User plan (trial, starter, growth)
             campaign_id: Campaign UUID (optional)
+            system_prompt: Optional system-level instructions for LLM persona
 
         Returns:
             dict with keys: content, model_used, token_count, cost_usd
@@ -66,10 +76,19 @@ class InferenceClient:
                 status_code=402  # Payment Required
             )
 
+        # Build messages list: system + user when system_prompt provided
+        if system_prompt:
+            messages = [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt},
+            ]
+        else:
+            messages = [{"role": "user", "content": prompt}]
+
         # 2. Try primary model
         try:
             result = await self._call_openrouter(
-                prompt=prompt,
+                messages=messages,
                 model=self.config["model"],
                 max_tokens=self.config["max_tokens"],
                 temperature=self.config["temperature"]
@@ -78,7 +97,7 @@ class InferenceClient:
             # 3. Fallback to secondary model on failure
             try:
                 result = await self._call_openrouter(
-                    prompt=prompt,
+                    messages=messages,
                     model=self.config["fallback"],
                     max_tokens=self.config["max_tokens"],
                     temperature=self.config["temperature"]
@@ -120,13 +139,21 @@ class InferenceClient:
 
     async def _call_openrouter(
         self,
-        prompt: str,
+        messages: List[Dict[str, str]],
         model: str,
         max_tokens: int,
-        temperature: float
+        temperature: float,
+        prompt: Optional[str] = None,
     ) -> dict:
         """
         Make HTTP call to OpenRouter API.
+
+        Args:
+            messages: List of message dicts with role and content keys.
+            model: OpenRouter model identifier.
+            max_tokens: Maximum tokens in response.
+            temperature: Sampling temperature.
+            prompt: Deprecated, ignored. Use messages parameter instead.
 
         Returns:
             dict with keys: content, model_used, token_count
@@ -139,7 +166,7 @@ class InferenceClient:
         }
         payload = {
             "model": model,
-            "messages": [{"role": "user", "content": prompt}],
+            "messages": messages,
             "max_tokens": max_tokens,
             "temperature": temperature
         }

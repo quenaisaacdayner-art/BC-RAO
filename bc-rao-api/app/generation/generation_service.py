@@ -22,7 +22,7 @@ from app.integrations.supabase_client import get_supabase_client
 from app.inference.client import InferenceClient
 from app.generation.prompt_builder import PromptBuilder
 from app.generation.isc_gating import validate_generation_request
-from app.generation.blacklist_validator import validate_draft
+from app.generation.blacklist_validator import validate_draft, detect_ai_patterns
 from app.analysis.nlp_pipeline import analyze_posts_batch
 from app.analysis.scorers import calculate_post_score
 from app.models.draft import (
@@ -98,16 +98,37 @@ class GenerationService:
             # Continue with generic defaults
 
         # Step 2: Load syntax blacklist patterns
+        # Query uses actual DB column names from migrations 001+002:
+        # forbidden_pattern (text), category (text), failure_type (enum), confidence (float)
         blacklist_patterns = []
         try:
             blacklist_response = self.supabase.table("syntax_blacklist").select(
-                "regex_pattern, category, pattern_description"
+                "forbidden_pattern, category, failure_type, confidence"
             ).eq("campaign_id", campaign_id).eq("subreddit", request.subreddit).execute()
 
-            blacklist_patterns = blacklist_response.data
+            # Normalize column names for PromptBuilder compatibility
+            blacklist_patterns = [
+                {
+                    "regex_pattern": p.get("forbidden_pattern", ""),
+                    "category": p.get("category", p.get("failure_type", "Other")),
+                    "pattern_description": p.get("forbidden_pattern", ""),
+                }
+                for p in blacklist_response.data
+            ]
         except Exception as e:
             logger.error(f"Error loading blacklist patterns: {e}")
             # Continue without blacklist
+
+        # Also inject community-detected forbidden patterns from profile
+        if profile and profile.get("forbidden_patterns"):
+            forbidden = profile.get("forbidden_patterns", {})
+            detected = forbidden.get("detected_patterns", [])
+            for pattern in detected:
+                blacklist_patterns.append({
+                    "regex_pattern": pattern.get("pattern_description", ""),
+                    "category": pattern.get("category", "Community-detected"),
+                    "pattern_description": pattern.get("pattern_description", ""),
+                })
 
         # Step 3: ISC gating validation
         gating_result = validate_generation_request(
@@ -141,12 +162,12 @@ class GenerationService:
         # Step 5: LLM generation via InferenceClient
         inference_client = InferenceClient(task="generate_draft")
 
-        # Combine system + user prompts for InferenceClient
-        combined_prompt = f"{prompts['system']}\n\n{prompts['user']}"
-
+        # Send system and user prompts as separate messages for proper
+        # persona adherence and instruction following via Chat Completions API
         try:
             inference_result = await inference_client.call(
-                prompt=combined_prompt,
+                prompt=prompts["user"],
+                system_prompt=prompts["system"],
                 user_id=user_id,
                 plan=plan,
                 campaign_id=campaign_id,
@@ -176,6 +197,16 @@ class GenerationService:
             logger.warning(
                 f"Generated draft has {blacklist_violations} blacklist violations for r/{request.subreddit}"
             )
+
+        # Step 6b: AI-pattern detection (quality gate for humanization)
+        ai_patterns = detect_ai_patterns(generated_text)
+        if ai_patterns:
+            ai_categories = [p["category"] for p in ai_patterns]
+            logger.warning(
+                f"Generated draft has {len(ai_patterns)} AI-tell patterns for r/{request.subreddit}: {ai_categories}"
+            )
+            # Count AI patterns as additional blacklist violations for scoring
+            blacklist_violations += len(ai_patterns)
 
         # Step 7: Calculate scores via NLP pipeline
         try:

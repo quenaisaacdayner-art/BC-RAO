@@ -94,9 +94,12 @@ async def run_collection_background(task_id: str, campaign_id: str, user_id: str
             "analysis_task_id": analysis_task_id  # Frontend can track analysis progress
         })
 
-        # Launch analysis as background task
+        # Launch analysis as background task (pass user_id/plan for style guide)
         asyncio.create_task(
-            run_analysis_background_task(analysis_task_id, campaign_id)
+            run_analysis_background_task(
+                analysis_task_id, campaign_id,
+                user_id=user_id, plan=plan,
+            )
         )
 
     except Exception as e:
@@ -106,7 +109,13 @@ async def run_collection_background(task_id: str, campaign_id: str, user_id: str
         })
 
 
-async def run_analysis_background_task(task_id: str, campaign_id: str, force_refresh: bool = False):
+async def run_analysis_background_task(
+    task_id: str,
+    campaign_id: str,
+    force_refresh: bool = False,
+    user_id: Optional[str] = None,
+    plan: Optional[str] = None,
+):
     """
     Run analysis pipeline as an asyncio background task.
     Stores progress in Redis for SSE streaming.
@@ -115,10 +124,12 @@ async def run_analysis_background_task(task_id: str, campaign_id: str, force_ref
         task_id: Task UUID for Redis state tracking
         campaign_id: Campaign UUID
         force_refresh: If True, re-analyze even if profiles exist
+        user_id: User UUID for LLM style guide cost tracking
+        plan: User plan for budget enforcement
     """
     from app.workers.analysis_worker import run_analysis_background
 
-    await run_analysis_background(task_id, campaign_id, force_refresh)
+    await run_analysis_background(task_id, campaign_id, force_refresh, user_id=user_id, plan=plan)
 
 
 async def run_monitoring_check_background_task(task_id: str, shadow_id: str):

@@ -28,6 +28,8 @@ from app.analysis.pattern_extractor import (
     extract_forbidden_patterns,
     check_post_penalties,
 )
+from app.analysis.style_extractor import extract_community_style
+from app.analysis.style_guide_generator import generate_style_guide
 from app.models.analysis import (
     AnalysisResult,
     AnalysisProgress,
@@ -51,6 +53,8 @@ class AnalysisService:
         campaign_id: str,
         force_refresh: bool = False,
         progress_callback: Optional[Callable[[AnalysisProgress], None]] = None,
+        user_id: Optional[str] = None,
+        plan: Optional[str] = None,
     ) -> AnalysisResult:
         """
         Run full analysis pipeline: NLP -> scoring -> profiling.
@@ -206,6 +210,33 @@ class AnalysisService:
                 # Step 5: Extract forbidden patterns
                 forbidden_result = extract_forbidden_patterns(texts)
 
+                # Step 5.1: Extract structural style metrics (SpaCy - FREE)
+                top_scored = sorted(
+                    scored_posts,
+                    key=lambda p: p.get("total_score", 0),
+                    reverse=True,
+                )
+                top_texts = [p["raw_text"] for p in top_scored[:20]]
+                style_metrics = extract_community_style(texts, top_texts)
+
+                # Step 5.2: Generate LLM style guide (Haiku - ~$0.003/subreddit)
+                style_guide = None
+                if user_id and plan:
+                    try:
+                        style_guide = await generate_style_guide(
+                            subreddit=subreddit,
+                            top_posts=[
+                                {"title": p.get("title", ""), "raw_text": p["raw_text"]}
+                                for p in top_scored[:12]
+                            ],
+                            style_metrics=style_metrics,
+                            user_id=user_id,
+                            plan=plan,
+                            campaign_id=campaign_id,
+                        )
+                    except Exception as e:
+                        errors.append(f"Style guide generation failed for r/{subreddit}: {str(e)}")
+
                 # Step 6: Calculate profile statistics
                 profile_data = self._build_community_profile(
                     campaign_id=campaign_id,
@@ -214,6 +245,8 @@ class AnalysisService:
                     nlp_results=nlp_results,
                     scored_posts=scored_posts,
                     forbidden_patterns=forbidden_result,
+                    style_metrics=style_metrics,
+                    style_guide=style_guide,
                 )
 
                 # Step 7: Upsert community profile
@@ -265,6 +298,8 @@ class AnalysisService:
         nlp_results: List[dict],
         scored_posts: List[dict],
         forbidden_patterns: dict,
+        style_metrics: Optional[dict] = None,
+        style_guide: Optional[dict] = None,
     ) -> dict:
         """Build community profile dictionary for database insertion."""
         # Calculate dominant tone
@@ -298,7 +333,7 @@ class AnalysisService:
             archetype = post.get("archetype", "Unclassified")
             archetype_dist[archetype] = archetype_dist.get(archetype, 0) + 1
 
-        return {
+        profile = {
             "campaign_id": campaign_id,
             "subreddit": subreddit,
             "isc_score": isc_score,
@@ -310,6 +345,13 @@ class AnalysisService:
             "archetype_distribution": archetype_dist,
             "sample_size": len(scored_posts),
         }
+
+        if style_metrics is not None:
+            profile["style_metrics"] = style_metrics
+        if style_guide is not None:
+            profile["style_guide"] = style_guide
+
+        return profile
 
     async def get_community_profile(self, campaign_id: str, subreddit: str) -> dict:
         """

@@ -25,7 +25,7 @@ MODEL_ROUTING = {
     },
     "extract_patterns": {
         "model": "anthropic/claude-3-haiku-20240307",
-        "max_tokens": 1000,
+        "max_tokens": 1500,
         "temperature": 0.2,
         "fallback": "google/gemini-flash-1.5"
     },

@@ -1,13 +1,64 @@
 """
-Post-generation blacklist validation.
+Post-generation blacklist validation and AI-pattern detection.
 
 Validates generated drafts against regex forbidden patterns from the database.
+Also detects common AI-generated writing patterns that make posts look inauthentic.
 Provides utilities for link density, sentence length, and jargon checking.
 """
 
 import re
-from typing import List, Dict
+from typing import List, Dict, Tuple
 from app.models.draft import BlacklistCheckResult, BlacklistViolation
+
+
+# Compiled regex patterns for detecting AI-generated writing tells.
+# These are common patterns that LLMs produce which real humans rarely use.
+AI_TELL_PATTERNS = [
+    # Formal transition phrases that AI overuses
+    (re.compile(r'\b(Furthermore|Moreover|Additionally|In conclusion|That being said|With that in mind|It\'s worth noting|Needless to say)\b', re.IGNORECASE), "AI-formal-transition", "Formal transition phrase"),
+    # ChatGPT-style phrases
+    (re.compile(r'\b(I\'d be happy to|Great question|Let me share|Here\'s the thing|Without further ado|In today\'s world)\b', re.IGNORECASE), "AI-chatgpt-phrase", "ChatGPT-style phrase"),
+    # Corporate/marketing buzzwords
+    (re.compile(r'\b(game-changer|cutting-edge|best-in-class|revolutionary|innovative solution|robust|streamline|leverage|optimize)\b', re.IGNORECASE), "AI-corporate-buzzword", "Corporate/marketing buzzword"),
+    # Overly structured bullet/list patterns (3+ sequential items starting with -)
+    (re.compile(r'(?:^|\n)\s*[-*]\s+.+(?:\n\s*[-*]\s+.+){2,}', re.MULTILINE), "AI-list-structure", "Bullet point list (uncommon in casual Reddit posts)"),
+    # Generic greeting openings
+    (re.compile(r'^(?:Hey everyone|Hi everyone|Hello everyone|Hey folks|Hi folks|Greetings)[!,.]', re.IGNORECASE | re.MULTILINE), "AI-generic-greeting", "Generic greeting opening"),
+    # AI discourse marker "So," at sentence start
+    (re.compile(r'(?:^|\.\s+)So,\s', re.MULTILINE), "AI-so-discourse", "\"So,\" as discourse marker"),
+]
+
+
+def detect_ai_patterns(text: str) -> List[Dict]:
+    """
+    Detect common AI-generated writing patterns in text.
+
+    Returns a list of detected patterns with their category, description,
+    and the matched text. Used as a quality gate after LLM generation.
+
+    Args:
+        text: Generated draft text to check
+
+    Returns:
+        List of dicts with keys: category, description, matched_text, severity
+
+    Examples:
+        >>> detect_ai_patterns("Furthermore, this innovative solution is a game-changer.")
+        [{"category": "AI-formal-transition", ...}, {"category": "AI-corporate-buzzword", ...}]
+    """
+    detections = []
+
+    for pattern, category, description in AI_TELL_PATTERNS:
+        matches = list(pattern.finditer(text))
+        for match in matches:
+            detections.append({
+                "category": category,
+                "description": description,
+                "matched_text": match.group(0)[:100],
+                "severity": "high" if category in ("AI-chatgpt-phrase", "AI-corporate-buzzword") else "medium",
+            })
+
+    return detections
 
 
 def validate_draft(draft_text: str, forbidden_patterns: List[Dict]) -> BlacklistCheckResult:
