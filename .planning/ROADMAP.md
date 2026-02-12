@@ -12,11 +12,12 @@ BC-RAO delivers social intelligence for Reddit marketing through a systematic 6-
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation & Core Setup** - Auth, dashboard scaffold, campaign management, infrastructure
-- [ ] **Phase 2: Collection Pipeline** - Module 1 with Apify scraping, regex filtering, archetype classification
+- [x] **Phase 1: Foundation & Core Setup** - Auth, dashboard scaffold, campaign management, infrastructure
+- [x] **Phase 2: Collection Pipeline** - Module 1 with Apify scraping, regex filtering, archetype classification
 - [x] **Phase 3: Pattern Engine** - Module 2 with SpaCy rhythm analysis, ISC scoring, community profiling
 - [x] **Phase 4: Draft Generation** - Module 3 with conditioned generation, blacklist enforcement, ISC gating
-- [ ] **Phase 5: Monitoring & Feedback Loop** - Module 4 with dual-check shadowban detection, negative reinforcement
+- [x] **Phase 5: Monitoring & Feedback Loop** - Module 4 with dual-check shadowban detection, negative reinforcement
+- [ ] **Phase 5.1: Monitoring Hardening & Email Setup** - INSERTED: Gap closure from v1 audit
 - [ ] **Phase 6: Billing & Production Polish** - Stripe integration, usage enforcement, trial lifecycle
 
 ## Phase Details
@@ -42,8 +43,8 @@ Plans:
 - [x] 01-02-PLAN.md — Frontend foundation: Next.js + Tailwind + Shadcn/UI, Supabase middleware, theme provider (completed 2026-02-09)
 - [x] 01-03-PLAN.md — Auth system: Backend auth endpoints + frontend login/signup pages (completed 2026-02-09)
 - [x] 01-04-PLAN.md — Worker infrastructure: Celery + Redis, InferenceClient, cost tracking (completed 2026-02-09)
-- [ ] 01-05-PLAN.md — Campaign API + dashboard shell: CRUD endpoints, sidebar, overview page
-- [ ] 01-06-PLAN.md — Campaign UI: Create form with subreddit autocomplete, list, edit, delete
+- [x] 01-05-PLAN.md — Campaign API + dashboard shell: CRUD endpoints, sidebar, overview page (completed 2026-02-09)
+- [x] 01-06-PLAN.md — Campaign UI: Create form with subreddit autocomplete, list, edit, delete (completed 2026-02-09)
 
 ---
 
@@ -64,10 +65,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Backend pipeline core: Apify client, regex pre-filter, collection service, raw_posts models
-- [ ] 02-02-PLAN.md — Celery collection worker with progress tracking + FastAPI collection endpoints (trigger, SSE, posts query)
-- [ ] 02-03-PLAN.md — Frontend collection trigger page with live SSE progress tracking
-- [ ] 02-04-PLAN.md — Frontend post browsing: card grid, filters, detail modal, funnel stats + human verification
+- [x] 02-01-PLAN.md — Backend pipeline core: Apify client, regex pre-filter, collection service, raw_posts models (completed 2026-02-10)
+- [x] 02-02-PLAN.md — Celery collection worker with progress tracking + FastAPI collection endpoints (trigger, SSE, posts query) (completed 2026-02-10)
+- [x] 02-03-PLAN.md — Frontend collection trigger page with live SSE progress tracking (completed 2026-02-10)
+- [x] 02-04-PLAN.md — Frontend post browsing: card grid, filters, detail modal, funnel stats + human verification (completed 2026-02-10)
 
 ---
 
@@ -141,10 +142,35 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 05-01-PLAN.md — Backend monitoring foundation: models, service, Reddit dual-check client, email service
-- [ ] 05-02-PLAN.md — Backend API endpoints, monitoring worker, scheduler, audit task, feedback loop
-- [ ] 05-03-PLAN.md — Frontend monitoring dashboard: stats, post cards, filters, shadowban alert, URL registration
-- [ ] 05-04-PLAN.md — Stage 5 campaign journey integration, "I posted this" button on draft editor
+- [x] 05-01-PLAN.md — Backend monitoring foundation: models, service, Reddit dual-check client, email service (completed 2026-02-11)
+- [x] 05-02-PLAN.md — Backend API endpoints, monitoring worker, scheduler, audit task, feedback loop (completed 2026-02-11)
+- [x] 05-03-PLAN.md — Frontend monitoring dashboard: stats, post cards, filters, shadowban alert, URL registration (completed 2026-02-11)
+- [x] 05-04-PLAN.md — Stage 5 campaign journey integration, "I posted this" button on draft editor (completed 2026-02-11)
+
+---
+
+### Phase 5.1: Monitoring Hardening & Email Setup (INSERTED)
+**Goal**: Close all gaps identified in v1 audit for Phase 5: configure email service, enforce monitor plan limits, implement Post-Audit & Loop dashboard stage, verify RLS, fix naming inconsistencies, and integrate monitoring scheduler into app startup.
+
+**Depends on**: Phase 5 (monitoring infrastructure exists)
+
+**Requirements**: EMAL-01, EMAL-02, EMAL-03, ORCH-07, DASH-06, INFR-01
+
+**Gap Closure**: Closes gaps from v1-MILESTONE-AUDIT.md
+
+**Success Criteria** (what must be TRUE):
+  1. Email alerts (shadowban emergency, success, adjustment) send via Resend when triggered
+  2. Monitor slot registration enforces plan tier limits (trial=3, starter=10, growth=50)
+  3. Post-Audit & Loop stage (DASH-06) shows audit results, pivot recommendations, and feedback loop status
+  4. RLS verified enabled on all tenant-scoped tables (campaigns, raw_posts, community_profiles, generated_drafts, shadow_table, syntax_blacklist)
+  5. `monitored_posts` / `active_monitors` naming aligned between frontend and backend
+  6. Periodic monitoring scheduler launches automatically on app startup
+
+**Plans**: 2 plans
+
+Plans:
+- [ ] 05.1-01-PLAN.md — Email configuration (Resend), monitor plan limits, RLS verification, naming fix, scheduler startup integration
+- [ ] 05.1-02-PLAN.md — Post-Audit & Loop dashboard stage (DASH-06): audit results UI, pivot recommendations, feedback loop visualization
 
 ---
 
@@ -177,7 +203,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 5.1 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -185,9 +211,10 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 2. Collection Pipeline | 4/4 | Complete | 2026-02-10 |
 | 3. Pattern Engine | 4/4 | Complete | 2026-02-11 |
 | 4. Draft Generation | 5/5 | Complete | 2026-02-11 |
-| 5. Monitoring & Feedback Loop | 0/4 | Not started | - |
+| 5. Monitoring & Feedback Loop | 4/4 | Complete | 2026-02-11 |
+| 5.1 Monitoring Hardening (INSERTED) | 0/2 | Not started | - |
 | 6. Billing & Production Polish | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-02-07*
-*Last updated: 2026-02-11 (Phase 5 planned: 4 plans in 3 waves)*
+*Last updated: 2026-02-12 (Phase 5.1 inserted: gap closure from v1 audit)*
