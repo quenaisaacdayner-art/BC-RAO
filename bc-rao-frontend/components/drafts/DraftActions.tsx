@@ -3,10 +3,9 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+
 import { Input } from "@/components/ui/input";
-import { Check, Trash2, RefreshCw, ExternalLink, Rocket } from "lucide-react";
+import { Check, Trash2, ExternalLink, Rocket } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
 import CopyButton from "./CopyButton";
@@ -19,7 +18,7 @@ interface DraftActionsProps {
   isProcessing: boolean;
   onApprove: () => void;
   onDiscard: () => void;
-  onRegenerate: (feedback: string) => void;
+  onRegenerate?: (feedback: string) => void;
 }
 
 export default function DraftActions({
@@ -31,26 +30,9 @@ export default function DraftActions({
   onDiscard,
   onRegenerate,
 }: DraftActionsProps) {
-  const [showRegenerateFeedback, setShowRegenerateFeedback] = useState(false);
-  const [feedback, setFeedback] = useState("");
   const [showPostUrlInput, setShowPostUrlInput] = useState(false);
   const [postUrl, setPostUrl] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
-
-  const handleRegenerate = () => {
-    if (showRegenerateFeedback) {
-      onRegenerate(feedback);
-      setFeedback("");
-      setShowRegenerateFeedback(false);
-    } else {
-      setShowRegenerateFeedback(true);
-    }
-  };
-
-  const handleCancelRegenerate = () => {
-    setShowRegenerateFeedback(false);
-    setFeedback("");
-  };
 
   const handlePostUrlSubmit = async () => {
     // Validate Reddit URL format
@@ -198,26 +180,6 @@ export default function DraftActions({
         </div>
       )}
 
-      {/* Regenerate Feedback Section */}
-      {showRegenerateFeedback && (
-        <div className="space-y-2">
-          <Label htmlFor="feedback" className="text-sm">
-            Regeneration Feedback (Optional)
-          </Label>
-          <Textarea
-            id="feedback"
-            placeholder="What should be different in the new draft?"
-            value={feedback}
-            onChange={(e) => setFeedback(e.target.value)}
-            rows={4}
-            disabled={isProcessing}
-          />
-          <p className="text-xs text-muted-foreground">
-            Provide guidance for the regeneration. Leave blank to try a different variation.
-          </p>
-        </div>
-      )}
-
       {/* Action Buttons */}
       <div className="space-y-2">
         <Button
@@ -230,37 +192,6 @@ export default function DraftActions({
         </Button>
 
         <CopyButton text={draftText} disabled={isProcessing} />
-
-        {showRegenerateFeedback ? (
-          <div className="grid grid-cols-2 gap-2">
-            <Button
-              variant="outline"
-              onClick={handleCancelRegenerate}
-              disabled={isProcessing}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="default"
-              onClick={handleRegenerate}
-              disabled={isProcessing}
-              className="gap-2"
-            >
-              <RefreshCw className="h-4 w-4" />
-              Generate
-            </Button>
-          </div>
-        ) : (
-          <Button
-            variant="outline"
-            onClick={handleRegenerate}
-            disabled={isProcessing}
-            className="w-full gap-2"
-          >
-            <RefreshCw className="h-4 w-4" />
-            Regenerate
-          </Button>
-        )}
 
         <Button
           variant="destructive"
