@@ -10,6 +10,7 @@ import { Check, Trash2, RefreshCw, ExternalLink, Rocket } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
 import CopyButton from "./CopyButton";
+import { createClient } from "@/lib/supabase/client";
 
 interface DraftActionsProps {
   draftText: string;
@@ -70,11 +71,20 @@ export default function DraftActions({
     try {
       setIsRegistering(true);
 
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session?.access_token) {
+        toast.error("Session expired. Please log in again.");
+        return;
+      }
+
       // POST to monitoring API
       const response = await fetch("/api/monitoring", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           post_url: postUrl.trim(),

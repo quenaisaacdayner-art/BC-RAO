@@ -48,6 +48,7 @@ export default function GenerationForm({
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      subreddit: "",
       archetype: "Feedback",
       context: "",
     },

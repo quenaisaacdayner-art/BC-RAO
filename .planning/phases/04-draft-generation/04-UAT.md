@@ -9,21 +9,23 @@ updated: 2026-02-11T12:00:00Z
 ## Current Test
 <!-- OVERWRITE each test - shows where we are -->
 
-number: 1
-name: Generation Form Layout
+number: 2
+name: ISC Gating Warning
 expected: |
-  Navigate to a campaign page, then click the "Generate Draft" button (or go to /dashboard/campaigns/[id]/drafts/new). You should see a single-form page with three inputs: a subreddit dropdown (populated with your campaign's target subreddits), an archetype selector (Journey/ProblemSolution/Feedback), and an optional context textarea. A "Generate" button should be at the bottom.
-awaiting: user response
+  Select a subreddit with ISC > 7.5. Orange warning + archetype locks to Feedback.
+awaiting: paused - investigating errors
 
 ## Tests
 
 ### 1. Generation Form Layout
 expected: Navigate to a campaign's draft generation page. You should see a single-form with three inputs: subreddit dropdown (populated with campaign's target subreddits), archetype selector (Journey/ProblemSolution/Feedback), and optional context textarea. Generate button at the bottom.
-result: [pending]
+result: pass
 
 ### 2. ISC Gating Warning
 expected: Select a subreddit that has a community profile with ISC score > 7.5 (high sensitivity). An orange warning banner should appear explaining the ISC score/tier. The archetype selector should auto-switch to "Feedback" and disable other options.
-result: [pending]
+result: issue
+reported: "e.forEach is not a function error when selecting subreddit, profile shows as 'No profile' even though subreddit was analyzed"
+severity: major
 
 ### 3. Unprofiled Subreddit Warning
 expected: Select a subreddit that has NOT been analyzed (no community profile). A yellow warning banner should appear saying accuracy may be reduced. Generation should still be allowed (button not disabled).
@@ -76,11 +78,19 @@ result: [pending]
 ## Summary
 
 total: 14
-passed: 0
-issues: 0
-pending: 14
+passed: 1
+issues: 1
+pending: 12
 skipped: 0
 
 ## Gaps
 
-[none yet]
+- truth: "ISC gating warning appears when selecting high-sensitivity subreddit"
+  status: failed
+  reason: "User reported: e.forEach is not a function error when selecting subreddit, profile shows as 'No profile' even though subreddit was analyzed"
+  severity: major
+  test: 2
+  root_cause: ""
+  artifacts: []
+  missing: []
+  debug_session: ""

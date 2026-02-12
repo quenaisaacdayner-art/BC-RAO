@@ -77,9 +77,12 @@ export default function DraftsPage() {
         });
 
         if (draftsResponse.ok) {
-          const draftsData = await draftsResponse.json();
-          setDrafts(draftsData);
-          setFilteredDrafts(draftsData);
+          const responseData = await draftsResponse.json();
+          const draftsArray = Array.isArray(responseData)
+            ? responseData
+            : responseData.drafts || [];
+          setDrafts(draftsArray);
+          setFilteredDrafts(draftsArray);
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load data");

@@ -79,7 +79,10 @@ export default function NewDraftPage() {
         });
 
         if (profilesResponse.ok) {
-          const profilesData: CommunityProfile[] = await profilesResponse.json();
+          const responseData = await profilesResponse.json();
+          const profilesData: CommunityProfile[] = Array.isArray(responseData)
+            ? responseData
+            : responseData.profiles || [];
 
           // Convert to lookup object
           const iscLookup: Record<string, { score: number; tier: string }> = {};

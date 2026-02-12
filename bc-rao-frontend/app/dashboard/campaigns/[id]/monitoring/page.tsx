@@ -149,9 +149,12 @@ export default function MonitoringPage() {
       );
 
       if (response.ok) {
-        const data = await response.json();
-        setPosts(data);
-        setFilteredPosts(data);
+        const responseData = await response.json();
+        const postsArray = Array.isArray(responseData)
+          ? responseData
+          : responseData.posts || [];
+        setPosts(postsArray);
+        setFilteredPosts(postsArray);
       }
     } catch (err) {
       console.error("Failed to fetch posts:", err);
