@@ -40,6 +40,7 @@ export default function NewDraftPage() {
   const [progress, setProgress] = useState<ProgressData>({ status: "" });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [draftUsage, setDraftUsage] = useState<{ used: number; limit: number } | null>(null);
 
   // Load campaign and community profiles
   useEffect(() => {
@@ -93,6 +94,17 @@ export default function NewDraftPage() {
             };
           });
           setIscData(iscLookup);
+        }
+
+        // Fetch draft usage for current month
+        const draftsResponse = await fetch(`/api/campaigns/${campaignId}/drafts?limit=1`, {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+        if (draftsResponse.ok) {
+          const draftsData = await draftsResponse.json();
+          setDraftUsage({ used: draftsData.total ?? 0, limit: 10 }); // trial = 10
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load data");
@@ -246,6 +258,31 @@ export default function NewDraftPage() {
         <h2 className="text-3xl font-bold tracking-tight">Generate Draft</h2>
         <p className="text-muted-foreground">{campaign.name}</p>
       </div>
+
+      {/* Draft Usage Indicator */}
+      {draftUsage && (
+        <div className={`rounded-lg border p-3 flex items-center justify-between ${
+          draftUsage.used >= draftUsage.limit
+            ? "border-red-300 bg-red-50 dark:bg-red-950/30 dark:border-red-800"
+            : draftUsage.used >= draftUsage.limit * 0.8
+              ? "border-yellow-300 bg-yellow-50 dark:bg-yellow-950/30 dark:border-yellow-800"
+              : "border-border bg-muted/50"
+        }`}>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">
+              {draftUsage.used >= draftUsage.limit
+                ? "Monthly limit reached"
+                : "Monthly usage"}
+            </span>
+            <span className={`text-sm ${
+              draftUsage.used >= draftUsage.limit ? "text-red-600 dark:text-red-400 font-semibold" : "text-muted-foreground"
+            }`}>
+              {draftUsage.used} / {draftUsage.limit} drafts
+            </span>
+          </div>
+          <span className="text-xs text-muted-foreground">Trial plan</span>
+        </div>
+      )}
 
       {/* Error Display */}
       {error && (
