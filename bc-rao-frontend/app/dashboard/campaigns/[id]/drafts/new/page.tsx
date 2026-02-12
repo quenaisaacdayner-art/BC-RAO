@@ -177,7 +177,7 @@ export default function NewDraftPage() {
           // Redirect to draft editor after short delay
           if (draftId) {
             setTimeout(() => {
-              router.push(`/dashboard/drafts/${draftId}/edit`);
+              router.push(`/dashboard/campaigns/${campaignId}/drafts/${draftId}/edit`);
             }, 1500);
           }
         } catch (err) {
