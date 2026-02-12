@@ -122,18 +122,19 @@ async def run_monitoring_check(task_id: str, shadow_id: str):
             check_result=check_result
         )
 
-        # Store check_result in metadata for consecutive failure tracking
-        # NOTE: This requires metadata JSONB column in shadow_table
-        # For now, we'll store it as a simple update - TODO in future schema iteration
-        try:
-            current_metadata = entry.get("metadata") or {}
-            current_metadata["last_check_result"] = check_result
-
-            supabase.table("shadow_table").update({
-                "metadata": current_metadata
-            }).eq("id", shadow_id).execute()
-        except Exception as e:
-            logger.warning(f"Could not update metadata for {shadow_id}: {e}")
+        # TODO: Store check_result in metadata for consecutive failure tracking
+        # This requires adding a metadata JSONB column to shadow_table schema
+        # Consecutive failure logic is currently not functional
+        # Options: (1) Add metadata JSONB column, (2) Create separate check_history table
+        # For now, skip metadata update - single check triggers shadowban alert
+        #
+        # Uncomment once schema is updated:
+        # try:
+        #     current_metadata = entry.get("metadata") or {}
+        #     current_metadata["last_check_result"] = check_result
+        #     supabase.table("shadow_table").update({"metadata": current_metadata}).eq("id", shadow_id).execute()
+        # except Exception as e:
+        #     logger.warning(f"Could not update metadata for {shadow_id}: {e}")
 
         # 5. Handle shadowban/removal detection
         if new_status == "Shadowbanned":
@@ -173,6 +174,8 @@ async def run_monitoring_check(task_id: str, shadow_id: str):
                         subject=f"URGENT: Shadowban detected in r/{entry['subreddit']}",
                         body_preview="Your post is invisible to other users..."
                     )
+                else:
+                    logger.warning(f"Profile not found for user {entry['user_id']} - skipping shadowban alert email")
 
             # Extract and inject patterns
             update_task_state(task_id, "PROGRESS", {
@@ -183,17 +186,18 @@ async def run_monitoring_check(task_id: str, shadow_id: str):
             # Fetch original draft text if draft_id exists
             draft_text = None
             if entry.get("draft_id"):
-                draft_response = supabase.table("generated_drafts").select("generated_text").eq(
+                draft_response = supabase.table("generated_drafts").select("body").eq(
                     "id", entry["draft_id"]
                 ).execute()
                 if draft_response.data:
-                    draft_text = draft_response.data[0]["generated_text"]
+                    draft_text = draft_response.data[0]["body"]
 
             if draft_text:
                 await extract_and_inject_patterns(
                     shadow_id=shadow_id,
                     draft_text=draft_text,
                     subreddit=entry["subreddit"],
+                    campaign_id=entry["campaign_id"],
                     failure_type="Shadowban"
                 )
 
@@ -206,17 +210,18 @@ async def run_monitoring_check(task_id: str, shadow_id: str):
             # Extract and inject patterns for admin removal
             draft_text = None
             if entry.get("draft_id"):
-                draft_response = supabase.table("generated_drafts").select("generated_text").eq(
+                draft_response = supabase.table("generated_drafts").select("body").eq(
                     "id", entry["draft_id"]
                 ).execute()
                 if draft_response.data:
-                    draft_text = draft_response.data[0]["generated_text"]
+                    draft_text = draft_response.data[0]["body"]
 
             if draft_text:
                 await extract_and_inject_patterns(
                     shadow_id=shadow_id,
                     draft_text=draft_text,
                     subreddit=entry["subreddit"],
+                    campaign_id=entry["campaign_id"],
                     failure_type="AdminRemoval"
                 )
 
@@ -376,6 +381,7 @@ async def extract_and_inject_patterns(
     shadow_id: str,
     draft_text: str,
     subreddit: str,
+    campaign_id: str,
     failure_type: str
 ):
     """
@@ -387,6 +393,7 @@ async def extract_and_inject_patterns(
         shadow_id: Shadow entry UUID (used as source_post_id)
         draft_text: Original draft text to analyze
         subreddit: Subreddit name
+        campaign_id: Campaign UUID
         failure_type: 'Shadowban' or 'AdminRemoval'
     """
     try:
@@ -409,6 +416,7 @@ async def extract_and_inject_patterns(
             try:
                 # Insert with upsert to avoid duplicate errors
                 insert_data = {
+                    "campaign_id": campaign_id,
                     "subreddit": subreddit,
                     "forbidden_pattern": penalty["phrase"],
                     "failure_type": failure_type,  # Will be cast to failure_category enum

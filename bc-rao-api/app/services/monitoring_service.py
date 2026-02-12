@@ -88,24 +88,19 @@ class MonitoringService:
         # Default ISC if profile doesn't exist
         isc_at_post = profile_response.data[0]["isc_score"] if profile_response.data else 5.0
 
-        # 5. Determine check_interval based on user's account_status from subscriptions
-        # NOTE: account_status is NOT in subscriptions table per schema - using subscription.plan as proxy
-        subscription_response = self.supabase.table("subscriptions").select("plan").eq("user_id", user_id).execute()
-
-        # For now, use plan as proxy: trial = "New" behavior (1h), else 4h
-        # TODO: Add account_status tracking to profiles or separate table in future phase
-        check_interval_hours = 1 if (subscription_response.data and subscription_response.data[0]["plan"] == "trial") else 4
-
-        # If we want to use account_status from shadow_table history, check most recent entry
+        # 5. Determine check_interval based on user's account_status from shadow_table history
+        # Account status is derived from post history, not stored in profiles/subscriptions
         # For first-time users, default to "Established" (4h interval)
         account_status = "Established"
+        check_interval_hours = 4
+
         recent_posts = self.supabase.table("shadow_table").select("account_status").eq(
             "user_id", user_id
         ).order("created_at", desc=True).limit(1).execute()
 
         if recent_posts.data:
             account_status = recent_posts.data[0].get("account_status", "Established")
-            # Override check_interval based on account_status
+            # Set check_interval based on account_status
             if account_status == "New":
                 check_interval_hours = 1
             else:
@@ -280,18 +275,24 @@ class MonitoringService:
             new_status: New status_vida value
             check_result: Optional check result dict to append to metadata
         """
-        # Fetch current entry to increment total_checks
-        current = self.supabase.table("shadow_table").select("total_checks").eq("id", shadow_id).execute()
+        # Fetch current entry to increment total_checks and get check_interval_hours
+        current = self.supabase.table("shadow_table").select("total_checks, check_interval_hours").eq("id", shadow_id).execute()
         if not current.data:
             raise ValueError(f"Shadow entry not found: {shadow_id}")
 
         total_checks = current.data[0]["total_checks"] + 1
+        check_interval_hours = current.data[0].get("check_interval_hours", 4)
+
+        # Calculate next check time
+        from datetime import timedelta
+        next_check = datetime.utcnow() + timedelta(hours=check_interval_hours)
 
         update_data = {
             "status_vida": new_status,
             "total_checks": total_checks,
             "last_check_at": datetime.utcnow().isoformat(),
-            "last_check_status": 200  # HTTP status code placeholder
+            "last_check_status": 200,  # HTTP status code placeholder
+            "next_check_at": next_check.isoformat()
         }
 
         # TODO: Append check_result to JSONB metadata field if schema updated in future

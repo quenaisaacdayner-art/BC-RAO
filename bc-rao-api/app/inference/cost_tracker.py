@@ -31,6 +31,10 @@ class CostTracker:
         # Get plan cap
         cap = COST_CAPS.get(plan, COST_CAPS["trial"])
 
+        # Edge case: if cap is 0, budget is exhausted
+        if cap == 0:
+            return (False, 0.0)
+
         # Calculate billing cycle start (first day of current month)
         now = datetime.utcnow()
         billing_start = datetime(now.year, now.month, 1)

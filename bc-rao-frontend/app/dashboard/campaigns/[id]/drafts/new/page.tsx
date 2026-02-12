@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -41,6 +41,14 @@ export default function NewDraftPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [draftUsage, setDraftUsage] = useState<{ used: number; limit: number } | null>(null);
+  const eventSourceRef = useRef<EventSource | null>(null);
+
+  // Cleanup EventSource on unmount
+  useEffect(() => {
+    return () => {
+      eventSourceRef.current?.close();
+    };
+  }, []);
 
   // Load campaign and community profiles
   useEffect(() => {
@@ -104,7 +112,9 @@ export default function NewDraftPage() {
         });
         if (draftsResponse.ok) {
           const draftsData = await draftsResponse.json();
-          setDraftUsage({ used: draftsData.total ?? 0, limit: 10 }); // trial = 10
+          // Backend returns { drafts: [], total: N }
+          const totalDrafts = draftsData.total ?? draftsData.drafts?.length ?? 0;
+          setDraftUsage({ used: totalDrafts, limit: 10 }); // trial = 10
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load data");
@@ -156,6 +166,7 @@ export default function NewDraftPage() {
       const eventSource = new EventSource(
         getSSEUrl(`/campaigns/${campaignId}/drafts/generate/stream/${result.task_id}`)
       );
+      eventSourceRef.current = eventSource;
 
       // Backend sends named SSE events (event: progress, success, error, done)
       // Must use addEventListener — onmessage only handles unnamed events
@@ -217,11 +228,6 @@ export default function NewDraftPage() {
       eventSource.addEventListener("done", () => {
         eventSource.close();
       });
-
-      // Cleanup on unmount
-      return () => {
-        eventSource.close();
-      };
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to generate draft");
       setPhase("error");

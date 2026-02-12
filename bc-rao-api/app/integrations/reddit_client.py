@@ -84,22 +84,26 @@ class RedditDualCheckClient:
         auth = (self.client_id, self.client_secret)
         data = {"grant_type": "client_credentials"}
 
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                "https://www.reddit.com/api/v1/access_token",
-                auth=auth,
-                data=data,
-                headers={"User-Agent": "BC-RAO/1.0 (monitoring)"}
-            )
-            response.raise_for_status()
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    "https://www.reddit.com/api/v1/access_token",
+                    auth=auth,
+                    data=data,
+                    headers={"User-Agent": "BC-RAO/1.0 (monitoring)"}
+                )
+                response.raise_for_status()
 
-        token_data = response.json()
-        self._access_token = token_data["access_token"]
-        # Cache for 3500 seconds (expires at 3600, leave 100s buffer)
-        self._token_expires_at = datetime.utcnow() + timedelta(seconds=3500)
+            token_data = response.json()
+            self._access_token = token_data["access_token"]
+            # Cache for 3500 seconds (expires at 3600, leave 100s buffer)
+            self._token_expires_at = datetime.utcnow() + timedelta(seconds=3500)
 
-        logger.info("Reddit OAuth token obtained successfully")
-        return self._access_token
+            logger.info("Reddit OAuth token obtained successfully")
+            return self._access_token
+        except httpx.HTTPError as e:
+            logger.error(f"Reddit OAuth token fetch failed: {e}")
+            raise Exception(f"Failed to authenticate with Reddit API: {e}")
 
     async def dual_check_post(self, reddit_post_id: str) -> Literal["active", "removed", "shadowbanned"]:
         """

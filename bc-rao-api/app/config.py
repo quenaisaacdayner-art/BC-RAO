@@ -29,12 +29,6 @@ class Settings(BaseSettings):
     APIFY_API_TOKEN: str = ""
     APIFY_REDDIT_ACTOR_ID: str = ""
 
-    # Stripe
-    STRIPE_SECRET_KEY: str = ""
-    STRIPE_WEBHOOK_SECRET: str = ""
-    STRIPE_STARTER_PRICE_ID: str = ""
-    STRIPE_GROWTH_PRICE_ID: str = ""
-
     # Celery / Redis
     REDIS_URL: str = "redis://localhost:6379/0"
     CELERY_BROKER_URL: str = ""

@@ -127,8 +127,10 @@ async def trigger_generation(
             }
         )
 
-    # User plan — defaults to "trial" until billing (Phase 6) is implemented
-    plan = "trial"
+    # Fetch user plan from subscriptions table
+    supabase = get_supabase_client()
+    subscription_response = supabase.table("subscriptions").select("plan").eq("user_id", user_id).execute()
+    plan = subscription_response.data[0]["plan"] if subscription_response.data else "trial"
 
     # Check monthly draft limit
     await check_monthly_draft_limit(user_id, plan)
@@ -480,8 +482,10 @@ async def regenerate_draft(
     """
     user_id = user["sub"]
 
-    # User plan — defaults to "trial" until billing (Phase 6) is implemented
-    plan = "trial"
+    # Fetch user plan from subscriptions table
+    supabase = get_supabase_client()
+    subscription_response = supabase.table("subscriptions").select("plan").eq("user_id", user_id).execute()
+    plan = subscription_response.data[0]["plan"] if subscription_response.data else "trial"
 
     # Check monthly draft limit (regeneration counts toward limit)
     await check_monthly_draft_limit(user_id, plan)

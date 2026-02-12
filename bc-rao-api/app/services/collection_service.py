@@ -91,6 +91,16 @@ class CollectionService:
                 status_code=400
             )
 
+        # Validate subreddit names (must not include 'r/' prefix)
+        for subreddit in target_subreddits:
+            if subreddit.startswith("r/"):
+                raise AppError(
+                    code=ErrorCode.VALIDATION_ERROR,
+                    message=f"Subreddit names should not include 'r/' prefix: {subreddit}",
+                    details={"invalid_subreddit": subreddit},
+                    status_code=400
+                )
+
         total_steps = len(target_subreddits)
 
         # Process each subreddit
@@ -110,12 +120,23 @@ class CollectionService:
                     ))
 
                 # Step 1: Scrape posts (run in thread pool to avoid blocking event loop)
-                scraped_posts = await asyncio.to_thread(
-                    scrape_subreddit,
-                    subreddit=subreddit,
-                    keywords=keywords,
-                    max_posts=100
-                )
+                # Retry once on failure to handle transient Apify errors
+                try:
+                    scraped_posts = await asyncio.to_thread(
+                        scrape_subreddit,
+                        subreddit=subreddit,
+                        keywords=keywords,
+                        max_posts=100
+                    )
+                except Exception as scrape_error:
+                    # Retry once after delay
+                    await asyncio.sleep(5)
+                    scraped_posts = await asyncio.to_thread(
+                        scrape_subreddit,
+                        subreddit=subreddit,
+                        keywords=keywords,
+                        max_posts=100
+                    )
                 scraped_total += len(scraped_posts)
 
                 # Update progress: filtering

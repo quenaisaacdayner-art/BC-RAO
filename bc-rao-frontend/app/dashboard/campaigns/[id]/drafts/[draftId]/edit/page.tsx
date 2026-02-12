@@ -180,7 +180,7 @@ export default function DraftEditPage({
         console.log("Progress:", data.status);
       });
 
-      eventSource.addEventListener("complete", (event) => {
+      eventSource.addEventListener("success", (event) => {
         const data = JSON.parse(event.data);
         eventSource.close();
         // Redirect to the new draft

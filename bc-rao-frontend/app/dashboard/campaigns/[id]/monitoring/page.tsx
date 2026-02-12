@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -100,7 +100,7 @@ export default function MonitoringPage() {
   }, [campaignId, router]);
 
   // Fetch dashboard stats
-  async function fetchStats() {
+  const fetchStats = useCallback(async () => {
     try {
       const supabase = createClient();
       const { data: { session } } = await supabase.auth.getSession();
@@ -123,10 +123,10 @@ export default function MonitoringPage() {
     } catch (err) {
       console.error("Failed to fetch stats:", err);
     }
-  }
+  }, [campaignId]);
 
   // Fetch monitored posts
-  async function fetchPosts() {
+  const fetchPosts = useCallback(async () => {
     try {
       const supabase = createClient();
       const { data: { session } } = await supabase.auth.getSession();
@@ -154,7 +154,7 @@ export default function MonitoringPage() {
     } catch (err) {
       console.error("Failed to fetch posts:", err);
     }
-  }
+  }, [campaignId, statusFilter]);
 
   // Initial fetch
   useEffect(() => {
@@ -162,7 +162,7 @@ export default function MonitoringPage() {
       fetchStats();
       fetchPosts();
     }
-  }, [campaign]);
+  }, [campaign, fetchStats, fetchPosts]);
 
   // Polling for real-time updates (every 30 seconds)
   useEffect(() => {
@@ -174,14 +174,14 @@ export default function MonitoringPage() {
     }, 30000);
 
     return () => clearInterval(interval);
-  }, [campaign, statusFilter]);
+  }, [campaign, fetchStats, fetchPosts]);
 
   // Re-fetch when filter changes
   useEffect(() => {
     if (campaign) {
       fetchPosts();
     }
-  }, [statusFilter]);
+  }, [campaign, fetchPosts]);
 
   // Check for shadowbanned posts and show alert
   useEffect(() => {

@@ -164,9 +164,12 @@ class InferenceClient:
     def _estimate_cost(self, token_count: int, model: str) -> float:
         """
         Estimate cost based on token count and model.
-        This is a simplified calculation - in production, parse from OpenRouter response.
+
+        TODO: Parse actual cost from OpenRouter response headers (X-OpenRouter-Cost or generation_info)
+        Current implementation uses hardcoded 2024 pricing estimates which may be inaccurate.
+        This affects budget tracking and usage limits.
         """
-        # Rough cost per 1K tokens (in USD)
+        # Rough cost per 1K tokens (in USD) - 2024 pricing
         cost_per_1k = {
             "claude-3-haiku": 0.0005,
             "claude-sonnet-4": 0.015,

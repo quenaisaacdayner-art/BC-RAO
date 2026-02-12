@@ -36,14 +36,6 @@ class RawPostResponse(RawPostCreate):
         from_attributes = True
 
 
-class RawPostWithMeta(RawPostResponse):
-    """
-    Model for raw post with metadata (used for detail modal).
-    Extends RawPostResponse - schema already covers all needed fields.
-    """
-    pass
-
-
 class RawPostListResponse(BaseModel):
     """Paginated list response for raw posts."""
     posts: list[RawPostResponse]

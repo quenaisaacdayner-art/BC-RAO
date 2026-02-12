@@ -2,6 +2,7 @@
 BC-RAO FastAPI Application Entry Point.
 Configures middleware, error handlers, and routes.
 """
+import asyncio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
@@ -51,6 +52,28 @@ app.add_exception_handler(Exception, generic_error_handler)
 
 # Include v1 API router
 app.include_router(v1_router, prefix="/v1")
+
+
+@app.on_event("startup")
+async def startup_event():
+    """
+    Application startup event handler.
+    Starts the periodic monitoring scheduler.
+    """
+    from app.workers.task_runner import schedule_periodic_monitoring
+    asyncio.create_task(schedule_periodic_monitoring())
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """
+    Application shutdown event handler.
+    Closes Redis connection to prevent resource leaks.
+    """
+    from app.workers.task_runner import get_redis
+    r = get_redis()
+    if r:
+        r.close()
 
 
 @app.get("/health")
