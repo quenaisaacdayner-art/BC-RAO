@@ -78,7 +78,7 @@ export function computeStages(
       description: "Analyze community profiles and patterns",
       completed: stage3Complete,
       active: stage2Complete && !stage3Complete, // Active if Stage 2 done
-      url: `/dashboard/campaigns/${campaignId}/profiles`,
+      url: `/dashboard/campaigns/${campaignId}/analysis`,
       locked: !stage2Complete, // Locked until Stage 2 complete
     },
     {
@@ -119,7 +119,7 @@ export function getStageUrl(stageId: number, campaignId: string): string {
   const baseUrls: Record<number, string> = {
     1: `/dashboard/campaigns/${campaignId}/edit`,
     2: `/dashboard/campaigns/${campaignId}/collect`,
-    3: `/dashboard/campaigns/${campaignId}/profiles`,
+    3: `/dashboard/campaigns/${campaignId}/analysis`,
     4: `/dashboard/campaigns/${campaignId}/drafts/new`,
     5: `/dashboard/campaigns/${campaignId}/monitoring`,
   };

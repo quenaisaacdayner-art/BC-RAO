@@ -1,5 +1,5 @@
 ---
-status: complete
+status: diagnosed
 phase: 04-draft-generation
 source: [04-01-SUMMARY.md, 04-02-SUMMARY.md, 04-03-SUMMARY.md, 04-04-SUMMARY.md, 04-05-SUMMARY.md]
 started: 2026-02-11T12:00:00Z
@@ -92,31 +92,47 @@ skipped: 6
 ## Gaps
 
 - truth: "ISC gating warning appears when selecting high-sensitivity subreddit"
-  status: failed
+  status: fixed
   reason: "User reported: e.forEach is not a function error when selecting subreddit, profile shows as 'No profile' even though subreddit was analyzed"
   severity: major
   test: 2
-  root_cause: ""
-  artifacts: []
+  root_cause: "Backend returns {profiles: [...]} wrapper but frontend called .forEach() on the object directly. Already fixed in commit 2806c17."
+  artifacts:
+    - path: "bc-rao-frontend/app/dashboard/campaigns/[id]/drafts/new/page.tsx"
+      issue: "Called .forEach() on {profiles:[...]} object instead of array"
+    - path: "bc-rao-api/app/api/v1/analysis.py"
+      issue: "Returns {profiles: profiles} wrapper at line 272"
   missing: []
-  debug_session: ""
+  debug_session: ".planning/debug/04-isc-gating-foreach.md"
 
 - truth: "Stage indicator shows correct completed/active/locked states and click navigation works"
   status: failed
   reason: "User reported: Stage 2 completed but still shows green without clear completed state. Stage 3 doesn't let me click to redirect to /analysis"
   severity: major
   test: 11
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "Stage 3 URL hardcoded to /profiles instead of /analysis in campaign-stages.ts (lines 81 and 123)"
+  artifacts:
+    - path: "bc-rao-frontend/lib/campaign-stages.ts"
+      issue: "Stage 3 URL points to /profiles instead of /analysis in both computeStages() and getStageUrl()"
+    - path: "bc-rao-frontend/components/dashboard/StageIndicator.tsx"
+      issue: "Completed vs active stage visual styles too similar"
+  missing:
+    - "Change Stage 3 URL from /profiles to /analysis in both locations"
+    - "Strengthen completed stage visual distinction"
+  debug_session: ".planning/debug/04-stage3-navigation.md"
 
 - truth: "Draft generation shows SSE progress and redirects to editor on completion"
   status: failed
   reason: "User reported: depois de clicar em generate começa mas depois aparece conexão perdida - Connection lost. Please try again."
   severity: major
   test: 4
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "Backend sends named SSE events (event: progress) but frontend uses onmessage which only handles unnamed events. Also data format mismatch between backend and frontend."
+  artifacts:
+    - path: "bc-rao-frontend/app/dashboard/campaigns/[id]/drafts/new/page.tsx"
+      issue: "Uses eventSource.onmessage instead of addEventListener for named events; expects wrong data shape"
+    - path: "bc-rao-api/app/api/v1/drafts.py"
+      issue: "Sends named SSE events (event: progress/success/error) at lines 280-295"
+  missing:
+    - "Replace onmessage with addEventListener for named events (progress, success, error, done)"
+    - "Map data fields: data.message instead of data.status, data.draft.id instead of data.result.draft_id"
+  debug_session: ".planning/debug/04-sse-connection-lost.md"

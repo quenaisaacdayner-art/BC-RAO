@@ -145,42 +145,66 @@ export default function NewDraftPage() {
         getSSEUrl(`/campaigns/${campaignId}/drafts/generate/stream/${result.task_id}`)
       );
 
-      eventSource.onmessage = (event) => {
+      // Backend sends named SSE events (event: progress, success, error, done)
+      // Must use addEventListener — onmessage only handles unnamed events
+      eventSource.addEventListener("started", () => {
+        setProgress({ status: "Starting generation..." });
+      });
+
+      eventSource.addEventListener("progress", (event) => {
         try {
           const data = JSON.parse(event.data);
+          setProgress({
+            status: data.message || "Processing...",
+            currentPhase: data.phase,
+          });
+        } catch (err) {
+          console.error("Failed to parse SSE progress:", err);
+        }
+      });
 
-          if (data.state === "PROGRESS") {
-            setProgress({
-              status: data.status || "Processing...",
-              currentPhase: data.meta?.phase,
-            });
-          } else if (data.state === "SUCCESS") {
-            setProgress({
-              status: "Complete",
-              draftId: data.result?.draft_id,
-            });
-            setPhase("complete");
-            eventSource.close();
+      eventSource.addEventListener("success", (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          const draftId = data.draft?.id;
+          setProgress({
+            status: "Complete",
+            draftId,
+          });
+          setPhase("complete");
+          eventSource.close();
 
-            // Redirect to draft editor after short delay
+          // Redirect to draft editor after short delay
+          if (draftId) {
             setTimeout(() => {
-              router.push(`/dashboard/drafts/${data.result.draft_id}/edit`);
+              router.push(`/dashboard/drafts/${draftId}/edit`);
             }, 1500);
-          } else if (data.state === "FAILURE" || data.error) {
-            setError(data.error || "Generation failed");
+          }
+        } catch (err) {
+          console.error("Failed to parse SSE success:", err);
+        }
+      });
+
+      eventSource.addEventListener("error", (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          setError(data.message || "Generation failed");
+          setPhase("error");
+          eventSource.close();
+        } catch {
+          // SSE connection error (not a named event from backend)
+          // Only treat as connection lost if we haven't completed
+          if (phase !== "complete") {
+            setError("Connection lost. Please try again.");
             setPhase("error");
             eventSource.close();
           }
-        } catch (err) {
-          console.error("Failed to parse SSE message:", err);
         }
-      };
+      });
 
-      eventSource.onerror = () => {
-        setError("Connection lost. Please try again.");
-        setPhase("error");
+      eventSource.addEventListener("done", () => {
         eventSource.close();
-      };
+      });
 
       // Cleanup on unmount
       return () => {
