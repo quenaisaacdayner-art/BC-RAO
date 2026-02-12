@@ -211,11 +211,16 @@ class GenerationService:
             rhythm_match_score = 5.0
 
         # Step 8: Store draft in generated_drafts table
+        # Auto-generate title from first line of body (DB requires NOT NULL)
+        first_line = generated_text.strip().split("\n")[0].strip()
+        auto_title = first_line[:80] + ("..." if len(first_line) > 80 else "")
+
         draft_data = {
             "campaign_id": campaign_id,
             "user_id": user_id,
             "subreddit": request.subreddit,
             "archetype": request.archetype,
+            "title": auto_title,
             "body": generated_text,
             "vulnerability_score": vulnerability_score,
             "rhythm_match_score": rhythm_match_score,
