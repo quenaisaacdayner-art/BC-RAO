@@ -151,7 +151,7 @@ export default function NewDraftPage() {
         setProgress({ status: "Starting generation..." });
       });
 
-      eventSource.addEventListener("progress", (event) => {
+      eventSource.addEventListener("progress", ((event: MessageEvent) => {
         try {
           const data = JSON.parse(event.data);
           setProgress({
@@ -161,9 +161,9 @@ export default function NewDraftPage() {
         } catch (err) {
           console.error("Failed to parse SSE progress:", err);
         }
-      });
+      }) as EventListener);
 
-      eventSource.addEventListener("success", (event) => {
+      eventSource.addEventListener("success", ((event: MessageEvent) => {
         try {
           const data = JSON.parse(event.data);
           const draftId = data.draft?.id;
@@ -183,9 +183,9 @@ export default function NewDraftPage() {
         } catch (err) {
           console.error("Failed to parse SSE success:", err);
         }
-      });
+      }) as EventListener);
 
-      eventSource.addEventListener("error", (event) => {
+      eventSource.addEventListener("error", ((event: MessageEvent) => {
         try {
           const data = JSON.parse(event.data);
           setError(data.message || "Generation failed");
@@ -200,7 +200,7 @@ export default function NewDraftPage() {
             eventSource.close();
           }
         }
-      });
+      }) as EventListener);
 
       eventSource.addEventListener("done", () => {
         eventSource.close();
