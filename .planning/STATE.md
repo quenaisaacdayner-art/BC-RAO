@@ -11,18 +11,18 @@ See: .planning/PROJECT.md (updated 2026-02-07)
 ## Current Position
 
 Phase: 4.1 (Draft Generation Anti-AI Optimization)
-Plan: 1 of 3 complete
+Plan: 2 of 3 complete
 Status: In progress
-Last activity: 2026-02-13 - Completed 04.1-01-PLAN.md (Prompt Input Pipeline Optimization)
+Last activity: 2026-02-13 - Completed 04.1-02-PLAN.md (AI Detection Expansion + Blocking Regeneration Loop)
 
-Progress: [████████░░░░░░░░░░░░░░░░] 33% (1/3 Phase 4.1 plans complete)
+Progress: [████████████████░░░░░░░░] 67% (2/3 Phase 4.1 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 21
+- Total plans completed: 22
 - Average duration: 6.1 minutes
-- Total execution time: 2.18 hours
+- Total execution time: 2.28 hours
 
 **By Phase:**
 
@@ -33,11 +33,11 @@ Progress: [████████░░░░░░░░░░░░░░░
 | 3. Pattern Engine | 4 | 28 min | 7.0 min |
 | 4. Draft Generation | 5 | 33 min | 6.6 min |
 | 5. Monitoring & Feedback Loop | 3 | 22 min | 7.3 min |
-| 4.1. Anti-AI Optimization | 1 | 9 min | 9.0 min |
+| 4.1. Anti-AI Optimization | 2 | 15 min | 7.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 05-01 (6min), 05-02 (8min), 05-04 (8min), 04.1-01 (9min)
-- Trend: Slight uptick for prompt engineering complexity
+- Last 5 plans: 05-02 (8min), 05-04 (8min), 04.1-01 (9min), 04.1-02 (6min)
+- Trend: Fast execution for well-specified pattern expansion
 
 *Updated after each plan completion*
 
@@ -124,6 +124,11 @@ Recent decisions affecting current work:
 - No top_p for Claude Sonnet 4 (04.1-01): API rejects combined temperature+top_p (verified constraint, returns 400)
 - Positive humanization rules (04.1-01): 3-5 diverse Good/Bad examples per rule to prevent LLM from copying any single example verbatim
 - Uniform random template selection (04.1-01): 12 templates with random.choice sufficient, no weighted selection needed
+- 12 AI-tell patterns total (04.1-02): 6 original + 6 new covering symmetrical structure, tidy endings, enumeration, hedge-affirm, generic descriptors, over-enthusiasm
+- MAX_REGENERATION_ATTEMPTS=2 (04.1-02): 3 total attempts balances quality improvement with cost control
+- Escalating anti-pattern feedback (04.1-02): Attempt 1 messy writing, attempt 2 maximum humanization
+- AI-tidy-ending and AI-symmetrical-structure high severity (04.1-02): Most obvious AI tells get highest severity classification
+- Token cost accumulation across retries (04.1-02): generation_params reflects true cost of final draft
 
 ### Pending Todos
 
@@ -146,6 +151,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-13 (Phase 4.1 Plan 01 execution complete)
-Stopped at: Completed 04.1-01-PLAN.md (Prompt Input Pipeline Optimization)
+Last session: 2026-02-13 (Phase 4.1 Plan 02 execution complete)
+Stopped at: Completed 04.1-02-PLAN.md (AI Detection Expansion + Blocking Regeneration Loop)
 Resume file: None
