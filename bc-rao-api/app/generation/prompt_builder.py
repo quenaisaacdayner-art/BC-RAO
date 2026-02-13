@@ -2,10 +2,12 @@
 Dynamic prompt construction from community profiles and blacklists.
 
 Builds LLM prompts that inject community DNA (ISC, rhythm, formality),
-real community writing examples, anti-AI writing rules, and
+real community writing examples, positive humanization rules, structural
+templates for post shape randomization, randomized ending styles, and
 forbidden patterns to generate Reddit-native content.
 """
 
+import random
 from typing import Optional, Dict, List
 
 
@@ -16,8 +18,10 @@ class PromptBuilder:
     Constructs system + user prompts that include:
     - Community DNA (ISC score, formality, rhythm patterns)
     - Real community writing examples (top success hooks)
-    - Anti-AI writing instructions to avoid detectable patterns
-    - Archetype-specific rules
+    - Positive humanization rules (replaces negation-based ANTI_AI_RULES)
+    - Randomly selected structural template for post shape variance
+    - Randomly selected ending style to avoid tidy conclusions
+    - Archetype-specific rules written as flowing prose
     - Forbidden patterns from syntax blacklist
     - ISC gating constraints
     """
@@ -31,44 +35,156 @@ class PromptBuilder:
         "avg_sentence_length": 15.0,
     }
 
-    # Anti-AI writing rules injected into every generation prompt.
-    # These counter the most common detectable patterns of LLM-generated text.
-    ANTI_AI_RULES = """## CRITICAL: Anti-AI Writing Rules (MANDATORY)
-You MUST follow ALL of these rules. Violating any of them makes the post detectable as AI-generated.
+    # Positive humanization rules injected into every generation prompt.
+    # These use concrete before/after examples instead of NEVER-based negations.
+    # Research shows LLMs follow positive instructions 3-5x better than negations.
+    HUMANIZATION_RULES = """## Writing Style (MANDATORY)
 
-STRUCTURE:
-- NEVER use bullet points or numbered lists in the post body
-- NEVER use headers, bold, or markdown formatting (unless the subreddit commonly does)
-- NEVER write in a 5-paragraph essay structure
-- NEVER use a "hook, body, conclusion" structure
-- Write in flowing paragraphs like a real person typing on Reddit
+These examples show the ENERGY and VIBE, not exact words to copy. Absorb the feel, then write your own way.
 
-LANGUAGE:
-- NEVER use these AI-telltale phrases: "I'd be happy to", "Great question", "It's worth noting",
-  "In my experience", "game-changer", "I can't recommend enough", "needless to say",
-  "at the end of the day", "without further ado", "in today's world", "it's important to note",
-  "I've been on a journey", "to be honest", "Here's the thing", "Let me share"
-- NEVER use formal transitions: "Furthermore", "Additionally", "Moreover", "In conclusion",
-  "That being said", "With that in mind", "On the other hand", "It goes without saying"
-- NEVER use corporate/marketing language: "leverage", "optimize", "streamline", "robust",
-  "cutting-edge", "innovative", "revolutionary", "game-changing", "best-in-class", "scalable"
-- NEVER start sentences with "So," as a discourse marker (AI signature)
-- Use contractions naturally (don't, can't, wouldn't, I'm, it's)
-- Use casual filler words occasionally (like, basically, honestly, idk, tbh, ngl)
+STRUCTURE - Write like a real person typing, not composing:
+  Good: "So my webpack config was completely borked after the upgrade. Spent 3 hours
+         trying different loaders before I realized the issue was in my tsconfig.
+         The fix ended up being stupidly simple"
+  Good: "Been running this setup for about 6 months now and honestly it just works.
+         Had some hiccups early on with the auth layer but once I figured out the
+         token refresh thing it's been smooth"
+  Good: "ok so I know everyone says to use X but hear me out -- I tried it and it
+         was awful for my use case. Maybe I'm doing something wrong but the docs
+         are basically nonexistent"
+  Bad:  "Introduction: After upgrading webpack, I encountered configuration issues.
+         Body: Through systematic debugging, I identified the root cause.
+         Conclusion: The solution was straightforward."
+  Bad:  "In this post, I will share my experience with three key challenges and
+         the solutions I discovered along the way."
 
-TONE:
-- Write like you're talking to a friend, not presenting to an audience
-- Include imperfections: incomplete thoughts, self-corrections, tangents
-- Show genuine emotion (frustration, excitement, confusion) not polished sentiment
-- Vary your energy within the post (not consistently enthusiastic or analytical)
-- End naturally, not with a neat bow. Real posts sometimes just... end.
+Write in flowing paragraphs. Mix short punchy sentences with longer rambling ones.
+Start mid-thought. Let your post trail off or end abruptly sometimes.
+Skip headers, bold text, and markdown formatting unless the subreddit commonly uses them.
 
-REDDIT-SPECIFIC:
-- Start mid-thought or with the problem, NOT with "Hey everyone!" or "Hi r/subreddit!"
-- Don't over-explain context. Reddit users assume shared knowledge.
-- Use the subreddit's natural vocabulary and abbreviations
-- Match the post length typical for this subreddit (don't over-write)
-- If asking a question, be specific, not generic"""
+LANGUAGE - Sound like a tired developer, not a press release:
+  Good: "honestly idk if this is the right approach but it's been working for
+         like 3 months now so whatever"
+  Good: "the migration was a nightmare -- took us two sprints and we still have
+         edge cases popping up. but at least the core stuff is stable now I think"
+  Good: "might be a dumb question but has anyone actually gotten the v2 API to
+         work with custom middleware? their examples are all trivial"
+  Good: "ngl this saved my ass. was about to rewrite the whole thing from scratch"
+  Bad:  "I'd be happy to share my innovative solution that streamlines the workflow"
+  Bad:  "It's worth noting that this game-changing approach leverages cutting-edge
+         technology to optimize your development pipeline"
+  Bad:  "Furthermore, I can't recommend this enough. In conclusion, it has
+         significantly improved my workflow."
+
+Use contractions (don't, can't, wouldn't). Throw in casual filler (like, basically,
+honestly, idk, tbh). Use incomplete thoughts with dashes -- like this -- when you
+change direction mid-sentence. Connect thoughts the way you'd talk, not write an essay.
+
+TONE - Be a real person with real energy:
+  Good: "I was mass about this for like a week before I found the fix. turns out
+         it was a one-line change. I almost threw my laptop"
+  Good: "look I know this is subjective but if you're still using X in 2026 you're
+         just making your life harder for no reason"
+  Good: "this might be controversial but I actually don't mind the new API. yeah
+         the migration sucked but the DX is way better now"
+  Bad:  "I had a wonderful experience discovering this tool. It truly transformed
+         my approach to development and I hope it helps you too!"
+  Bad:  "While there are certainly challenges, the benefits far outweigh the
+         drawbacks, and I believe this is the optimal path forward."
+
+Write like you're talking to a friend, not presenting to an audience.
+Include imperfections: incomplete thoughts, self-corrections, tangents.
+Show genuine emotion (frustration, excitement, confusion) not polished sentiment.
+Vary your energy within the post -- don't be consistently enthusiastic or analytical.
+
+REDDIT-SPECIFIC - Match the community:
+  Good: [starts mid-thought] "The caching layer is what finally fixed it for us"
+  Good: [assumes shared context] "anyone else having issues with the latest release?"
+  Good: [specific question] "has anyone benchmarked pgvector vs pinecone for <1M rows?"
+  Bad:  [greeting opener] "Hey everyone! I wanted to share my experience with..."
+  Bad:  [over-explains] "For those who may not know, Python is a programming language..."
+  Bad:  [generic question] "What do you think about this approach?"
+
+Start mid-thought or with the problem. Reddit users assume shared knowledge.
+Use the subreddit's natural vocabulary and abbreviations.
+Match the post length typical for this subreddit."""
+
+    # 12 structural templates for random post shape selection.
+    # Each generation randomly picks one to prevent predictable post structures.
+    STRUCTURAL_TEMPLATES = [
+        {
+            "name": "climax_first",
+            "instruction": "Start with the most dramatic/important moment. Then explain how you got there. End mid-thought or with a question.",
+            "example_shape": "BANG -> backstory -> details -> trails off"
+        },
+        {
+            "name": "tangent_heavy",
+            "instruction": "Start with your main point but go off on 1-2 tangents (parentheticals, side stories). Come back to the main point eventually.",
+            "example_shape": "Main point -> tangent -> oh right anyway -> more detail -> tangent -> done"
+        },
+        {
+            "name": "mid_rant",
+            "instruction": "Start calm, get progressively more frustrated/excited as you write. The energy escalates throughout.",
+            "example_shape": "Calm setup -> building frustration -> CAPS or emphatic language -> sudden stop"
+        },
+        {
+            "name": "stream_of_consciousness",
+            "instruction": "Write as if you're thinking out loud. Use dashes, parentheses, self-corrections ('wait, actually...'). Jump between related thoughts.",
+            "example_shape": "Thought -> aside -> correction -> related thought -> question -> done"
+        },
+        {
+            "name": "buried_lede",
+            "instruction": "Spend most of the post on context/background. The actual important information comes in the last 20%.",
+            "example_shape": "Context -> more context -> oh btw here's the actual thing -> brief reaction"
+        },
+        {
+            "name": "list_disguised",
+            "instruction": "You want to convey multiple points but DO NOT use a list. Weave them into flowing paragraphs with transitions like 'and another thing' or 'plus'.",
+            "example_shape": "Point woven into story -> another point -> connects back -> final thought"
+        },
+        {
+            "name": "question_driven",
+            "instruction": "Frame the entire post around questions you're wrestling with. Sprinkle answers you've found but keep coming back to uncertainty.",
+            "example_shape": "Question -> partial answer -> but then -> another question -> what I tried -> still unsure"
+        },
+        {
+            "name": "frustration_dump",
+            "instruction": "This is a vent post. Start frustrated, stay frustrated. Maybe offer a small silver lining at the end but don't resolve the frustration.",
+            "example_shape": "Frustration -> specifics -> more frustration -> tried this -> didn't work -> ugh -> tiny hope maybe"
+        },
+        {
+            "name": "update_style",
+            "instruction": "Write as if updating the community on something they already know about. Skip intro context. Jump right into what changed.",
+            "example_shape": "Quick reference to previous post/situation -> what happened -> current status -> what's next"
+        },
+        {
+            "name": "discovery_story",
+            "instruction": "Tell it chronologically but skip the boring parts. Fast-forward through setup, slow down on the interesting discovery moment.",
+            "example_shape": "Brief setup -> fast forward -> THE MOMENT -> details -> reflection"
+        },
+        {
+            "name": "comparison_rant",
+            "instruction": "Compare two things (tools, approaches, experiences). Be opinionated. Pick a side. Don't be balanced.",
+            "example_shape": "Thing A sucks because -> Thing B is better because -> specific example -> strong opinion ending"
+        },
+        {
+            "name": "reluctant_recommendation",
+            "instruction": "Recommend something but act like you don't want to. Show hesitation, caveats, 'it's not perfect but...' energy.",
+            "example_shape": "Caveat -> more caveats -> ok fine here's the thing -> but seriously it has problems -> still using it though"
+        },
+    ]
+
+    # 8 ending styles randomly injected to prevent tidy-conclusion AI tell.
+    ENDING_STYLES = [
+        "End abruptly. Just stop writing when you've made your point. No conclusion.",
+        "End with a specific question to the community. Not 'what do you think?' but something concrete like 'has anyone tried X with Y?'",
+        "End with a frustrated aside. Like 'ugh anyway' or 'idk anymore' or 'whatever works I guess'",
+        "Trail off with an incomplete thought. Use '...' or 'but yeah' or 'so there's that'",
+        "End by pivoting to a tangentially related thought. Don't wrap up the main topic.",
+        "End with self-deprecation. 'probably doing this all wrong but' or 'sorry for the wall of text'",
+        "End with a very brief 'edit:' or 'update:' adding one small detail.",
+        "End mid-sentence or mid-thought, as if you got distracted and hit submit.",
+    ]
 
     def build_prompt(
         self,
@@ -78,7 +194,7 @@ REDDIT-SPECIFIC:
         profile: Optional[Dict] = None,
         blacklist_patterns: Optional[List[Dict]] = None,
         constraints: Optional[List[str]] = None,
-    ) -> Dict[str, str]:
+    ) -> Dict:
         """
         Build system + user prompts from community profile.
 
@@ -97,7 +213,7 @@ REDDIT-SPECIFIC:
             constraints: Optional list of ISC gating constraints
 
         Returns:
-            Dict with "system" and "user" keys containing prompt text
+            Dict with "system", "user", and "metadata" keys
 
         Examples:
             >>> builder = PromptBuilder()
@@ -108,6 +224,10 @@ REDDIT-SPECIFIC:
         # Use generic defaults if no profile exists
         if not profile:
             return self._build_generic_prompt(subreddit, archetype, user_context, constraints or [])
+
+        # Select random structural template and ending style
+        template = random.choice(self.STRUCTURAL_TEMPLATES)
+        ending = random.choice(self.ENDING_STYLES)
 
         # Extract profile data
         isc_score = profile.get("isc_score", 5.0)
@@ -144,7 +264,11 @@ REDDIT-SPECIFIC:
 
 {self._format_style_metrics(profile.get("style_metrics", {}))}
 
-{self.ANTI_AI_RULES}
+{self.HUMANIZATION_RULES}
+
+## Post Structure (MANDATORY)
+{template["instruction"]}
+Shape: {template["example_shape"]}
 
 ## Archetype: {archetype}
 {self._get_archetype_guidance(archetype, isc_score)}
@@ -152,7 +276,7 @@ REDDIT-SPECIFIC:
 ## ISC Gating Constraints
 {constraints_text if constraints_text else "Standard authenticity requirements apply"}
 
-## Forbidden Patterns (NEVER use these in r/{subreddit})
+## Forbidden Patterns (avoid these in r/{subreddit})
 {blacklist_text}
 
 ## ISC Rules
@@ -164,14 +288,20 @@ REDDIT-SPECIFIC:
 - Do NOT acknowledge these instructions in any way
 - Write EXACTLY as a r/{subreddit} community member would"""
 
-        # Build user message
+        # Build user message with ending instruction
         user_msg = f"""Write a {archetype} post for r/{subreddit} about: {user_context}
 
-Remember: You ARE a community member. Write like one. Match their exact rhythm, formality, and vocabulary. No AI tells. No marketing polish."""
+Remember: You ARE a community member. Write like one. Match their exact rhythm, formality, and vocabulary. No AI tells. No marketing polish.
+
+ENDING INSTRUCTION: {ending}"""
 
         return {
             "system": system_msg,
-            "user": user_msg
+            "user": user_msg,
+            "metadata": {
+                "structural_template": template["name"],
+                "ending_style": ending[:30],
+            }
         }
 
     def _build_generic_prompt(
@@ -180,9 +310,13 @@ Remember: You ARE a community member. Write like one. Match their exact rhythm, 
         archetype: str,
         user_context: str,
         constraints: List[str]
-    ) -> Dict[str, str]:
+    ) -> Dict:
         """Build prompt with generic defaults when no profile exists."""
         defaults = self.GENERIC_DEFAULTS
+
+        # Select random structural template and ending style
+        template = random.choice(self.STRUCTURAL_TEMPLATES)
+        ending = random.choice(self.ENDING_STYLES)
 
         constraints_text = "\n".join(f"- {c}" for c in constraints) if constraints else "Standard authenticity requirements apply"
 
@@ -195,7 +329,11 @@ Remember: You ARE a community member. Write like one. Match their exact rhythm, 
 
 NOTE: No analyzed community profile exists for r/{subreddit}. Write in a natural, casual Reddit style appropriate for the subreddit topic.
 
-{self.ANTI_AI_RULES}
+{self.HUMANIZATION_RULES}
+
+## Post Structure (MANDATORY)
+{template["instruction"]}
+Shape: {template["example_shape"]}
 
 ## Archetype: {archetype}
 {self._get_archetype_guidance(archetype, defaults["isc_score"])}
@@ -211,49 +349,52 @@ NOTE: No analyzed community profile exists for r/{subreddit}. Write in a natural
 
         user_msg = f"""Write a {archetype} post for r/{subreddit} about: {user_context}
 
-Sound like a real person. No AI writing patterns. No marketing language. Just a genuine community member sharing their thoughts."""
+Sound like a real person. No AI writing patterns. No marketing language. Just a genuine community member sharing their thoughts.
+
+ENDING INSTRUCTION: {ending}"""
 
         return {
             "system": system_msg,
-            "user": user_msg
+            "user": user_msg,
+            "metadata": {
+                "structural_template": template["name"],
+                "ending_style": ending[:30],
+            }
         }
 
     def _get_archetype_guidance(self, archetype: str, isc_score: float) -> str:
-        """Get archetype-specific generation rules."""
+        """
+        Get archetype-specific generation guidance as flowing prose.
+
+        Written as prose paragraphs (not bullet lists) because LLMs mirror
+        instruction formatting in output. Bullet-point guidance produces
+        bullet-point posts.
+        """
         guidance = {
-            "Journey": """Share a personal discovery story:
-- Start mid-thought with the problem you faced (no "Hey everyone" or "So I...")
-- Describe your search for solutions, mention specific things that DIDN'T work
-- Let the product/solution emerge naturally from the story, not as a pitch
-- End with where you are now - results, open questions, or next steps
-- Use past tense for things that happened, present for current status
-- Include specific details: numbers, timeframes, concrete outcomes
-- Show the emotional arc: frustration -> searching -> discovery -> relief/progress""",
+            "Journey": """You're telling a personal discovery story. The kind where you were stuck, frustrated, maybe a little desperate, and then you stumbled onto something that actually worked. Don't narrate it like a case study. Write it like you'd tell a friend over beers -- start in the middle of the chaos, skip the boring setup, and get to the part where things got interesting.
 
-            "ProblemSolution": """Lead with raw pain, solution is an afterthought:
-- Jump straight into the problem. No greetings. No setup. No "I've been struggling with..."
-- Spend 90% of the post on the problem: what's broken, what you tried, why it sucks
-- Explain why the obvious solutions don't work (shows you've done homework)
-- The product/solution appears only in the final 10%, mentioned casually
-- Keep the solution mention brief and factual, not enthusiastic
-- End with your current status or a question, not a recommendation""",
+The key is specificity over generality. Instead of "I tried many solutions," say exactly what you tried and why each one sucked. Name the tools, mention the error messages, reference the Stack Overflow threads that didn't help. The product or solution should emerge organically from your story, not land like a pitch. You discovered it while digging through some thread or a coworker mentioned it offhand -- it wasn't the hero of your story, it was the thing that happened to work.
 
-            "Feedback": """Ask for genuine feedback by inverting authority:
-- Position yourself as learning, the community as experts
-- Explain what you're working on and WHY (the motivation, not the features)
-- Share what you've tried or learned, including what confused you
-- Ask SPECIFIC questions, not "what do you think?"
-- Show real uncertainty: "I'm not sure if X or Y is the right approach"
-- Mention what you're worried about or where you feel stuck
-- Invite criticism openly: "tell me what I'm missing" or "where am I wrong here?"
-- Do NOT list features. Describe the problem you're solving."""
+Let the emotional flow be messy and real. You were frustrated, then hopeful, then frustrated again, then surprised it actually worked. Use past tense for things that happened, present tense for where you are now. Include specific numbers, timeframes, concrete outcomes. Don't wrap up neatly -- either leave an open question, mention what you're still figuring out, or just stop when you've said your piece.""",
+
+            "ProblemSolution": """You're writing from a place of raw pain. The problem is the entire post. You're not writing a balanced "here's the problem and here's the solution" piece -- you're venting about something that's been driving you insane, and oh by the way you might have found something that helps.
+
+Jump straight into what's broken. No greeting, no setup, no "I've been working on..." preamble. Just the pain. What's failing, what error you're getting, why the obvious fix doesn't work. Spend the vast majority of your post describing the problem in visceral detail -- the failed attempts, the misleading documentation, the hours wasted. Show that you've done your homework by explaining why the standard solutions don't apply to your situation.
+
+The solution or product appears only at the very end, almost as an afterthought. Mentioned casually, briefly, without enthusiasm. "ended up trying X and it actually worked" energy, not "I discovered this amazing tool" energy. Keep it factual and understated. End with your current status or a lingering question, not a recommendation.""",
+
+            "Feedback": """You're approaching the community as a learner, not an authority. You have something you're working on and you genuinely don't know if you're on the right track. The community knows more than you and you're actively inviting them to poke holes in your thinking.
+
+Describe what you're building or working on in terms of the problem it solves, not the features it has. Share your motivation -- why you care about this, what frustrated you enough to start working on it. Then get vulnerable about what confuses you, what trade-offs you're unsure about, where you feel stuck. Ask specific questions, not vague "what do you think?" prompts. Something like "should I be using X or Y for this specific thing, given that I need Z?" shows you've thought about it.
+
+Show real uncertainty. You might be completely wrong about your approach and you're okay with hearing that. Invite criticism openly -- "tell me what I'm missing" or "where am I overthinking this?" Position the community as the experts and yourself as someone trying to learn. Don't list features or describe your project like a pitch deck. Talk about the messy reality of building it."""
         }
 
         base_guidance = guidance.get(archetype, "")
 
         # High ISC = extra constraints
         if isc_score > 7.5 and archetype == "Feedback":
-            base_guidance += "\n\nCRITICAL (High ISC community):\n- ZERO links allowed in the post\n- Maximum vulnerability (personal pronouns, real emotions, open questions)\n- Absolutely no marketing language or product positioning"
+            base_guidance += "\n\nCRITICAL (High ISC community): Zero links allowed in the post. Maximum vulnerability -- personal pronouns, real emotions, open questions. Absolutely no marketing language or product positioning. This community will detect and reject anything that smells like promotion."
 
         return base_guidance
 
@@ -364,7 +505,7 @@ These are NOT templates to copy. They show the VOICE of this community. Absorb t
             if vocab.get("use_these"):
                 sections.append(f"  Use naturally: {', '.join(vocab['use_these'])}")
             if vocab.get("avoid_these"):
-                sections.append(f"  NEVER use: {', '.join(vocab['avoid_these'])}")
+                sections.append(f"  Avoid: {', '.join(vocab['avoid_these'])}")
             if vocab.get("domain_terms"):
                 sections.append(f"  Domain terms: {', '.join(vocab['domain_terms'])}")
 
@@ -382,6 +523,27 @@ These are NOT templates to copy. They show the VOICE of this community. Absorb t
 
         if style_guide.get("taboo_patterns"):
             sections.append(f"\nTABOO (instant detection as outsider): {style_guide['taboo_patterns']}")
+
+        # Forward-compatible: community opinion landscape (Plan 03 enrichment)
+        opinion = style_guide.get("opinion_landscape", {})
+        if opinion:
+            sections.append("\nCOMMUNITY OPINIONS:")
+            if opinion.get("loved_tools"):
+                sections.append(f"  Champions: {', '.join(opinion['loved_tools'])}")
+            if opinion.get("hated_tools"):
+                sections.append(f"  Despises: {', '.join(opinion['hated_tools'])}")
+            if opinion.get("controversial_takes"):
+                sections.append(f"  Debates: {', '.join(opinion['controversial_takes'])}")
+            if opinion.get("tribal_knowledge"):
+                sections.append(f"  Insider refs: {', '.join(opinion['tribal_knowledge'])}")
+
+        # Forward-compatible: imperfection profile (Plan 03 enrichment)
+        imperfection = style_guide.get("imperfection_profile", {})
+        if imperfection:
+            sections.append("\nIMPERFECTION PROFILE:")
+            for key in ["typical_typos", "grammar_looseness", "self_correction_frequency", "digression_tolerance"]:
+                if imperfection.get(key):
+                    sections.append(f"  {key.replace('_', ' ').title()}: {imperfection[key]}")
 
         return "\n".join(sections)
 
@@ -452,6 +614,25 @@ These are NOT templates to copy. They show the VOICE of this community. Absorb t
             patterns = openings["top_opening_patterns"][:5]
             pattern_strs = [f'"{p["pattern"]}"' for p in patterns]
             sections.append(f"\nCommon opening patterns: {', '.join(pattern_strs)}")
+
+        # Forward-compatible: imperfection metrics from Plan 03 style_extractor changes
+        imperfections = style_metrics.get("imperfections", {})
+        if imperfections:
+            parts = []
+            fr = imperfections.get("fragment_ratio", 0)
+            if fr > 0.05:
+                parts.append(f"sentence fragments ({fr*100:.0f}% of sentences)")
+            pr = imperfections.get("parenthetical_frequency", 0)
+            if pr > 0.1:
+                parts.append(f"parenthetical asides ({pr:.1f}/post)")
+            sc = imperfections.get("self_correction_rate", 0)
+            if sc > 0.05:
+                parts.append(f"self-corrections ({sc:.1f}/post)")
+            dr = imperfections.get("dash_interruption_rate", 0)
+            if dr > 0.1:
+                parts.append(f"dash interruptions ({dr:.1f}/post)")
+            if parts:
+                sections.append(f"\nImperfection patterns: {', '.join(parts)}")
 
         # Only return if we have content beyond the header
         if len(sections) <= 1:
