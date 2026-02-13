@@ -264,6 +264,9 @@ class GenerationService:
                 "user_context": request.context,
                 "isc_score": isc_score,
                 "constraints": gating_result["constraints"],
+                **({"structural_template": prompts["metadata"]["structural_template"],
+                    "ending_style": prompts["metadata"]["ending_style"]}
+                   if prompts.get("metadata") else {}),
             },
             "status": "generated",
         }
