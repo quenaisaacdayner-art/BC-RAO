@@ -6,23 +6,23 @@ See: .planning/PROJECT.md (updated 2026-02-07)
 
 **Core value:** Founders can generate Reddit posts that survive moderation and earn genuine engagement by mimicking native community behavior patterns, not by guessing.
 
-**Current focus:** Phase 4 complete — ready for Phase 5 (Monitoring & Feedback Loop)
+**Current focus:** Phase 4.1 — Draft Generation Anti-AI Optimization
 
 ## Current Position
 
-Phase: 5 of 6 (Monitoring & Feedback Loop)
+Phase: 4.1 (Draft Generation Anti-AI Optimization)
 Plan: 3 of 3 complete
 Status: Phase complete
-Last activity: 2026-02-11 - Completed 05-04-PLAN.md (Stage 5 UI & "I Posted This" Button)
+Last activity: 2026-02-12 - Completed 04.1-03-PLAN.md (Community Intelligence Enrichment)
 
-Progress: [████████████░░░░░░░░░░░░] 100% (3/3 Phase 5 plans complete)
+Progress: [████████████████████████] 100% (3/3 Phase 4.1 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 20
+- Total plans completed: 23
 - Average duration: 6.0 minutes
-- Total execution time: 2.01 hours
+- Total execution time: 2.31 hours
 
 **By Phase:**
 
@@ -33,10 +33,11 @@ Progress: [████████████░░░░░░░░░░░
 | 3. Pattern Engine | 4 | 28 min | 7.0 min |
 | 4. Draft Generation | 5 | 33 min | 6.6 min |
 | 5. Monitoring & Feedback Loop | 3 | 22 min | 7.3 min |
+| 4.1. Anti-AI Optimization | 3 | 18 min | 6.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 04-04 (4min), 04-05 (4min), 05-01 (6min), 05-02 (8min), 05-04 (8min)
-- Trend: Slight uptick in Phase 5 (more integration complexity)
+- Last 5 plans: 05-01 (6min), 05-02 (8min), 05-04 (8min), 04.1-01 (6min), 04.1-03 (6min)
+- Trend: Stable at ~6min for analysis-focused plans
 
 *Updated after each plan completion*
 
@@ -118,10 +119,17 @@ Recent decisions affecting current work:
 - "I posted this" button entry point (05-04): Draft editor post registration for approved/posted drafts
 - Inline URL input UX (05-04): Lightweight expandable form below button, not modal
 - Client-side Reddit URL validation (05-04): Regex pattern validates before POST to /api/monitoring
+- Burstiness weight 0.15 in scoring formula (04.1-03): Rebalanced vulnerability 0.25->0.20, rhythm 0.25->0.20, formality 0.20->0.15
+- Fragment detection skips single-word sentences (04.1-03): Reduces false positives in imperfection metrics
+- Parenthetical regex 5+ chars threshold (04.1-03): Filters emoticons from parenthetical frequency count
 
 ### Pending Todos
 
 None yet.
+
+### Roadmap Evolution
+
+- Phase 4.1 inserted after Phase 4: Draft Generation Anti-AI Optimization (URGENT) — Rewrite generation pipeline to eliminate 6 AI-detectable anti-patterns identified in .planning/debug/generic-ai-detectable-drafts.md
 
 ### Blockers/Concerns
 
@@ -136,6 +144,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-11 (Phase 5 Plan 04 execution complete)
-Stopped at: Completed 05-04-PLAN.md (Stage 5 UI & "I Posted This" Button)
+Last session: 2026-02-12 (Phase 4.1 Plan 03 execution complete)
+Stopped at: Completed 04.1-03-PLAN.md (Community Intelligence Enrichment)
 Resume file: None
