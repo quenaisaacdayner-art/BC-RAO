@@ -5,12 +5,13 @@ Pipeline flow:
 1. Load community profile from Supabase
 2. Load syntax blacklist patterns
 3. Run ISC gating validation
-4. Build prompt via PromptBuilder
+4. Build prompt via PromptBuilder (few-shot imitation approach)
 5. Call InferenceClient for LLM generation
-6. Post-process: blacklist validation
-7. Score draft (vulnerability + rhythm match)
-8. Store in generated_drafts table
-9. Return DraftResponse
+6. Post-process: humanizer transforms (deterministic)
+7. Validate: blacklist + AI-pattern detection
+8. Score draft (vulnerability + rhythm match)
+9. Store in generated_drafts table
+10. Return DraftResponse
 """
 
 import logging
@@ -21,6 +22,7 @@ from datetime import datetime
 from app.integrations.supabase_client import get_supabase_client
 from app.inference.client import InferenceClient
 from app.generation.prompt_builder import PromptBuilder
+from app.generation.humanizer import humanize_text, intensity_from_formality
 from app.generation.isc_gating import validate_generation_request
 from app.generation.blacklist_validator import validate_draft, detect_ai_patterns
 from app.analysis.nlp_pipeline import analyze_posts_batch
@@ -36,8 +38,6 @@ from app.utils.errors import AppError, ErrorCode
 
 logger = logging.getLogger(__name__)
 
-MAX_REGENERATION_ATTEMPTS = 2  # Max retries after initial generation (3 total attempts max)
-
 
 class GenerationService:
     """Service for generating, scoring, and managing drafts."""
@@ -45,31 +45,6 @@ class GenerationService:
     def __init__(self):
         self.supabase = get_supabase_client()
         self.prompt_builder = PromptBuilder()
-
-    def _build_anti_pattern_feedback(self, ai_patterns: list, attempt: int) -> str:
-        """Build escalating feedback for regeneration based on detected AI patterns."""
-        categories = list(set(p["category"] for p in ai_patterns))
-        descriptions = [p["description"] for p in ai_patterns]
-
-        feedback_parts = [
-            f"CRITICAL: Your previous attempt was detected as AI-written. Attempt {attempt + 1} of {MAX_REGENERATION_ATTEMPTS + 1}.",
-            f"Detected problems: {', '.join(descriptions)}",
-        ]
-
-        # Escalating instructions based on attempt number
-        if attempt == 1:
-            feedback_parts.append(
-                "Write MORE messily. Use incomplete sentences. Start mid-thought. "
-                "Drop the structure entirely. Sound frustrated or excited, not composed."
-            )
-        elif attempt >= 2:
-            feedback_parts.append(
-                "MAXIMUM humanization required. Write like you're venting to a friend at 2am. "
-                "Grammar mistakes are GOOD. Tangents are GOOD. Abrupt endings are GOOD. "
-                "Forget everything you know about writing well."
-            )
-
-        return "\n".join(feedback_parts)
 
     async def generate_draft(
         self,
@@ -186,75 +161,54 @@ class GenerationService:
             constraints=gating_result["constraints"],
         )
 
-        # Steps 5-6b: Generate with AI pattern detection loop
+        # Step 5: Single LLM generation (no regeneration loop)
         inference_client = InferenceClient(task="generate_draft")
-        generated_text = None
-        model_used = None
-        token_count = 0
-        token_cost_usd = 0.0
-        final_ai_patterns = []
-        regeneration_attempts = 0
 
-        for attempt in range(MAX_REGENERATION_ATTEMPTS + 1):
-            # On retry, rebuild prompt with anti-pattern feedback
-            current_prompts = prompts
-            if attempt > 0:
-                anti_pattern_feedback = self._build_anti_pattern_feedback(final_ai_patterns, attempt)
-                current_prompts = self.prompt_builder.build_prompt(
-                    subreddit=request.subreddit,
-                    archetype=request.archetype,
-                    user_context=(request.context or "") + f"\n\n{anti_pattern_feedback}",
-                    profile=profile,
-                    blacklist_patterns=blacklist_patterns,
-                    constraints=gating_result["constraints"],
-                )
-                regeneration_attempts = attempt
-
-            # Step 5: LLM generation
-            try:
-                inference_result = await inference_client.call(
-                    prompt=current_prompts["user"],
-                    system_prompt=current_prompts["system"],
-                    user_id=user_id,
-                    plan=plan,
-                    campaign_id=campaign_id,
-                )
-
-                generated_text = inference_result["content"]
-                model_used = inference_result["model_used"]
-                token_count += inference_result["token_count"]  # Accumulate across retries
-                token_cost_usd += inference_result["cost_usd"]  # Accumulate across retries
-
-            except AppError:
-                raise
-            except Exception as e:
-                raise AppError(
-                    code=ErrorCode.INFERENCE_FAILED,
-                    message=f"Draft generation failed: {str(e)}",
-                    details={"subreddit": request.subreddit, "archetype": request.archetype},
-                    status_code=503
-                )
-
-            # Step 6b: AI-pattern detection (blocking quality gate)
-            final_ai_patterns = detect_ai_patterns(generated_text)
-
-            if not final_ai_patterns:
-                logger.info(f"Draft passed AI detection on attempt {attempt + 1} for r/{request.subreddit}")
-                break  # Clean draft, accept it
-
-            if attempt == MAX_REGENERATION_ATTEMPTS:
-                logger.warning(
-                    f"Draft still has {len(final_ai_patterns)} AI patterns after {MAX_REGENERATION_ATTEMPTS + 1} attempts "
-                    f"for r/{request.subreddit}. Accepting best-effort draft."
-                )
-                break  # Max retries reached, accept as-is
-
-            logger.info(
-                f"AI patterns detected on attempt {attempt + 1} for r/{request.subreddit}: "
-                f"{[p['category'] for p in final_ai_patterns]}. Regenerating..."
+        try:
+            inference_result = await inference_client.call(
+                prompt=prompts["user"],
+                system_prompt=prompts["system"],
+                user_id=user_id,
+                plan=plan,
+                campaign_id=campaign_id,
             )
 
-        # Step 6: Post-generation blacklist validation
+            generated_text = inference_result["content"]
+            model_used = inference_result["model_used"]
+            token_count = inference_result["token_count"]
+            token_cost_usd = inference_result["cost_usd"]
+
+        except AppError:
+            raise
+        except Exception as e:
+            raise AppError(
+                code=ErrorCode.INFERENCE_FAILED,
+                message=f"Draft generation failed: {str(e)}",
+                details={"subreddit": request.subreddit, "archetype": request.archetype},
+                status_code=503
+            )
+
+        # Step 6: Deterministic humanization post-processing
+        # Instead of asking the LLM to "write badly" (which fights its training),
+        # we let it generate good content and apply human-like transforms on top.
+        formality_level = profile.get("formality_level") if profile else None
+        intensity = intensity_from_formality(formality_level)
+        generated_text = humanize_text(generated_text, intensity=intensity)
+
+        logger.info(
+            f"Draft generated and humanized for r/{request.subreddit} "
+            f"(intensity={intensity:.2f}, tokens={token_count})"
+        )
+
+        # Step 6b: AI-pattern detection (quality monitoring, not blocking)
+        final_ai_patterns = detect_ai_patterns(generated_text)
+        if final_ai_patterns:
+            logger.info(
+                f"Post-humanization AI patterns for r/{request.subreddit}: "
+                f"{[p['category'] for p in final_ai_patterns]}"
+            )
+
+        # Step 8: Post-generation blacklist validation
         blacklist_check = validate_draft(generated_text, blacklist_patterns)
         blacklist_violations = len(blacklist_check.violations)
 
@@ -267,7 +221,7 @@ class GenerationService:
         if final_ai_patterns:
             blacklist_violations += len(final_ai_patterns)
 
-        # Step 7: Calculate scores via NLP pipeline
+        # Step 9: Calculate scores via NLP pipeline
         try:
             # Run NLP analysis on generated text
             nlp_results = analyze_posts_batch([generated_text])
@@ -300,7 +254,7 @@ class GenerationService:
             vulnerability_score = 5.0
             rhythm_match_score = 5.0
 
-        # Step 8: Store draft in generated_drafts table
+        # Step 10: Store draft in generated_drafts table
         # Auto-generate title from first line of body (DB requires NOT NULL)
         first_line = generated_text.strip().split("\n")[0].strip()
         auto_title = first_line[:80] + ("..." if len(first_line) > 80 else "")
@@ -323,11 +277,9 @@ class GenerationService:
                 "user_context": request.context,
                 "isc_score": isc_score,
                 "constraints": gating_result["constraints"],
-                "regeneration_attempts": regeneration_attempts,
-                "final_ai_patterns": len(final_ai_patterns),
-                **({"structural_template": prompts["metadata"]["structural_template"],
-                    "ending_style": prompts["metadata"]["ending_style"]}
-                   if prompts.get("metadata") else {}),
+                "humanization_intensity": intensity,
+                "ai_patterns_remaining": len(final_ai_patterns),
+                "approach": prompts.get("metadata", {}).get("approach", "few-shot-imitation"),
             },
             "status": "generated",
         }
@@ -343,7 +295,7 @@ class GenerationService:
                 status_code=500
             )
 
-        # Step 9: Return DraftResponse
+        # Step 11: Return DraftResponse
         return DraftResponse(
             id=stored_draft["id"],
             campaign_id=stored_draft["campaign_id"],
