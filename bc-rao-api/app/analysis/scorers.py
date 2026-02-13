@@ -223,6 +223,47 @@ def calculate_link_density_penalty(text: str) -> tuple[float, list[dict]]:
     return round(penalty, 2), penalty_phrases
 
 
+def calculate_burstiness_score(
+    post_sentence_length_std: Optional[float],
+    post_avg_sentence_length: Optional[float],
+    community_burstiness_cv: Optional[float] = None,
+) -> float:
+    """
+    Score how bursty (sentence-length-varied) a post is.
+
+    Burstiness is measured via Coefficient of Variation (CV = std_dev / mean).
+    Human text typically has CV 0.5-0.8, AI text has CV 0.2-0.4.
+
+    Args:
+        post_sentence_length_std: Standard deviation of sentence lengths in post
+        post_avg_sentence_length: Mean sentence length in post
+        community_burstiness_cv: Community's average CV (if available)
+
+    Returns:
+        Score from 0-10 where 10 = matches community burstiness or falls in human-like range.
+    """
+    if post_sentence_length_std is None or post_avg_sentence_length is None:
+        return 5.0  # Neutral if data missing
+    if post_avg_sentence_length == 0:
+        return 0.0
+
+    post_cv = post_sentence_length_std / post_avg_sentence_length
+
+    if community_burstiness_cv is not None:
+        # Score based on distance from community CV
+        diff = abs(post_cv - community_burstiness_cv)
+        return max(0.0, min(10.0, round(10.0 - diff * 15.0, 2)))
+
+    # No community reference: score based on absolute CV
+    # CV < 0.3 = too uniform (AI-like), CV > 0.9 = too chaotic
+    if post_cv < 0.3:
+        return round(post_cv * 20.0, 2)  # 0-6 range for low CV
+    elif post_cv > 0.9:
+        return round(max(0.0, 10.0 - (post_cv - 0.9) * 20.0), 2)
+    else:
+        return round(min(10.0, 6.0 + (post_cv - 0.3) * 6.67), 2)  # 6-10 range for good CV
+
+
 def calculate_post_score(post_data: dict, community_avg: dict) -> dict:
     """
     Calculate comprehensive post success score.
@@ -239,6 +280,7 @@ def calculate_post_score(post_data: dict, community_avg: dict) -> dict:
         - vulnerability_weight (0-10)
         - rhythm_adherence (0-10)
         - formality_match (0-10)
+        - burstiness_score (0-10)
         - marketing_jargon_penalty (0-10, higher = worse)
         - link_density_penalty (0-10, higher = worse)
         - total_score (0-10)
@@ -258,6 +300,11 @@ def calculate_post_score(post_data: dict, community_avg: dict) -> dict:
         post_data.get("formality_score"),
         community_avg.get("formality_level"),
     )
+    burstiness = calculate_burstiness_score(
+        post_data.get("sentence_length_std"),
+        post_data.get("avg_sentence_length"),
+        community_avg.get("burstiness_cv"),
+    )
 
     # Calculate penalties
     jargon_penalty, jargon_phrases = calculate_marketing_jargon_penalty(text)
@@ -266,11 +313,12 @@ def calculate_post_score(post_data: dict, community_avg: dict) -> dict:
     # Combined penalty phrases
     penalty_phrases = jargon_phrases + link_phrases
 
-    # Total score formula
+    # Total score formula (with burstiness)
     total = (
-        vulnerability * 0.25
-        + rhythm * 0.25
-        + formality * 0.2
+        vulnerability * 0.20
+        + rhythm * 0.20
+        + formality * 0.15
+        + burstiness * 0.15
         - jargon_penalty * 0.15
         - link_penalty * 0.15
     )
@@ -282,6 +330,7 @@ def calculate_post_score(post_data: dict, community_avg: dict) -> dict:
         "vulnerability_weight": vulnerability,
         "rhythm_adherence": rhythm,
         "formality_match": formality,
+        "burstiness_score": burstiness,
         "marketing_jargon_penalty": jargon_penalty,
         "link_density_penalty": link_penalty,
         "total_score": round(total, 2),
