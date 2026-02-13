@@ -14,7 +14,10 @@ MODEL_ROUTING = {
     "generate_draft": {
         "model": "anthropic/claude-sonnet-4-20250514",
         "max_tokens": 2000,
-        "temperature": 0.7,
+        "temperature": 0.85,
+        "frequency_penalty": 0.3,
+        "presence_penalty": 0.2,
+        # NO top_p -- Claude Sonnet 4 rejects combined temperature+top_p
         "fallback": "openai/gpt-4o-mini"
     },
     "score_post": {

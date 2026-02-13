@@ -91,7 +91,9 @@ class InferenceClient:
                 messages=messages,
                 model=self.config["model"],
                 max_tokens=self.config["max_tokens"],
-                temperature=self.config["temperature"]
+                temperature=self.config["temperature"],
+                frequency_penalty=self.config.get("frequency_penalty"),
+                presence_penalty=self.config.get("presence_penalty"),
             )
         except Exception as e:
             # 3. Fallback to secondary model on failure
@@ -100,7 +102,9 @@ class InferenceClient:
                     messages=messages,
                     model=self.config["fallback"],
                     max_tokens=self.config["max_tokens"],
-                    temperature=self.config["temperature"]
+                    temperature=self.config["temperature"],
+                    frequency_penalty=self.config.get("frequency_penalty"),
+                    presence_penalty=self.config.get("presence_penalty"),
                 )
             except Exception as fallback_error:
                 raise AppError(
@@ -144,6 +148,8 @@ class InferenceClient:
         max_tokens: int,
         temperature: float,
         prompt: Optional[str] = None,
+        frequency_penalty: Optional[float] = None,
+        presence_penalty: Optional[float] = None,
     ) -> dict:
         """
         Make HTTP call to OpenRouter API.
@@ -154,6 +160,8 @@ class InferenceClient:
             max_tokens: Maximum tokens in response.
             temperature: Sampling temperature.
             prompt: Deprecated, ignored. Use messages parameter instead.
+            frequency_penalty: Optional penalty for repeated tokens (0.0-2.0).
+            presence_penalty: Optional penalty encouraging topic diversity (0.0-2.0).
 
         Returns:
             dict with keys: content, model_used, token_count
@@ -170,6 +178,10 @@ class InferenceClient:
             "max_tokens": max_tokens,
             "temperature": temperature
         }
+        if frequency_penalty is not None:
+            payload["frequency_penalty"] = frequency_penalty
+        if presence_penalty is not None:
+            payload["presence_penalty"] = presence_penalty
 
         async with httpx.AsyncClient(timeout=60.0) as client:
             response = await client.post(url, headers=headers, json=payload)
