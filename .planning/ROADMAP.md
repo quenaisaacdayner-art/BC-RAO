@@ -16,6 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Collection Pipeline** - Module 1 with Apify scraping, regex filtering, archetype classification
 - [x] **Phase 3: Pattern Engine** - Module 2 with SpaCy rhythm analysis, ISC scoring, community profiling
 - [x] **Phase 4: Draft Generation** - Module 3 with conditioned generation, blacklist enforcement, ISC gating
+- [x] **Phase 04.1: Anti-AI Optimization** - Positive prompting, structural templates, blocking regeneration, community DNA enrichment
 - [x] **Phase 5: Monitoring & Feedback Loop** - Module 4 with dual-check shadowban detection, negative reinforcement
 - [ ] **Phase 5.1: Monitoring Hardening & Email Setup** - INSERTED: Gap closure from v1 audit
 - [ ] **Phase 6: Billing & Production Polish** - Stripe integration, usage enforcement, trial lifecycle
@@ -143,9 +144,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 04.1-01-PLAN.md — Model parameters (frequency/presence penalty) + prompt overhaul (positive rules, 12 structural templates, 8 ending styles, prose archetype guidance)
-- [ ] 04.1-02-PLAN.md — Expanded AI detection (6 new patterns) + blocking regeneration loop (up to 2 retries with escalating feedback)
-- [ ] 04.1-03-PLAN.md — Community DNA enrichment (imperfection metrics, opinion landscape) + burstiness scoring
+- [x] 04.1-01-PLAN.md — Model parameters (frequency/presence penalty) + prompt overhaul (positive rules, 12 structural templates, 8 ending styles, prose archetype guidance) (completed 2026-02-12)
+- [x] 04.1-02-PLAN.md — Expanded AI detection (6 new patterns) + blocking regeneration loop (up to 2 retries with escalating feedback) (completed 2026-02-12)
+- [x] 04.1-03-PLAN.md — Community DNA enrichment (imperfection metrics, opinion landscape) + burstiness scoring (completed 2026-02-12)
 
 ### Phase 5: Monitoring & Feedback Loop
 **Goal**: System monitors posted content with dual-check shadowban detection, alerts users on removals, and feeds removal data back into blacklist for continuous learning.
@@ -236,10 +237,11 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 5.1 → 6
 | 2. Collection Pipeline | 4/4 | Complete | 2026-02-10 |
 | 3. Pattern Engine | 4/4 | Complete | 2026-02-11 |
 | 4. Draft Generation | 5/5 | Complete | 2026-02-11 |
+| 04.1 Anti-AI Optimization (INSERTED) | 3/3 | Complete | 2026-02-12 |
 | 5. Monitoring & Feedback Loop | 4/4 | Complete | 2026-02-11 |
 | 5.1 Monitoring Hardening (INSERTED) | 0/2 | Not started | - |
 | 6. Billing & Production Polish | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-02-07*
-*Last updated: 2026-02-12 (Phase 5.1 inserted: gap closure from v1 audit)*
+*Last updated: 2026-02-12 (Phase 04.1 complete: anti-AI optimization)*

@@ -6,23 +6,23 @@ See: .planning/PROJECT.md (updated 2026-02-07)
 
 **Core value:** Founders can generate Reddit posts that survive moderation and earn genuine engagement by mimicking native community behavior patterns, not by guessing.
 
-**Current focus:** Phase 4.1 — Draft Generation Anti-AI Optimization
+**Current focus:** Phase 04.1 complete — ready for Phase 5.1 (Monitoring Hardening & Email Setup)
 
 ## Current Position
 
-Phase: 4.1 (Draft Generation Anti-AI Optimization)
-Plan: 2 of 3 complete
-Status: In progress
-Last activity: 2026-02-13 - Completed 04.1-02-PLAN.md (AI Detection Expansion + Blocking Regeneration Loop)
+Phase: 04.1 of 6 (Draft Generation Anti-AI Optimization)
+Plan: 3 of 3 complete
+Status: Phase complete
+Last activity: 2026-02-12 - Completed phase 04.1 verification (PASSED 8/8)
 
-Progress: [████████████████░░░░░░░░] 67% (2/3 Phase 4.1 plans complete)
+Progress: [████████████████████████] 100% (3/3 Phase 04.1 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 22
-- Average duration: 6.1 minutes
-- Total execution time: 2.28 hours
+- Total plans completed: 23
+- Average duration: 6.2 minutes
+- Total execution time: 2.38 hours
 
 **By Phase:**
 
@@ -33,11 +33,11 @@ Progress: [████████████████░░░░░░░
 | 3. Pattern Engine | 4 | 28 min | 7.0 min |
 | 4. Draft Generation | 5 | 33 min | 6.6 min |
 | 5. Monitoring & Feedback Loop | 3 | 22 min | 7.3 min |
-| 4.1. Anti-AI Optimization | 2 | 15 min | 7.5 min |
+| 4.1. Anti-AI Optimization | 3 | 21 min | 7.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 05-02 (8min), 05-04 (8min), 04.1-01 (9min), 04.1-02 (6min)
-- Trend: Fast execution for well-specified pattern expansion
+- Last 5 plans: 05-04 (8min), 04.1-01 (9min), 04.1-03 (6min), 04.1-02 (6min)
+- Trend: Consistent execution for well-specified anti-AI optimization
 
 *Updated after each plan completion*
 
@@ -129,6 +129,11 @@ Recent decisions affecting current work:
 - Escalating anti-pattern feedback (04.1-02): Attempt 1 messy writing, attempt 2 maximum humanization
 - AI-tidy-ending and AI-symmetrical-structure high severity (04.1-02): Most obvious AI tells get highest severity classification
 - Token cost accumulation across retries (04.1-02): generation_params reflects true cost of final draft
+- SpaCy POS-based fragment detection (04.1-03): Sentences without VERB POS tag classified as fragments
+- CV-based burstiness scoring (04.1-03): coefficient of variation 0.5-0.8 = human-like, 0.2-0.4 = AI-like
+- Burstiness weight 0.15 in scoring formula (04.1-03): vulnerability/rhythm/formality weights reduced to accommodate
+- Opinion landscape 5 fields (04.1-03): loved_tools, hated_tools, controversial_takes, tribal_knowledge, strong_biases
+- Imperfection profile 4 fields (04.1-03): typical_typos, grammar_looseness, self_correction_frequency, digression_tolerance
 
 ### Pending Todos
 
@@ -151,6 +156,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-13 (Phase 4.1 Plan 02 execution complete)
-Stopped at: Completed 04.1-02-PLAN.md (AI Detection Expansion + Blocking Regeneration Loop)
+Last session: 2026-02-12 (Phase 04.1 execution complete, verification PASSED)
+Stopped at: Phase 04.1 complete — all 3 plans executed, 8/8 must-haves verified
 Resume file: None
