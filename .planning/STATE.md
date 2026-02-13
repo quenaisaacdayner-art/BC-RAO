@@ -11,18 +11,18 @@ See: .planning/PROJECT.md (updated 2026-02-07)
 ## Current Position
 
 Phase: 4.1 (Draft Generation Anti-AI Optimization)
-Plan: 3 of 3 complete
-Status: Phase complete
-Last activity: 2026-02-12 - Completed 04.1-03-PLAN.md (Community Intelligence Enrichment)
+Plan: 1 of 3 complete
+Status: In progress
+Last activity: 2026-02-13 - Completed 04.1-01-PLAN.md (Prompt Input Pipeline Optimization)
 
-Progress: [████████████████████████] 100% (3/3 Phase 4.1 plans complete)
+Progress: [████████░░░░░░░░░░░░░░░░] 33% (1/3 Phase 4.1 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 23
-- Average duration: 6.0 minutes
-- Total execution time: 2.31 hours
+- Total plans completed: 21
+- Average duration: 6.1 minutes
+- Total execution time: 2.18 hours
 
 **By Phase:**
 
@@ -33,11 +33,11 @@ Progress: [███████████████████████
 | 3. Pattern Engine | 4 | 28 min | 7.0 min |
 | 4. Draft Generation | 5 | 33 min | 6.6 min |
 | 5. Monitoring & Feedback Loop | 3 | 22 min | 7.3 min |
-| 4.1. Anti-AI Optimization | 3 | 18 min | 6.0 min |
+| 4.1. Anti-AI Optimization | 1 | 9 min | 9.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 05-01 (6min), 05-02 (8min), 05-04 (8min), 04.1-01 (6min), 04.1-03 (6min)
-- Trend: Stable at ~6min for analysis-focused plans
+- Last 5 plans: 05-01 (6min), 05-02 (8min), 05-04 (8min), 04.1-01 (9min)
+- Trend: Slight uptick for prompt engineering complexity
 
 *Updated after each plan completion*
 
@@ -119,9 +119,11 @@ Recent decisions affecting current work:
 - "I posted this" button entry point (05-04): Draft editor post registration for approved/posted drafts
 - Inline URL input UX (05-04): Lightweight expandable form below button, not modal
 - Client-side Reddit URL validation (05-04): Regex pattern validates before POST to /api/monitoring
-- Burstiness weight 0.15 in scoring formula (04.1-03): Rebalanced vulnerability 0.25->0.20, rhythm 0.25->0.20, formality 0.20->0.15
-- Fragment detection skips single-word sentences (04.1-03): Reduces false positives in imperfection metrics
-- Parenthetical regex 5+ chars threshold (04.1-03): Filters emoticons from parenthetical frequency count
+- Temperature 0.85 for all archetypes (04.1-01): Up from 0.7 for creative variance, uniform start before per-archetype tuning
+- frequency_penalty=0.3 and presence_penalty=0.2 (04.1-01): Creative variance without incoherence
+- No top_p for Claude Sonnet 4 (04.1-01): API rejects combined temperature+top_p (verified constraint, returns 400)
+- Positive humanization rules (04.1-01): 3-5 diverse Good/Bad examples per rule to prevent LLM from copying any single example verbatim
+- Uniform random template selection (04.1-01): 12 templates with random.choice sufficient, no weighted selection needed
 
 ### Pending Todos
 
@@ -144,6 +146,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-12 (Phase 4.1 Plan 03 execution complete)
-Stopped at: Completed 04.1-03-PLAN.md (Community Intelligence Enrichment)
+Last session: 2026-02-13 (Phase 4.1 Plan 01 execution complete)
+Stopped at: Completed 04.1-01-PLAN.md (Prompt Input Pipeline Optimization)
 Resume file: None
