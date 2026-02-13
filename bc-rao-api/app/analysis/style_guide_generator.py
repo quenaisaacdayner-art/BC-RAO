@@ -26,6 +26,19 @@ EMPTY_STYLE_GUIDE: Dict[str, Any] = {
     "formatting_rules": "",
     "emotional_tone": "",
     "taboo_patterns": "",
+    "opinion_landscape": {
+        "loved_tools": [],
+        "hated_tools": [],
+        "controversial_takes": [],
+        "tribal_knowledge": [],
+        "strong_biases": [],
+    },
+    "imperfection_profile": {
+        "typical_typos": "",
+        "grammar_looseness": "",
+        "self_correction_frequency": "",
+        "digression_tolerance": "",
+    },
 }
 
 SYSTEM_PROMPT = """You are a sociolinguistic analyst specializing in online community communication patterns.
@@ -64,7 +77,20 @@ Return EXACTLY this JSON structure:
   "closing_guide": "How posts typically end, with 2-3 example patterns from the data",
   "formatting_rules": "Paragraph length, line breaks, formatting conventions observed",
   "emotional_tone": "The emotional register and energy level of this community",
-  "taboo_patterns": "What would immediately mark a post as outsider/corporate/AI-generated in this community"
+  "taboo_patterns": "What would immediately mark a post as outsider/corporate/AI-generated in this community",
+  "opinion_landscape": {{
+      "loved_tools": ["tools/frameworks this community champions — be specific"],
+      "hated_tools": ["tools/frameworks this community despises or mocks"],
+      "controversial_takes": ["divisive opinions that spark debate in this community"],
+      "tribal_knowledge": ["insider references, memes, running jokes unique to this community"],
+      "strong_biases": ["clear community biases, e.g. 'prefers X over Y'"]
+  }},
+  "imperfection_profile": {{
+      "typical_typos": "whether typos are common or rare in this community",
+      "grammar_looseness": "how loose grammar is (fragments, run-ons, etc)",
+      "self_correction_frequency": "how often people correct themselves mid-post",
+      "digression_tolerance": "how much the community tolerates off-topic tangents"
+  }}
 }}"""
 
 
@@ -231,6 +257,27 @@ def _validate_style_guide(parsed: Dict[str, Any]) -> Dict[str, Any]:
             "use_these": vg.get("use_these", []) if isinstance(vg.get("use_these"), list) else [],
             "avoid_these": vg.get("avoid_these", []) if isinstance(vg.get("avoid_these"), list) else [],
             "domain_terms": vg.get("domain_terms", []) if isinstance(vg.get("domain_terms"), list) else [],
+        }
+
+    # Opinion landscape (nested dict with lists)
+    if "opinion_landscape" in parsed and isinstance(parsed["opinion_landscape"], dict):
+        ol = parsed["opinion_landscape"]
+        result["opinion_landscape"] = {
+            "loved_tools": ol.get("loved_tools", []) if isinstance(ol.get("loved_tools"), list) else [],
+            "hated_tools": ol.get("hated_tools", []) if isinstance(ol.get("hated_tools"), list) else [],
+            "controversial_takes": ol.get("controversial_takes", []) if isinstance(ol.get("controversial_takes"), list) else [],
+            "tribal_knowledge": ol.get("tribal_knowledge", []) if isinstance(ol.get("tribal_knowledge"), list) else [],
+            "strong_biases": ol.get("strong_biases", []) if isinstance(ol.get("strong_biases"), list) else [],
+        }
+
+    # Imperfection profile (nested dict with strings)
+    if "imperfection_profile" in parsed and isinstance(parsed["imperfection_profile"], dict):
+        ip = parsed["imperfection_profile"]
+        result["imperfection_profile"] = {
+            "typical_typos": ip.get("typical_typos", "") if isinstance(ip.get("typical_typos"), str) else "",
+            "grammar_looseness": ip.get("grammar_looseness", "") if isinstance(ip.get("grammar_looseness"), str) else "",
+            "self_correction_frequency": ip.get("self_correction_frequency", "") if isinstance(ip.get("self_correction_frequency"), str) else "",
+            "digression_tolerance": ip.get("digression_tolerance", "") if isinstance(ip.get("digression_tolerance"), str) else "",
         }
 
     return result

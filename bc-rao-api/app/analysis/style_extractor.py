@@ -49,6 +49,7 @@ def extract_community_style(
     punctuation = _extract_punctuation(docs, texts)
     formatting = _extract_formatting(texts)
     openings = _extract_openings(top_texts)
+    imperfections = _extract_imperfections(docs, texts)
 
     return {
         "vocabulary": vocabulary,
@@ -56,6 +57,7 @@ def extract_community_style(
         "punctuation": punctuation,
         "formatting": formatting,
         "openings": openings,
+        "imperfections": imperfections,
     }
 
 
@@ -249,6 +251,64 @@ def _extract_openings(top_texts: List[str]) -> Dict[str, Any]:
     }
 
 
+def _extract_imperfections(docs, texts: List[str]) -> Dict[str, Any]:
+    """
+    Extract imperfection metrics that characterize human-like writing.
+
+    Measures fragment ratio (verbless sentences), parenthetical asides,
+    self-correction markers, and dash interruptions. These metrics tell
+    the generation LLM how messy to write to match the community.
+
+    Args:
+        docs: SpaCy Doc objects for each text
+        texts: Raw post texts
+
+    Returns:
+        Dict with fragment_ratio, parenthetical_frequency,
+        self_correction_rate, dash_interruption_rate
+    """
+    # Parenthetical regex: 5+ chars inside parens (filters emoticons/short asides)
+    parenthetical_pattern = re.compile(r'\([^)]{5,}\)')
+    # Self-correction markers
+    self_correction_pattern = re.compile(
+        r'\b(?:I mean|actually|wait|edit:|update:|sorry,? I meant)\b',
+        re.IGNORECASE,
+    )
+    # Mid-sentence dash interruptions (space-dash-space or em-dash)
+    dash_pattern = re.compile(r'\s[-\u2013\u2014]{1,2}\s')
+
+    fragment_count = 0
+    total_sentences = 0
+    parenthetical_counts = []
+    self_correction_counts = []
+    dash_counts = []
+
+    for doc, text in zip(docs, texts):
+        # Fragment detection: sentences without a VERB POS tag
+        for sent in doc.sents:
+            tokens = [t for t in sent if t.is_alpha]
+            # Skip single-word sentences and punctuation-only sentences
+            if len(tokens) <= 1:
+                continue
+            total_sentences += 1
+            has_verb = any(t.pos_ == "VERB" for t in sent)
+            if not has_verb:
+                fragment_count += 1
+
+        # Per-post counts for averaging
+        parenthetical_counts.append(len(parenthetical_pattern.findall(text)))
+        self_correction_counts.append(len(self_correction_pattern.findall(text)))
+        dash_counts.append(len(dash_pattern.findall(text)))
+
+    n = len(texts)
+    return {
+        "fragment_ratio": round(fragment_count / total_sentences, 3) if total_sentences > 0 else 0.0,
+        "parenthetical_frequency": round(sum(parenthetical_counts) / n, 2) if n > 0 else 0.0,
+        "self_correction_rate": round(sum(self_correction_counts) / n, 2) if n > 0 else 0.0,
+        "dash_interruption_rate": round(sum(dash_counts) / n, 2) if n > 0 else 0.0,
+    }
+
+
 def _empty_style() -> Dict[str, Any]:
     """Return empty style structure for edge cases."""
     return {
@@ -283,5 +343,11 @@ def _empty_style() -> Dict[str, Any]:
         },
         "openings": {
             "top_opening_patterns": [],
+        },
+        "imperfections": {
+            "fragment_ratio": 0.0,
+            "parenthetical_frequency": 0.0,
+            "self_correction_rate": 0.0,
+            "dash_interruption_rate": 0.0,
         },
     }

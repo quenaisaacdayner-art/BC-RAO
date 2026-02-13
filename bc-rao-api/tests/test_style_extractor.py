@@ -48,6 +48,7 @@ class TestExtractCommunityStyle:
         assert "punctuation" in result
         assert "formatting" in result
         assert "openings" in result
+        assert "imperfections" in result
 
     def test_vocabulary_extraction(self):
         result = extract_community_style(STARTUP_POSTS)
@@ -155,3 +156,44 @@ class TestExtractCommunityStyle:
         # Should not crash, even if output is sparse
         assert "vocabulary" in result
         assert "structure" in result
+
+    def test_imperfections_extraction(self):
+        """Should extract all 4 imperfection metrics."""
+        texts_with_imperfections = [
+            "Beautiful day. Gorgeous sunset.",  # fragments (no verb)
+            "I mean, actually it was fine. The thing (which was really surprising) happened yesterday.",
+            "So the app -- you know -- just crashed. I tried to fix it but wait, that's not right.",
+            "This is great. Amazing stuff. The project (with all its complexity) worked out.",
+        ]
+        result = extract_community_style(texts_with_imperfections)
+        imp = result["imperfections"]
+
+        # All 4 keys present
+        assert "fragment_ratio" in imp
+        assert "parenthetical_frequency" in imp
+        assert "self_correction_rate" in imp
+        assert "dash_interruption_rate" in imp
+
+        # Types are correct
+        assert isinstance(imp["fragment_ratio"], float)
+        assert isinstance(imp["parenthetical_frequency"], float)
+        assert isinstance(imp["self_correction_rate"], float)
+        assert isinstance(imp["dash_interruption_rate"], float)
+
+        # Fragment ratio should be > 0 (some fragments present)
+        assert imp["fragment_ratio"] > 0, "Should detect sentence fragments"
+        # Parenthetical frequency > 0 (parenthetical asides present)
+        assert imp["parenthetical_frequency"] > 0, "Should detect parentheticals"
+        # Self-correction rate > 0 (self-correction markers present)
+        assert imp["self_correction_rate"] > 0, "Should detect self-corrections"
+        # Dash interruption rate > 0 (dash interruptions present)
+        assert imp["dash_interruption_rate"] > 0, "Should detect dash interruptions"
+
+    def test_imperfections_in_empty_style(self):
+        """Empty style should include imperfections with zero defaults."""
+        result = _empty_style()
+        assert "imperfections" in result
+        assert result["imperfections"]["fragment_ratio"] == 0.0
+        assert result["imperfections"]["parenthetical_frequency"] == 0.0
+        assert result["imperfections"]["self_correction_rate"] == 0.0
+        assert result["imperfections"]["dash_interruption_rate"] == 0.0

@@ -90,6 +90,9 @@ class TestParseStyleGuideJson:
         result = _parse_style_guide_json(partial)
         assert result["voice_description"] == "Casual and fun"
         assert result["vocabulary_guide"] == {"use_these": [], "avoid_these": [], "domain_terms": []}
+        # New fields should also have defaults
+        assert result["opinion_landscape"] == {"loved_tools": [], "hated_tools": [], "controversial_takes": [], "tribal_knowledge": [], "strong_biases": []}
+        assert result["imperfection_profile"] == {"typical_typos": "", "grammar_looseness": "", "self_correction_frequency": "", "digression_tolerance": ""}
 
     def test_wrong_types_handled(self):
         bad_types = json.dumps({
@@ -239,3 +242,55 @@ class TestGenerateStyleGuide:
 
         # Should fall back to empty guide, not crash
         assert result == EMPTY_STYLE_GUIDE
+
+
+class TestNewStyleGuideFields:
+    """Test opinion_landscape and imperfection_profile handling."""
+
+    def test_empty_style_guide_has_new_fields(self):
+        assert "opinion_landscape" in EMPTY_STYLE_GUIDE
+        assert "imperfection_profile" in EMPTY_STYLE_GUIDE
+        assert isinstance(EMPTY_STYLE_GUIDE["opinion_landscape"]["loved_tools"], list)
+        assert isinstance(EMPTY_STYLE_GUIDE["imperfection_profile"]["typical_typos"], str)
+
+    def test_validates_opinion_landscape(self):
+        full_json = json.dumps({
+            "voice_description": "Test",
+            "opinion_landscape": {
+                "loved_tools": ["React", "TypeScript"],
+                "hated_tools": ["jQuery"],
+                "controversial_takes": ["Tailwind is better than CSS"],
+                "tribal_knowledge": ["We don't talk about the 2024 outage"],
+                "strong_biases": ["Prefers functional over OOP"],
+            },
+        })
+        result = _parse_style_guide_json(full_json)
+        assert result["opinion_landscape"]["loved_tools"] == ["React", "TypeScript"]
+        assert result["opinion_landscape"]["hated_tools"] == ["jQuery"]
+        assert len(result["opinion_landscape"]["controversial_takes"]) == 1
+
+    def test_validates_imperfection_profile(self):
+        full_json = json.dumps({
+            "voice_description": "Test",
+            "imperfection_profile": {
+                "typical_typos": "Common, especially on mobile",
+                "grammar_looseness": "Very loose, lots of fragments",
+                "self_correction_frequency": "Frequent edits and corrections",
+                "digression_tolerance": "High, tangents are welcome",
+            },
+        })
+        result = _parse_style_guide_json(full_json)
+        assert result["imperfection_profile"]["typical_typos"] == "Common, especially on mobile"
+        assert result["imperfection_profile"]["grammar_looseness"] == "Very loose, lots of fragments"
+
+    def test_wrong_types_in_new_fields(self):
+        bad = json.dumps({
+            "opinion_landscape": {"loved_tools": "not a list", "hated_tools": 123},
+            "imperfection_profile": {"typical_typos": 42, "grammar_looseness": ["wrong"]},
+        })
+        result = _parse_style_guide_json(bad)
+        # Should fall back to defaults for wrong types
+        assert result["opinion_landscape"]["loved_tools"] == []
+        assert result["opinion_landscape"]["hated_tools"] == []
+        assert result["imperfection_profile"]["typical_typos"] == ""
+        assert result["imperfection_profile"]["grammar_looseness"] == ""
