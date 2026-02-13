@@ -3,9 +3,10 @@ Tests for blacklist validation - content safety feature.
 
 Tests pattern matching, case sensitivity, and violation detection
 to ensure forbidden promotional language is caught.
+Also tests AI-tell pattern detection for humanization quality gating.
 """
 import pytest
-from app.generation.blacklist_validator import validate_draft
+from app.generation.blacklist_validator import validate_draft, detect_ai_patterns, AI_TELL_PATTERNS
 
 
 class TestBlacklistValidation:
@@ -311,3 +312,177 @@ def test_each_forbidden_pattern_detected(forbidden_phrase):
 
     assert result.passed is False
     assert len(result.violations) >= 1
+
+
+class TestAIPatternCount:
+    """Test that AI_TELL_PATTERNS has the expected number of patterns."""
+
+    def test_ai_tell_patterns_count(self):
+        """Should have at least 12 compiled patterns (6 original + 6 new)."""
+        assert len(AI_TELL_PATTERNS) >= 12
+
+
+class TestAITidyEnding:
+    """Test AI-tidy-ending pattern detection."""
+
+    @pytest.mark.parametrize("phrase", [
+        "In summary, this was a great approach.",
+        "Overall, I think this works well.",
+        "All in all, it was worth the effort.",
+        "At the end of the day, you need to decide.",
+        "The takeaway: always test your code.",
+        "The bottom line: it depends on the use case.",
+        "To sum up, here are the key points.",
+        "In conclusion, this is the best option.",
+        "To conclude, we learned a lot.",
+        "Ultimately, the choice is yours.",
+        "Looking back, I should have done this differently.",
+        "In hindsight, the simpler approach was better.",
+        "The moral: don't overcomplicate things.",
+    ])
+    def test_tidy_ending_detected(self, phrase):
+        """Each tidy ending phrase should trigger AI-tidy-ending detection."""
+        results = detect_ai_patterns(phrase)
+        categories = [r["category"] for r in results]
+        assert "AI-tidy-ending" in categories, f"Expected AI-tidy-ending for: {phrase}"
+
+    def test_tidy_ending_severity_is_high(self):
+        """AI-tidy-ending should have high severity."""
+        results = detect_ai_patterns("In summary, this approach works.")
+        tidy = [r for r in results if r["category"] == "AI-tidy-ending"]
+        assert len(tidy) > 0
+        assert tidy[0]["severity"] == "high"
+
+
+class TestAISymmetricalStructure:
+    """Test AI-symmetrical-structure pattern detection."""
+
+    def test_symmetrical_structure_detected(self):
+        """Balanced intro-body-conclusion should be detected."""
+        # Short intro (50-200 chars), long body (200+ chars), short conclusion (50-200 chars)
+        intro = "I was thinking about how we approach testing in production environments recently."
+        body = (
+            "The thing is, most teams skip integration tests entirely. They write unit tests "
+            "because they are fast and easy. But when you deploy to production, the real issues "
+            "come from services talking to each other. Database queries timing out. Cache invalidation "
+            "failing silently. Network partitions causing data inconsistency across microservices."
+        )
+        conclusion = "Anyway, that has been my experience over the last couple of years working on this stuff."
+        text = f"{intro}\n\n{body}\n\n{conclusion}"
+        results = detect_ai_patterns(text)
+        categories = [r["category"] for r in results]
+        assert "AI-symmetrical-structure" in categories
+
+    def test_symmetrical_structure_severity_is_high(self):
+        """AI-symmetrical-structure should have high severity."""
+        intro = "I was thinking about how we approach testing in production environments recently."
+        body = (
+            "The thing is, most teams skip integration tests entirely. They write unit tests "
+            "because they are fast and easy. But when you deploy to production, the real issues "
+            "come from services talking to each other. Database queries timing out. Cache invalidation "
+            "failing silently. Network partitions causing data inconsistency across microservices."
+        )
+        conclusion = "Anyway, that has been my experience over the last couple of years working on this stuff."
+        text = f"{intro}\n\n{body}\n\n{conclusion}"
+        results = detect_ai_patterns(text)
+        sym = [r for r in results if r["category"] == "AI-symmetrical-structure"]
+        assert len(sym) > 0
+        assert sym[0]["severity"] == "high"
+
+
+class TestAIEnumeration:
+    """Test AI-enumeration pattern detection."""
+
+    @pytest.mark.parametrize("text", [
+        "First, you need to set up the environment.",
+        "Second, install the dependencies.",
+        "Third, run the migration script.",
+        "Finally, restart the server.",
+        "Lastly, verify the deployment.",
+        "Firstly, consider the requirements.",
+        "Secondly, evaluate the alternatives.",
+    ])
+    def test_enumeration_detected(self, text):
+        """Sequential ordinal words should trigger AI-enumeration."""
+        results = detect_ai_patterns(text)
+        categories = [r["category"] for r in results]
+        assert "AI-enumeration" in categories, f"Expected AI-enumeration for: {text}"
+
+
+class TestAIHedgeAffirm:
+    """Test AI-hedge-affirm pattern detection."""
+
+    @pytest.mark.parametrize("text", [
+        "While the framework has some limitations with edge cases, however it handles the core use cases well.",
+        "Although the documentation is sparse and hard to follow, nevertheless the library works correctly.",
+        "Though performance could be improved in several areas, still it meets the baseline requirements.",
+        "While this approach requires more initial setup work, that said it pays off in the long run.",
+    ])
+    def test_hedge_affirm_detected(self, text):
+        """Balanced hedge-then-affirm should trigger AI-hedge-affirm."""
+        results = detect_ai_patterns(text)
+        categories = [r["category"] for r in results]
+        assert "AI-hedge-affirm" in categories, f"Expected AI-hedge-affirm for: {text}"
+
+
+class TestAIGenericDescriptor:
+    """Test AI-generic-descriptor pattern detection."""
+
+    @pytest.mark.parametrize("text", [
+        "There are various tools available for this.",
+        "You can find numerous options in the ecosystem.",
+        "Several solutions exist for this problem.",
+        "Multiple approaches have been tried before.",
+        "A number of methods can help here.",
+        "A variety of techniques are commonly used.",
+        "There are various strategies to consider.",
+        "Multiple resources are available online.",
+    ])
+    def test_generic_descriptor_detected(self, text):
+        """Generic descriptor phrases should trigger AI-generic-descriptor."""
+        results = detect_ai_patterns(text)
+        categories = [r["category"] for r in results]
+        assert "AI-generic-descriptor" in categories, f"Expected AI-generic-descriptor for: {text}"
+
+
+class TestAIOverEnthusiasm:
+    """Test AI-over-enthusiasm pattern detection."""
+
+    def test_three_exclamations_detected(self):
+        """Three or more exclamation marks should trigger AI-over-enthusiasm."""
+        text = "This is amazing! I love it! You should try it too!"
+        results = detect_ai_patterns(text)
+        categories = [r["category"] for r in results]
+        assert "AI-over-enthusiasm" in categories
+
+    def test_two_exclamations_not_detected(self):
+        """Two exclamation marks should NOT trigger AI-over-enthusiasm."""
+        text = "This is great! Really impressive work."
+        results = detect_ai_patterns(text)
+        categories = [r["category"] for r in results]
+        assert "AI-over-enthusiasm" not in categories
+
+
+class TestAIPatternNegative:
+    """Test that normal human text does not trigger AI pattern detection."""
+
+    def test_clean_human_text_no_detections(self):
+        """Normal conversational text should return empty detection list."""
+        text = (
+            "been messing with fastapi for a couple weeks now and honestly "
+            "its pretty solid. had some issues with the async stuff at first "
+            "but figured it out eventually. anyone else run into weird behavior "
+            "with background tasks?"
+        )
+        results = detect_ai_patterns(text)
+        assert len(results) == 0, f"Expected no detections but got: {[r['category'] for r in results]}"
+
+    def test_casual_reddit_post_no_detections(self):
+        """Casual Reddit-style post should not trigger detections."""
+        text = (
+            "so i just switched from django to fastapi and wow the difference "
+            "in boilerplate is insane. took me like 2 days to port my whole api "
+            "over. the auto docs alone are worth it imo"
+        )
+        results = detect_ai_patterns(text)
+        assert len(results) == 0, f"Expected no detections but got: {[r['category'] for r in results]}"

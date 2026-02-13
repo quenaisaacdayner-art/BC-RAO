@@ -26,6 +26,39 @@ AI_TELL_PATTERNS = [
     (re.compile(r'^(?:Hey everyone|Hi everyone|Hello everyone|Hey folks|Hi folks|Greetings)[!,.]', re.IGNORECASE | re.MULTILINE), "AI-generic-greeting", "Generic greeting opening"),
     # AI discourse marker "So," at sentence start
     (re.compile(r'(?:^|\.\s+)So,\s', re.MULTILINE), "AI-so-discourse", "\"So,\" as discourse marker"),
+    # AI-symmetrical-structure: Suspiciously balanced intro-body-conclusion
+    (re.compile(
+        r'^.{50,200}\n\n.{200,}\n\n.{50,200}$', re.DOTALL
+    ), "AI-symmetrical-structure", "Suspiciously balanced intro-body-conclusion structure"),
+    # AI-tidy-ending: Tidy moral/summary endings
+    (re.compile(
+        r'(?:In summary|Overall|All in all|At the end of the day|The takeaway|'
+        r'The moral|Looking back|In hindsight|To sum up|The bottom line|'
+        r'In conclusion|To conclude|Ultimately)[,:]',
+        re.IGNORECASE
+    ), "AI-tidy-ending", "Tidy wrap-up ending phrase"),
+    # AI-enumeration: Enumerated parallel structure (sequential ordinals)
+    (re.compile(
+        r'(?:^|\n)\s*(?:First|Second|Third|Fourth|Finally|Lastly|Next|Then)(?:ly)?[,:\s]',
+        re.MULTILINE | re.IGNORECASE
+    ), "AI-enumeration", "Enumerated parallel structure"),
+    # AI-hedge-affirm: Balanced hedge-then-affirm pattern
+    (re.compile(
+        r'\b(?:While|Although|Though)\b.{20,80}\b(?:however|nevertheless|still|'
+        r'that said|on the other hand)\b',
+        re.IGNORECASE
+    ), "AI-hedge-affirm", "Balanced hedge-then-affirm pattern"),
+    # AI-generic-descriptor: Generic descriptors without specifics
+    (re.compile(
+        r'\b(?:various|numerous|several|multiple|a number of|a variety of)\s+'
+        r'(?:tools|options|solutions|approaches|methods|techniques|strategies|resources)\b',
+        re.IGNORECASE
+    ), "AI-generic-descriptor", "Generic descriptor without specifics"),
+    # AI-over-enthusiasm: 3+ exclamation marks in a single post
+    (re.compile(
+        r'(?:!.*){3,}',
+        re.DOTALL
+    ), "AI-over-enthusiasm", "Excessive exclamation marks (3+ in post)"),
 ]
 
 
@@ -55,7 +88,7 @@ def detect_ai_patterns(text: str) -> List[Dict]:
                 "category": category,
                 "description": description,
                 "matched_text": match.group(0)[:100],
-                "severity": "high" if category in ("AI-chatgpt-phrase", "AI-corporate-buzzword") else "medium",
+                "severity": "high" if category in ("AI-chatgpt-phrase", "AI-corporate-buzzword", "AI-tidy-ending", "AI-symmetrical-structure") else "medium",
             })
 
     return detections
