@@ -122,6 +122,31 @@ Plans:
 
 ---
 
+### Phase 04.1: Draft Generation Anti-AI Optimization (INSERTED)
+
+**Goal**: Generated drafts pass human scrutiny on Reddit by eliminating 6 AI-detectable anti-patterns (symmetrical structure, lack of visceral specificity, tidy endings, neutrality, perfect syntax, perfect lists) through positive prompt engineering, blocking quality gates with regeneration, community DNA enrichment, and structural randomization.
+
+**Depends on**: Phase 4 (draft generation pipeline exists)
+
+**Root Cause Analysis**: .planning/debug/generic-ai-detectable-drafts.md
+
+**Success Criteria** (what must be TRUE):
+  1. Prompts use positive instructions with concrete before/after examples instead of NEVER-based negations
+  2. Each generation randomly selects from 10+ structural templates (climax-first, tangent-first, mid-rant, etc.) preventing predictable post shapes
+  3. AI pattern detection is blocking — detected posts trigger up to 2 regeneration attempts with stronger anti-pattern instructions
+  4. Community profiles include bias/opinion data (loved/hated tools, controversial takes, tribal knowledge) injected into persona
+  5. Style extractor captures imperfection metrics (sentence fragment ratio, parenthetical frequency, self-correction patterns) fed into prompt
+  6. Model parameters optimized per archetype (temperature 0.85-0.9, top_p, frequency/presence penalties)
+  7. Posts end with randomized ending styles (abrupt stop, specific question, frustrated aside, trailing off) instead of tidy conclusions
+  8. Generated posts show measurable burstiness (sentence length variance) comparable to real community posts
+
+**Plans**: 3 plans
+
+Plans:
+- [ ] 04.1-01-PLAN.md — Model parameters (frequency/presence penalty) + prompt overhaul (positive rules, 12 structural templates, 8 ending styles, prose archetype guidance)
+- [ ] 04.1-02-PLAN.md — Expanded AI detection (6 new patterns) + blocking regeneration loop (up to 2 retries with escalating feedback)
+- [ ] 04.1-03-PLAN.md — Community DNA enrichment (imperfection metrics, opinion landscape) + burstiness scoring
+
 ### Phase 5: Monitoring & Feedback Loop
 **Goal**: System monitors posted content with dual-check shadowban detection, alerts users on removals, and feeds removal data back into blacklist for continuous learning.
 
